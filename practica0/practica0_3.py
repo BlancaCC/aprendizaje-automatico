@@ -44,7 +44,6 @@ list(map( print , imagenes))
 colores = ["#009f00", "#000000", "#ff0000"]
 
 
-
-list(map( lambda t: plt.plot(valores, t[0],t[1]) , zip(imagenes, colores)))
+list(map( lambda t: plt.scatter(valores, t[0], c = [ t[1]]*num_valores) , zip(imagenes, colores)))
 
 plt.show()
