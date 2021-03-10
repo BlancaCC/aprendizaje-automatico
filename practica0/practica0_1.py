@@ -30,8 +30,9 @@ from sklearn import datasets
 iris = datasets.load_iris()   # leemos la base de datos iris
 
 # 1.2 
-print(iris.feature_names) # Con este comando podemos ver el nombre de las caracetristicas 
-print (iris.target_names) # Nombre de las clases 
+print(iris.feature_names) # Con este comando podemos ver el nombre de las caracetristicas
+nombre_etiquetas = iris.target_names 
+print (nombre_etiquetas) # Nombre de las clases 
 
 
 X = iris.data # obtenemos los datos
@@ -57,11 +58,14 @@ y_min, y_max = X[:, sepalo_ancho_indice ].min() - borde, X[:, sepalo_ancho_indic
 plt.figure("sepalo", figsize=(8, 6)) # identificador y tamaño 
 plt.clf() # limpiamos buffer 
 
-# naranja negro verde 
+# naranja negro verde
 colores = ['#ff8000', '#000000', '#009f00']
 y_colores = [ colores[i] for i in y] # asociamos a cada clase su color
 
-plt.scatter(X[:, sepalo_longitud_indice], X[:, sepalo_ancho_indice], c=y_colores)
+tam = len(y) // len(nombre_etiquetas) # sabemos que son exactos y ordenados
+
+# mandamos a dibujar cada tipo
+[ plt.scatter(X[i*tam:(i+1)*tam, sepalo_longitud_indice], X[i*tam:(i+1)*tam, sepalo_ancho_indice], c=y_colores[i*tam:(i+1)*tam], label=l) for i,l in enumerate(nombre_etiquetas)]
 
 plt.xlabel('Sépalo longitud cm ')
 plt.ylabel('Sépalo ancho cm')
@@ -69,6 +73,7 @@ plt.ylabel('Sépalo ancho cm')
 plt.xlim(x_min, x_max)
 plt.ylim(y_min, y_max)
 
+plt.legend()
 
 plt.show()
 
@@ -88,7 +93,9 @@ plt.clf() # limpiamos buffer
 colores = ['#ff8000', '#000000', '#009f00']
 y_colores = [ colores[i] for i in y] # asociamos a cada clase su color
 
-plt.scatter(X[:, petalo_longitud_indice], X[:, petalo_ancho_indice], c=y_colores)
+
+[ plt.scatter(X[i*tam:(i+1)*tam, petalo_longitud_indice], X[i*tam:(i+1)*tam, petalo_ancho_indice], c=y_colores[i*tam:(i+1)*tam], label=l) for i,l in enumerate(nombre_etiquetas)]
+
 
 plt.xlabel('Pétalo longitud cm ')
 plt.ylabel('Pétalo ancho cm')
@@ -96,5 +103,7 @@ plt.ylabel('Pétalo ancho cm')
 
 plt.xlim(x_min, x_max)
 plt.ylim(y_min, y_max)
+
+plt.legend()
 
 plt.show()
