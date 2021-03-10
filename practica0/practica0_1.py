@@ -69,8 +69,8 @@ plt.clf() # limpiamos buffer
 
 
 plt.scatter(X[:, sepalo_longitud_indice], X[:, sepalo_ancho_indice], c=y_colores)
-plt.scatter([],[])
-plt.scatter([],[])
+
+[ plt.scatter([],[]) for i in range( 1, len(nombre_etiquetas))] # tenemos que añadir d-1 handle más para que represente las equitetas
 
 plt.xlabel('Sépalo longitud cm ')
 plt.ylabel('Sépalo ancho cm')
@@ -95,11 +95,11 @@ plt.figure("petalo", figsize=(8, 6)) # identificador y tamaño
 plt.clf() # limpiamos buffer 
 
 
-#[ plt.scatter(X[i*tam:(i+1)*tam, petalo_longitud_indice], X[i*tam:(i+1)*tam, petalo_ancho_indice], c=y_colores[i*tam:(i+1)*tam], label=l) for i,l in enumerate(nombre_etiquetas)]
-
 plt.scatter(X[:, petalo_longitud_indice], X[:, petalo_ancho_indice], c=y_colores)
-plt.scatter([],[])
-plt.scatter([],[])
+
+
+[ plt.scatter([],[]) for i in range( 1, len(nombre_etiquetas))] # tenemos que añadir d-1 handle más para que represente las equitetas 
+
 
 plt.xlabel('Pétalo longitud cm ')
 plt.ylabel('Pétalo ancho cm')
