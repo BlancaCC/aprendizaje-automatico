@@ -1,3 +1,15 @@
+#latex
+*~
+_*  
+*.aux  
+*.bcf
+*.lof
+*.lot
+*.xml
+*.log
+*.out
+*.toc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
