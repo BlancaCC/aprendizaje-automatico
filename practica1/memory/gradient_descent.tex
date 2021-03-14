@@ -1,0 +1,90 @@
+
+
+\section{ Gradient descent 's algorithm }
+\subsection{Introduction}
+
+Gradient descent is a general technique for minimizing a twice-differentiable functions through its slope. \cite{LFD}
+It is used to find local minimums due to the facts that the start point it is crucial.
+
+The basic idea is to update the weights using the gradients until it is not possible to continuous minimizing the error.
+
+
+\medskip
+
+\subsection{Math}
+
+We are going to define  algorithm:
+
+Let $w(0) \in \mathbb{R}^d$ be an arbitrary initial point,
+$E : \mathbb{R}^d \times \mathbb{R}^d \longrightarrow \mathbb R$
+a class $C^2$ function. The step size $\eta \in \mathbb{R}^+$
+is a experimental coefficient about how much are we going to follow the slope to obtain the new weight.  
+Let  $w(t) \in \mathbb{R}^d  \quad t \in \mathbb N$ be the weight for $t$ iteration which is defined as
+
+\begin{equation*}
+  w(t+1) = w(t) - \eta \nabla E_{in}(w(t))
+\end{equation*}
+
+\subsubsection{ Properties}
+
+\begin{itemize}
+\item This algorithm gives local minimums.
+\item Convergence it is not assured, so it would be necessary some stop criteria. 
+\item For a convex function it would be a unique global minimum.
+\item $\eta$ variable in time  is important: fixes learning gradient descent algorithm. 
+\end{itemize}
+
+
+\subsection{Algorithm}
+
+The following code snippet implement the algorithm, where $w(0)$ is the $initial\_point$, $E$ is the error, $\nabla E_{in}(w)$ is $gradient\_function$ and
+finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic basic on purely practical observation \cite{LFD}.
+
+This algorithm does not  it is necessary to figurate a stop condition, otherwise the algorithm could be
+
+In order to avoid an infintive search, our stop criteria are a limit in the number of iteration $max\_iter$ and an error tolerance . 
+
+\begin{minted}{python}
+
+def gradient_descent(inicial_point, E, gradient_function,  eta=0.1):
+    '''
+    initicial point: w_0 
+    E: error function 
+    gradient_function
+    eta:  step size 
+    '''
+    #### stop conditions   ######
+    max_iter = 1000
+    max_error =  0.0001
+    ####
+
+    iterations = 0
+    error = E( intial_point[0], intial_point[1])
+    w = initial_point
+
+    while iterations < max_iter and error > max_error:
+
+        w = w - eta * gradient_function(w[0], w[1])
+
+        iterations += 1
+        error =  E( w[0], w[1])
+    
+    return w, iterations   
+\end{minted}
+
+\subsection{Problem 2 }
+
+We want to solve the following problem: \\
+
+Run gradient descent's algorithm to find a minimum for
+function $E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2.$
+Start with $(u,v)=(1,1)$ and $\eta = 1.0$
+
+
+\subsubsection{Solve analytically the gradient of $E(u,v)$}
+
+
+\begin{multline*}
+  \nabla E(u,v) = \left( \frac{\partial}{\partial u}(u^3 e^{(v-2)} - 2* v^2 e^{-u})^2 , \frac{\partial}{\partial v} (u^3 e^{(v-2)} - 2 v^2 e^{-u})^2 \right) = \\
+ =  \left(2(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), 2(u^3 e^{(v-2)} - 4 v e^{-u}) \right)
+\end{multline*}
