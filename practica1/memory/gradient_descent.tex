@@ -46,33 +46,35 @@ In order to avoid an infinite search, our stop criteria are a limit in the numbe
 
 \begin{minted}{python}
 
-def gradient_descent(inicial_point, E, gradient_function,  eta=0.1):
+def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, target_error):
     '''
     initicial point: w_0 
     E: error function 
     gradient_function
     eta:  step size 
+
+    ### stop conditions ###
+    max_iter
+    target_error
     '''
-    #### stop conditions   ######
-    max_iter = 1000
-    max_error =  0.0001
-    ####
 
     iterations = 0
-    error = E( intial_point[0], intial_point[1])
+    error = E( initial_point[0], initial_point[1])
     w = initial_point
-
-    while iterations < max_iter and error > max_error:
+  
+    while ( (iterations < max_iter) and(error > target_error)): 
 
         w = w - eta * gradient_function(w[0], w[1])
-
+        
         iterations += 1
-        error =  E( w[0], w[1])
+        error = E(w[0], w[1])
+ 
     
-    return w, iterations   
+    return w, iterations
+
 \end{minted}
 
-\subsection{Problem 2 }
+\subsection{Problem 1}
 
 We want to solve the following problem: \\
 
@@ -90,11 +92,58 @@ Start with $(u,v)=(1,1)$ and $\eta = 1.0$
 \end{multline*}
 
 
-\subsubsection{Number of iterations.}
+\subsubsection{Number of iterations and final coordinates.}
 
 Firstable we need to use 64-bits float, so we are going to use the data type $float64$ of numpy library \cite{float64}.
 
 The functions' declaration are:
 
 \begin{minted}{python}
+  def dEu(u,v):
+    '''
+    Partial derivate of E with respect to the variable u
+    '''
+    return np.float64(
+        2
+        *( 3* u**2 * np.e**(v-2) + 2*v**2 * np.e**(-u) )
+        *( u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u))
+    )
+    
+def dEv(u,v):
+    '''
+    Partial derivate of E with respect to the variable v
+    '''
+    return np.float64(
+        2*
+        ( u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u) )
+        *( u**3 * np.e**(v-2) - 4*v * np.e**(-u))
+    )
+
+
+def gradE(u,v):
+    ''' 
+        gradient of E
+    '''
+    return np.array([dEu(u,v), dEv(u,v)])
+
 \end{minted}
+
+To obtain the number of iterations and the final coordinates the only thing we need to do is to call $gradien\_descent$ function with the initial conditions:
+
+\begin{minted}{python}
+eta = 0.01 
+max_iter = 10000000000
+target_error = 1e-14
+initial_point = np.array([1.0,1.0])
+w, it = gradient_descent( initial_point,E, gradE, eta, max_iter, target_error )
+\end{minted}
+
+The result are:
+
+\begin{itemize}
+\item Numbers of iterations: $178.$
+\item Final coordinates: $( 1.161779094157124 ,  0.9244949718723753 ).$
+\end{itemize}
+
+
+\subsection{Problem 2}
