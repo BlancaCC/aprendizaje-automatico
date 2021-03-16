@@ -37,7 +37,6 @@ def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, target
         
         iterations += 1
         error = E(w[0], w[1])
-        print(w)
  
     
     return w, iterations
@@ -48,9 +47,7 @@ def E(u,v):
     Function to minimize
     '''
     return np.float64(
-        (
-            u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u)
-        )**2
+        ( u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u) )**2
     )
 
 
@@ -59,9 +56,9 @@ def dEu(u,v):
     Partial derivate of E with respect to the variable u
     '''
     return np.float64(
-        2*(
-           3* u**2 * np.e**(v-2) + 2*v**2 * np.e**(-u)
-        )
+        2
+        *( 3* u**2 * np.e**(v-2) + 2*v**2 * np.e**(-u) )
+        *( u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u))
     )
     
 def dEv(u,v):
@@ -69,9 +66,9 @@ def dEv(u,v):
     Partial derivate of E with respect to the variable v
     '''
     return np.float64(
-        2*(
-        u**3 * np.e**(v-2) - 4*v * np.e**(-u)
-        )
+        2*
+        ( u**3 * np.e**(v-2) - 2*v**2 * np.e**(-u) )
+        *( u**3 * np.e**(v-2) - 4*v * np.e**(-u))
     )
 
 
@@ -82,11 +79,19 @@ def gradE(u,v):
     return np.array([dEu(u,v), dEv(u,v)])
 
 eta = 0.01 
-max_iter = 100#00000000
+max_iter = 10000000000
 target_error = 1e-14
 initial_point = np.array([1.0,1.0])
 w, it = gradient_descent( initial_point,E, gradE, eta, max_iter, target_error )
 
+######### Exercise answers ######
+print('a) Function:  E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2')
+
+print('dE_u = 2(u^3 e^{(v-s)} - 2* v^2 e^{-u})(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), ')
+
+print( 'dE_v =  2(u^3 e^{(v-s)} - 2* v^2 e^{-u})(u^3 e^{(v-2)} - 4 v e^{-u}')
+
+print ('So de gradient is: \n nabla E(u,v) =(2(u^3 e^{(v-s)} - 2* v^2 e^{-u})(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), 2(u^3 e^{(v-s)} - 2* v^2 e^{-u})(u^3 e^{(v-2)} - 4 v e^{-u}) )')
 
 print ('Numero de iteraciones: ', it)
 print ('Coordenadas obtenidas: (', w[0], ', ', w[1],')')
