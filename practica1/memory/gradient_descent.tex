@@ -40,9 +40,9 @@ Let  $w(t) \in \mathbb{R}^d  \quad t \in \mathbb N$ be the weight for $t$ iterat
 The following code snippet implement the algorithm, where $w(0)$ is the $initial\_point$, $E$ is the error, $\nabla E_{in}(w)$ is $gradient\_function$ and
 finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic basic on purely practical observation \cite{LFD}.
 
-This algorithm does not  it is necessary to figurate a stop condition, otherwise the algorithm could be
+This algorithm does not  it is necessary to figured a stop condition, otherwise the algorithm could be
 
-In order to avoid an infintive search, our stop criteria are a limit in the number of iteration $max\_iter$ and an error tolerance . 
+In order to avoid an infinite search, our stop criteria are a limit in the number of iteration $max\_iter$ and an error tolerance . 
 
 \begin{minted}{python}
 
@@ -88,3 +88,13 @@ Start with $(u,v)=(1,1)$ and $\eta = 1.0$
   \nabla E(u,v) = \left( \frac{\partial}{\partial u}(u^3 e^{(v-2)} - 2* v^2 e^{-u})^2 , \frac{\partial}{\partial v} (u^3 e^{(v-2)} - 2 v^2 e^{-u})^2 \right) = \\
  =  \left(2(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), 2(u^3 e^{(v-2)} - 4 v e^{-u}) \right)
 \end{multline*}
+
+
+\subsubsection{Number of iterations.}
+
+Firstable we need to use 64-bits float, so we are going to use the data type $float64$ of numpy library \cite{float64}.
+
+The functions' declaration are:
+
+\begin{minted}{python}
+\end{minted}

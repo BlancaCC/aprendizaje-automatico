@@ -15,23 +15,23 @@ print('Ejercicio 1\n')
 
 ## 1
 
-def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, max_error):
+def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, target_error):
     '''
     initicial point: w_0 
     E: error function 
     gradient_function
     eta:  step size 
 
-    ### stop conditions 
+    ### stop conditions ###
     max_iter
-    max_error
+    target_error
     '''
 
     iterations = 0
     error = E( initial_point[0], initial_point[1])
     w = initial_point
   
-    while ( (iterations < max_iter) and(error > max_error)): 
+    while ( (iterations < max_iter) and(error > target_error)): 
 
         w = w - eta * gradient_function(w[0], w[1])
         
@@ -83,9 +83,9 @@ def gradE(u,v):
 
 eta = 0.01 
 max_iter = 100#00000000
-error_to_get = 1e-14
+target_error = 1e-14
 initial_point = np.array([1.0,1.0])
-w, it = gradient_descent( initial_point,E, gradE, eta, max_iter, error_to_get )
+w, it = gradient_descent( initial_point,E, gradE, eta, max_iter, target_error )
 
 
 print ('Numero de iteraciones: ', it)
