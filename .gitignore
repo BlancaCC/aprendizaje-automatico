@@ -9,6 +9,11 @@ _*
 *.log
 *.out
 *.toc
+*.bbl
+*.blg
+*.dvi
+*-blx.bib
+  
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
