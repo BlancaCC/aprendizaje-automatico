@@ -112,7 +112,7 @@ ax.set(title='Ejercicio 1.2. Función sobre la que se calcula el descenso de gra
 ax.set_xlabel('u')
 ax.set_ylabel('v')
 ax.set_zlabel('E(u,v)')
-# plt.show() DESCOMENTAR
+ plt.show()
 
 ######### Exercise 1, part 2 answers  ######
 print('2 a) Function:  E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2')
