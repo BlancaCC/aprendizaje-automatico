@@ -3,8 +3,8 @@
 \section{ Gradient descent 's algorithm }
 \subsection{Introduction}
 
-Gradient descent is a general technique for minimizing a twice-differentiable functions through its slope. \cite{LFD}
-It is used to find local minimums due to the facts that the start point it is crucial.
+Gradient descent is a general technique for minimizing  twice-differentiable functions through its slope. \cite{LFD}
+It is used to find local minimums. The start point is crucial in the search.  
 
 The basic idea is to update the weights using the gradients until it is not possible to continuous minimizing the error.
 
@@ -40,13 +40,13 @@ Let  $w(t) \in \mathbb{R}^d  \quad t \in \mathbb N$ be the weight for $t$ iterat
 The following code snippet implement the algorithm, where $w(0)$ is the $initial\_point$, $E$ is the error, $\nabla E_{in}(w)$ is $gradient\_function$ and
 finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic basic on purely practical observation \cite{LFD}.
 
-This algorithm does not  it is necessary to figured a stop condition, otherwise the algorithm could be
 
-In order to avoid an infinite search, our stop criteria are a limit in the number of iteration $max\_iter$ and an error tolerance . 
+In order to avoid an infinite search, our stop criteria are a limit in the number of iterations $max\_iter$ and an error tolerance. 
 
 \begin{minted}{python}
 
-def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, target_error):
+  def gradient_descent(initial_point, E, gradient_function,
+  eta, max_iter, target_error):
     '''
     initicial point: w_0 
     E: error function 
@@ -76,7 +76,7 @@ def gradient_descent(initial_point, E, gradient_function,  eta, max_iter, target
 
 \subsection{Problem 1}
 
-We want to solve the following problem: \\
+We want to solve the following problem: %\\
 
 Run gradient descent's algorithm to find a minimum for
 function $E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2.$
@@ -147,3 +147,102 @@ The result are:
 
 
 \subsection{Problem 2}
+
+
+For function $f(x,y) = (x+2)^2 + 2(y-2)^2 + 2 \sin (2 \pi x) \sin (2 \pi y)$
+
+\subsubsection{ Use gradient descent to minimize $f$}
+
+The initial point is $(x_0 = -1, y_0 = 1)$,
+learning rate is $\eta = 0.01$ and the maximum number of iterations must
+be $50$.  Plot the result and repeat the experiment with  $\eta = 0.1$. 
+
+Firstly we are going to calculate partial derivatives and gradient of $f$.
+
+\begin{equation*}
+  \frac{\partial }{\partial x} f = 2 (x + 2) + 2 \sin (2 \pi y) \cos ( 2 \pi x) 2 \pi =  2 (x + 2) +  4 \pi \sin (2 \pi y) \cos ( 2 \pi x)   
+\end{equation*}
+
+\begin{equation*}
+  \frac{\partial }{\partial y} f = 2 (y - 2) +  4 \pi \sin (2 \pi x) \cos ( 2 \pi y)   
+\end{equation*}
+
+
+It is important to realise that $f(x,y) <0$ for some values in $\mathbb R^3$ so the error target has been omitted in this algorithm.   
+
+
+Now the new algorithm is
+\begin{minted}{python}
+  def gradient_descent_trace(initial_point, loss_function,
+    gradient_function,  eta, max_iter):
+    '''
+    initicial point: w_0 
+    loss_function: error function 
+    gradient_function
+    eta:  step size 
+
+    ### stop conditions ###
+    max_iter
+
+    #### return ####
+    (w,iterations)
+    w: the coordenates that minimize loss_function
+    it: the numbers of iterations needed to obtain w
+    
+    '''
+
+    iterations = 0
+    error = loss_function( initial_point[0], initial_point[1])
+    w = [initial_point]
+  
+    while iterations < max_iter: 
+
+        new_w = w[-1] - eta * gradient_function(w[-1][0], w[-1][1])
+        
+        
+        iterations += 1
+        error = loss_function(new_w[0], new_w[1])
+        w.append( new_w ) 
+    
+    return w, iterations
+  
+  \end{minted}
+
+
+  After 50 iterations for  $\eta = 0.01$, the  final coordinates are $(-1.269, 1.287)$ and their value is $-0.381$. The graph, which show the relation between iteration and the function minimization is
+
+  \includegraphics{1_3_smaller_eta}
+
+  As far as we have seen, before the $10^{Th}$ iteration we are really close to  the minimum and stay there without fluctuate.
+
+  On the other hand, after 50 iterations for  $\eta = 0.1$ the final coordinates are $(-2.939, 1.608)$ and their value is $0.724$ so as we can see this result is worse than the last one.
+
+  In the following graph we can see the evolution fluctuation of the images iteration by iteration 
+
+  \includegraphics{1_3_bigger_eta}.
+
+ The reason for this irregularity  is that the step size is too bigger so it skip the minimum.
+
+  We can also  compare the two experiment in the following graph.
+  \includegraphics{1_3_comparation_eta}.
+
+
+    Moreover, basic on its mathematics proof which use Taylor's series, we know that it should be small, but if it is too small the algorithm will never reach the minimum in a right time.
+
+ Let see a new example, now $\eta = 10^{-14}$, after 50 iteration  the final coordinates are $(-1, 1)$  and the value is $3$, so this new selection is even worse that one with the bigger step size, although it go without oscillate.  
+
+ \includegraphics{1_3_epsilon_eta}.
+ 
+    
+  As a conclusion, a priory, it is difficult to select a step size value, its problem should have an appropriate one, and the selection must be empirical. Even though some heuristic \cite{LFD} tell that $\eta = 0.01$ its a good try.  
+
+
+  
+
+\subsubsection{Minimum value }
+
+
+Before running the algorithm is important to think about a good value for $\eta$, based on the last section $\eta = 0.1$ is a good one. 
+
+
+
