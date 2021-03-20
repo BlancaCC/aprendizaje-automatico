@@ -142,7 +142,7 @@ The result are:
 
 \begin{itemize}
 \item Numbers of iterations: $178.$
-\item Final coordinates: $( 1.161779094157124 ,  0.9244949718723753 ).$
+\item Final coordinates: $( 1.162 ,  0.924 ).$
 \end{itemize}
 
 
@@ -211,7 +211,7 @@ Now the new algorithm is
 
   After 50 iterations for  $\eta = 0.01$, the  final coordinates are $(-1.269, 1.287)$ and their value is $-0.381$. The graph, which show the relation between iteration and the function minimization is
 
-  \includegraphics{1_3_smaller_eta}
+\includegraphics{1_3_smaller_eta}
 
   As far as we have seen, before the $10^{Th}$ iteration we are really close to  the minimum and stay there without fluctuate.
 
@@ -223,8 +223,9 @@ Now the new algorithm is
 
  The reason for this irregularity  is that the step size is too bigger so it skip the minimum.
 
-  We can also  compare the two experiment in the following graph.
-  \includegraphics{1_3_comparation_eta}.
+ We can also  compare the two experiment in the following graph.
+ 
+\includegraphics{1_3_comparation_eta}.
 
 
     Moreover, basic on its mathematics proof which use Taylor's series, we know that it should be small, but if it is too small the algorithm will never reach the minimum in a right time.
@@ -234,7 +235,7 @@ Now the new algorithm is
  \includegraphics{1_3_epsilon_eta}.
  
     
-  As a conclusion, a priory, it is difficult to select a step size value, its problem should have an appropriate one, and the selection must be empirical. Even though some heuristic \cite{LFD} tell that $\eta = 0.01$ its a good try.  
+  As a conclusion, a priory, it is difficult to select a step size value, each problem should have an appropriate one, and the selection must be empirical. Even though some heuristic \cite{LFD} tell that $\eta = 0.01$ its a good try.  
 
 
   
