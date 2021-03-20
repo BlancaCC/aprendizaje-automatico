@@ -112,7 +112,7 @@ ax.set(title='Ejercicio 1.2. Función sobre la que se calcula el descenso de gra
 ax.set_xlabel('u')
 ax.set_ylabel('v')
 ax.set_zlabel('E(u,v)')
- plt.show()
+plt.show()
 
 ######### Exercise 1, part 2 answers  ######
 print('2 a) Function:  E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2')
@@ -209,12 +209,13 @@ initial_point = np.array([-1.0,1.0])
 smaller_w, smaller_it = gradient_descent_trace( initial_point,f, gradF, smaller_eta, max_iter)
 bigger_w, bigger_it = gradient_descent_trace( initial_point,f, gradF, bigger_eta, max_iter)
 
-print(f'With eta = {smaller_eta}, coordenates {(smaller_w[-1][0],smaller_w[-1][1])} and the number of iterations: {smaller_it}')
-
-print(f'With eta = {bigger_eta}, coordenates {(bigger_w[-1][0],bigger_w[-1][1])} and the number of iterations: {bigger_it}')
-
 images_smaller_eta = [ f(x[0],x[1]) for x in smaller_w ]
 images_bigger_eta = [ f(x[0],x[1]) for x in bigger_w]
+
+print(f'With eta = {smaller_eta}, coordenates (x,y)= {(smaller_w[-1][0],smaller_w[-1][1])}, the number of iterations: {smaller_it} and the image is f(x,y) = {images_smaller_eta[-1]}')
+
+print(f'With eta = {bigger_eta}, coordenates (x,y)={(bigger_w[-1][0],bigger_w[-1][1])}, the number of iterations: {bigger_it} and the image is f(x,y) = {images_bigger_eta[-1]}')
+
 
 ########### PLOTTING
 x_label = 'Number of iterations'
@@ -255,6 +256,32 @@ plt.xlabel('Iterations')
 plt.ylabel('f(x,y)')
 
 plt.title("Comparation of the gradient descendent for $f$ changing eta value  ")
+
+
+plt.legend()
+plt.show()
+
+### exta experimental ####
+
+epsilon_eta = 1e-14
+max_iter = 50
+initial_point = np.array([-1.0,1.0])
+
+
+epsilon_eta_label = '$\eta$ = '+str(epsilon_eta)
+#### run 
+epsilon_w, epsilon_it = gradient_descent_trace( initial_point,f, gradF, epsilon_eta, max_iter)
+images_epsilon_eta = [ f(x[0],x[1]) for x in epsilon_w ]
+
+
+print(f'With eta = {epsilon_eta}, coordenates (x,y)={(epsilon_w[-1][0],epsilon_w[-1][1])}, the number of iterations: {epsilon_it} and the image is f(x,y) = {images_epsilon_eta[-1]}')
+
+
+plt.clf()
+plt.plot(images_epsilon_eta, label=epsilon_eta_label)
+plt.xlabel(x_label)
+plt.ylabel(y_label)
+plt.title(f'Gradient descent of f with $\eta =$ {epsilon_eta}')
 
 
 plt.legend()
