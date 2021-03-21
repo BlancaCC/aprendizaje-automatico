@@ -43,7 +43,7 @@ finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic basic on purely p
 
 In order to avoid an infinite search, our stop criteria are a limit in the number of iterations $max\_iter$ and an error tolerance. 
 
-\begin{minted}{python}
+\begin{minted}{python} TO-DO: is the same function that the final ?????
 
   def gradient_descent(initial_point, E, gradient_function,
   eta, max_iter, target_error):
@@ -82,7 +82,7 @@ Run gradient descent's algorithm to find a minimum for
 function $E(u,v) = (u^3 e^{(v-s)} - 2* v^2 e^{-u})^2.$
 Start with $(u,v)=(1,1)$ and $\eta = 1.0$
 
-
+TO-DO ABSOLUTE VALUE IS GOOD???? ( I don't know, may son nearer images of  funcitons... )
 \subsubsection{Solve analytically the gradient of $E(u,v)$}
 
 
@@ -145,6 +145,7 @@ The result are:
 \item Final coordinates: $( 1.162 ,  0.924 ).$
 \end{itemize}
 
+TO-DO: ADD IMAGE OF THE GRAPHICS 
 
 \subsection{Problem 2}
 
@@ -211,7 +212,8 @@ Now the new algorithm is
 
   After 50 iterations for  $\eta = 0.01$, the  final coordinates are $(-1.269, 1.287)$ and their value is $-0.381$. The graph, which show the relation between iteration and the function minimization is
 
-\includegraphics{1_3_smaller_eta}
+
+  \includegraphics{1_3_smaller_eta}
 
   As far as we have seen, before the $10^{Th}$ iteration we are really close to  the minimum and stay there without fluctuate.
 
@@ -245,5 +247,39 @@ Now the new algorithm is
 
 Before running the algorithm is important to think about a good value for $\eta$, based on the last section $\eta = 0.1$ is a good one. 
 
+
+After run the program the  results are
+
+\begin{center}
+  \begin{tabular}{ |c|c|c| }
+    \hline
+    Initial point  & Final coordinates & Final value  \\ 
+    \hline
+    (0.1, 0.1) &  (-0.303,  0.344) &   6.795 \\
+    (1, 1)  & (0.677,  1.290) &   6.438 \\
+    (-0.5, -0.5) & (-0.793, -0.126) &   9.125 \\
+    (-1, -1) & (-1.280,  -0.590)  & 12.881 \\
+ 
+ \hline
+\end{tabular}
+\end{center}
+
+
+This example gives the idea that the local minimums found depend on the start point and a priory, unless we know some properties
+of the function such as convexity or monotomy we are not able to assecure that the mimimum found is global.
+
+For a mathematical study we need differenciables functions that we know how to find where their zeros are, so we need to solve their equations, some time
+this is not possible and we use numeric methods.
+
+Another solutions can be ... (study the cost) repeat
+
+Efficiency of the algorithm ... TO-DO
+
+
+
+\subsection{ Final conclusion about finding global functions' miminum}  
+
+
+- Properties differenciable, arbitrary initial point, eta, computational cost...  TO-DO
 
 
