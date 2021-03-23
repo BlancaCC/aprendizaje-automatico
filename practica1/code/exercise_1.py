@@ -292,7 +292,7 @@ plt.show()
 
 #### exercise 3.b
 
-initial_points = map(np.array, [[0.1, 0.1], [1, 1], [-.5, -.5], [-1, -1]])
+initial_points = map(np.array, [[-.5, -.5],[1, 1], [2.1, -2.1], [-3,3],  [-2, 2]])
 minimum_value = np.Infinity
 
 print('{:^17}  {:^17}  {:^9}'.format('Initial', 'Final', 'Value'))
