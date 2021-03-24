@@ -1,0 +1,29 @@
+
+\section{ Linear regresion }
+\subsection{Stochastic gradient descendent}
+
+
+Stochastic gradient descendent (SGD) is a sequential version of the gradient descent. Instead of considering the full batch gradient on all $N$
+training data points, we condider a stochastic version of the gradient. Firts, pick a training data point $(x_n, y_n)$ uniformly random
+(hence the name 'stochastic') and consider only the error on that data point.
+
+The gradient of this single data point's error is used for the weight update in exactly the same that the gradient was used in batch gradient descent.
+
+
+Motivo de 1, -1 para compensar la etiqueta
+
+HAcer 200
+
+W no importa en la práctica (podemos manipularlo)
+
+VISUALIZAR MODELO CON SCATTER PLOT (DIAPOSITVA 22, CON LOS DATOS ENTRENAMIENTO Y TEST)t
+
+E w deberá de ser la misma
+
+Incluir valor de E_in E_oit y eroro de clasificación (lo normal es que el error en test sea un poquito peor que los de entrenamiento.
+
+Gradiente descendiente minimizar eterativamente:
+
+En el segunto no tiene porqué darse que una iteración sea mejor (otra cosa es que mejore la tendencia mejor)
+
+Si se utilizan todos sí que debería de ir mejorando de manera global. 
