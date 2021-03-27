@@ -39,7 +39,7 @@ def readData(file_x, file_y):
 	return x, y
 
 # Funcion para calcular el error
-def Err(x,y,w):
+def Error(x,y,w):
     '''quadratic error 
     INPUT
     x: input data matrix
@@ -49,18 +49,51 @@ def Err(x,y,w):
     OUTPUT
     quadratic error >= 0
     '''
-    
-    y_hat = x.dot(w)
+    error_times_n = np.linalg.norm(x.dot(w) - y.reshape(-1,1))
+  
+    return error_times_n/len(y)
 
-    error = np.square(y_hat - y.reshape(-1,1))
-   
-    return  error.mean()
+
+def dError(x,y,w):
+    ''' partial derivative
+    '''
+    
+    return (2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1))))
 
 # Gradiente Descendente Estocastico
-def sgd():#?):
-    #
-    return w
+def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
+    '''
+    Stochastic gradeint descent
+    x: data set
+    y: target vector
+    eta: learning rate
+    max_iter     
+    '''
 
+    w = np.zeros((x.shape[1], 1), np.float64)
+    #print( f'EN SGD LA W VALE {w}')
+    n_iterations = 0
+
+    len_x = len(x)
+    x_index = np.arange( len_x )
+    batch_start = 0
+
+    while n_iterations < max_iter:
+            
+            #shuffle and split the same into a sequence of mini-batches
+        if batch_start == 0:
+                x_index = np.random.permutation(x_index)
+        iter_index = x_index[ batch_start : batch_start + batch_size]
+
+        w = w - eta* dError(x[iter_index, :], y[iter_index], w)
+       
+        n_iterations += 1
+
+        batch_start += batch_size
+        if batch_start > len_x:  # Si hemos llegado al final reinicia
+                batch_start = 0
+        
+    return w
 
 def pseudoInverseMatrix ( X ):
     '''
@@ -100,19 +133,24 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Lectura de los datos para el test
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
-'''
-w = sgd(?)
+
+w = sgd(x,y, eta = 0.01, max_iter = 2000)
+
 print ('Bondad del resultado para grad. descendente estocastico:\n')
-print ("Ein: ", Err(x,y,w))
-print ("Eout: ", Err(x_test, y_test, w))
+print ("Ein: ", Error(x,y,w))
+print ("Eout: ", Error(x_test, y_test, w))
+#TO-DO AÑADIR PORCENTAJE DE MUESTRAS BIEN CLASIFICADAS
+
 '''
 
+'''
 
 w_pseudoinverse = pseudoInverse(x, y) # change number
-print('\nBondad del resultado para pseudo-inversa:')
-print("  Ein:  ", Err(x, y, w_pseudoinverse))
-print("  Eout: ", Err(x_test, y_test, w_pseudoinverse))
-input("\n--- Pulsar tecla para continuar ---\n")
+print("\nGoodness of the pseudoinverse fit:")
+print("  Ein:  ", Error(x, y, w_pseudoinverse))
+print("  Eout: ", Error(x_test, y_test, w_pseudoinverse))
+
+input("\n--- Type any key to continue ---\n")
 
 #Seguir haciendo el ejercicio...
 '''
