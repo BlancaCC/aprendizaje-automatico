@@ -32,7 +32,7 @@ def readData(file_x, file_y):
 			else:
 				y.append(label1)
 			x.append(np.array([1, datax[i][0], datax[i][1]]))
-			
+			    
 	x = np.array(x, np.float64)
 	y = np.array(y, np.float64)
 	
@@ -102,11 +102,14 @@ def pseudoInverseMatrix ( X ):
     return: hat matrix 
     '''
 
+    '''
     #S =( X^TX ) ^{-1}
     simetric_inverse = np.linalg.inv( X.T.dot(X) )
 
     # S X^T = ( X^TX ) ^{-1} X^T
     return simetric_inverse.dot(X.T)
+    '''
+    return np.linalg.pinv(X)
 
 
 # Pseudoinverse	
@@ -143,9 +146,9 @@ def performanceMeasurement(x,y,w):
     
     for sign in sign_column[:,0]:
         if sign > 0 :
-            bad_positives += 1
+                bad_positives += 1
         elif sign < 0 :
-            bad_negatives += 1
+                bad_negatives += 1
 
     input_size = len(y)
 
