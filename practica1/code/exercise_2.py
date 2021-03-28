@@ -173,15 +173,17 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Lectura de los datos para el test
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
-
-w = sgd(x,y, eta = 0.01, max_iter = 2000)
-
-
 print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
-print ("Ein: ", Error(x,y,w))
-print ("Eout: ", Error(x_test, y_test, w))
-evaluationMetrics (x,y,w, '\nEvaluating output training data set')
-evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
+
+batch_sizes = [2,32, 200, 1500]
+for _batch_size in batch_sizes:
+        w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
+
+        print( f'\n\tSGD, batch size {_batch_size}')
+        print ("Ein: ", Error(x,y,w))
+        print ("Eout: ", Error(x_test, y_test, w))
+        evaluationMetrics (x,y,w, '\nEvaluating output training data set')
+        evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
 
 
 w_pseudoinverse = pseudoInverse(x, y) 
