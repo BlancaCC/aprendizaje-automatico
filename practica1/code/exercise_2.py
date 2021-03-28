@@ -151,13 +151,15 @@ def performanceMeasurement(x,y,w):
 
     return bad_negatives, bad_positives, input_size
 
-def evaluationMetrics (x,y,w):
+def evaluationMetrics (x,y,w, label = None):
     '''PRINT THE PERFORMANCE MEASUREMENT
     '''
     bad_negatives, bad_positives, input_size = performanceMeasurement(x,y,w)
 
     accuracy = ( input_size-(bad_negatives +bad_positives))*100 / input_size
 
+    if label :
+        print(label)
     print( 'bad negatives :', bad_negatives)
     print( 'bad positives :', bad_positives)
     print( 'accuracy rate :', accuracy, '%')
@@ -171,20 +173,22 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 w = sgd(x,y, eta = 0.01, max_iter = 2000)
 
-print ('Bondad del resultado para grad. descendente estocastico:\n')
+
+print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
 print ("Ein: ", Error(x,y,w))
 print ("Eout: ", Error(x_test, y_test, w))
-evaluationMetrics (x,y,w)
+evaluationMetrics (x,y,w, '\nEvaluating output training data set')
+evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
 
-'''
 
-'''
-
-w_pseudoinverse = pseudoInverse(x, y) # change number
-print("\nGoodness of the pseudoinverse fit:")
+w_pseudoinverse = pseudoInverse(x, y) 
+print("\n___ Goodness of the Pseudo-inverse fit ___\n")
 print("  Ein:  ", Error(x, y, w_pseudoinverse))
 print("  Eout: ", Error(x_test, y_test, w_pseudoinverse))
-evaluationMetrics (x,y,w)
+
+evaluationMetrics (x,y,w, '\nEvaluating output training data set')
+evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
+
 input("\n--- Type any key to continue ---\n")
 
 #Seguir haciendo el ejercicio...
