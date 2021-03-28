@@ -109,7 +109,7 @@ def pseudoInverseMatrix ( X ):
     return simetric_inverse.dot(X.T)
 
 
-# Pseudoinversa	
+# Pseudoinverse	
 def pseudoInverse(X, Y):
     ''' TO-DO matrix dimension is correct?
     input:
@@ -127,6 +127,41 @@ def pseudoInverse(X, Y):
     return w
 
 
+# Evaluating the autput
+
+def performanceMeasurement(x,y,w):
+    '''Evaluating the output binary case
+
+    OUTPUT: 
+    bad_negative, bad_positives, input_size
+    '''
+
+    sign_column = np.sign(x.dot(w)) - y.reshape(-1,1)
+
+    bad_positives = 0
+    bad_negatives = 0
+    
+    for sign in sign_column[:,0]:
+        if sign > 0 :
+            bad_positives += 1
+        elif sign < 0 :
+            bad_negatives += 1
+
+    input_size = len(y)
+
+    return bad_negatives, bad_positives, input_size
+
+def evaluationMetrics (x,y,w):
+    '''PRINT THE PERFORMANCE MEASUREMENT
+    '''
+    bad_negatives, bad_positives, input_size = performanceMeasurement(x,y,w)
+
+    accuracy = ( input_size-(bad_negatives +bad_positives))*100 / input_size
+
+    print( 'bad negatives :', bad_negatives)
+    print( 'bad positives :', bad_positives)
+    print( 'accuracy rate :', accuracy, '%')
+    
 
 # Lectura de los datos de entrenamiento
 x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
@@ -139,7 +174,7 @@ w = sgd(x,y, eta = 0.01, max_iter = 2000)
 print ('Bondad del resultado para grad. descendente estocastico:\n')
 print ("Ein: ", Error(x,y,w))
 print ("Eout: ", Error(x_test, y_test, w))
-#TO-DO AÑADIR PORCENTAJE DE MUESTRAS BIEN CLASIFICADAS
+evaluationMetrics (x,y,w)
 
 '''
 
@@ -149,7 +184,7 @@ w_pseudoinverse = pseudoInverse(x, y) # change number
 print("\nGoodness of the pseudoinverse fit:")
 print("  Ein:  ", Error(x, y, w_pseudoinverse))
 print("  Eout: ", Error(x_test, y_test, w_pseudoinverse))
-
+evaluationMetrics (x,y,w)
 input("\n--- Type any key to continue ---\n")
 
 #Seguir haciendo el ejercicio...
