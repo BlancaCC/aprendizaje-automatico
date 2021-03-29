@@ -223,11 +223,13 @@ batch_sizes = [2,32, 200, 15000]
 for _batch_size in batch_sizes:
         w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
 
-        print( f'\n\tSGD, batch size {_batch_size}')
+        _title = f'SGD, batch size {_batch_size}'
+        print( '\n\t'+_title)
         print ("Ein: ", Error(x,y,w))
         print ("Eout: ", Error(x_test, y_test, w))
         evaluationMetrics (x,y,w, '\nEvaluating output training data set')
         evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
+        plotResults(x,y,w, title = _title)
 
 
 w_pseudoinverse = pseudoInverse(x, y) 
