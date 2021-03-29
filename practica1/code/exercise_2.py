@@ -92,7 +92,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
         batch_start += batch_size
         if batch_start > len_x:  # Si hemos llegado al final reinicia
                 batch_start = 0
-        
+
     return w
 
 def pseudoInverseMatrix ( X ):
@@ -163,10 +163,54 @@ def evaluationMetrics (x,y,w, label = None):
 
     if label :
         print(label)
-    print( 'bad negatives :', bad_negatives)
-    print( 'bad positives :', bad_positives)
-    print( 'accuracy rate :', accuracy, '%')
+    print ( 'Input size: ', input_size )    
+    print( 'Bad negatives :', bad_negatives)
+    print( 'Bad positives :', bad_positives)
+    print( 'Accuracy rate :', accuracy, '%')
+
+
+
+
+
     
+## Draw de result
+
+### scatter plot
+def plotResults (x,y,w, title = None):
+        label_5 = 1
+        label_1 = -1
+
+        labels = (label_5, label_1)
+        colors = {label_5: 'b', label_1: 'r'}
+        values = {label_5: 'Number 5', label_1: 'Number 1'}
+
+        plt.clf()
+
+        # data set plot 
+        for number_label in labels:
+                index = np.where(y == number_label)
+                plt.scatter(x[index, 1], x[index, 2], c=colors[number_label], label=values[number_label])
+
+        # regression line
+        symmetry_for_cero_intensity = -w[0]/w[2]
+
+        # en el caso de x1 = 1, tenemos 0 = w0 + w1 * w2 * x2
+        # luego x2 = (-w0 - w1) /w2
+        symmetry_for_one_intensity= (-w[0] - w[1])/w[2]
+        plt.plot([0, 1], [symmetry_for_cero_intensity, symmetry_for_one_intensity], 'k-', label=(title+ ' regression'))
+
+                
+
+        if title :
+                plt.title(title)
+        plt.xlabel('Average intensity')
+        plt.ylabel('Simmetry')
+        plt.legend()
+        plt.show()
+
+### Draw a line ( it is a regression os a line so must have one line
+
+### _____________ DATA ____________________
 
 # Lectura de los datos de entrenamiento
 x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
@@ -175,7 +219,7 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
 
-batch_sizes = [2,32, 200, 1500]
+batch_sizes = [2,32, 200, 15000]
 for _batch_size in batch_sizes:
         w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
 
@@ -193,6 +237,8 @@ print("  Eout: ", Error(x_test, y_test, w_pseudoinverse))
 
 evaluationMetrics (x,y,w, '\nEvaluating output training data set')
 evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
+plotResults(x,y,w, title = 'Pseudo-inverse')
+
 
 input("\n--- Type any key to continue ---\n")
 
@@ -212,30 +258,4 @@ def f(x1, x2):
 	return sign(?) 
 '''
 #Seguir haciendo el ejercicio...
-
-
-#a = np.array([[1, 0], [0, 1]])
-
-
-#def pseudoInverseGradientDescendent( eta, x, y ):
-'''
-def partialDerivativeE(j, x, y ):
-    '#''
-    input: 
-    - j: vector number   
-    - eta: learning rate   
-    - x input data 
-    - y target data 
-    
-    return partial derivative 
-    '#''
-
-    N = len (x)
-
-    return 2.0/N * sum( [ np.dot(x[n][j] (H_projection(x[n])-y[n])) for n in range (N)] )
-
-
-x = np.array([[1, 0], [0, 1]])
-y = np.array([1,-1])
-'''
 
