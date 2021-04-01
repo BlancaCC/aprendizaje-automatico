@@ -104,3 +104,7 @@ plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
 plt.legend()
 plt.show()
+
+
+
+#### C

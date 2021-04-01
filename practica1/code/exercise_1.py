@@ -261,6 +261,9 @@ plt.title("Comparation of the gradient descendent for $f$ changing eta value  ")
 plt.legend()
 plt.show()
 
+
+
+
 ### exta experimental ####
 
 epsilon_eta = 1e-14
@@ -287,6 +290,22 @@ plt.title(f'Gradient descent of f with $\eta =$ {epsilon_eta}')
 plt.legend()
 plt.show()
 
+
+## smaller eta and tiny one ###
+
+plt.clf()
+
+plt.plot(images_epsilon_eta, label=epsilon_eta_label)
+plt.plot( images_smaller_eta, label=r"$\eta$ = 0.01")
+
+plt.xlabel('Iterations')
+plt.ylabel('f(x,y)')
+
+plt.title("Comparation of the gradient descendent for $f$ changing eta value  ")
+
+
+plt.legend()
+plt.show()
 
 ######################################################################
 

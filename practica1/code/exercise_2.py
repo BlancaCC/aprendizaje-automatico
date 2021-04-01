@@ -49,7 +49,7 @@ def Error(x,y,w):
     OUTPUT
     quadratic error >= 0
     '''
-    error_times_n = np.linalg.norm(x.dot(w) - y.reshape(-1,1))
+    error_times_n = np.linalg.norm(x.dot(w) - y.reshape(-1,1))**2
   
     return error_times_n/len(y)
 
@@ -255,7 +255,7 @@ print ('Exercise 2\n')
 #### EXPERIMIENTS ###########
 
 ## a)
-
+print('\nEXPERIMENT (a) \n')
 def simula_unif(N, d, size):
         ''' generate a trining sample of N  points
 in the square [-size,size]x[-size,size]
@@ -285,19 +285,15 @@ plt.show()
 
 ## b)
 
-def sign(x):
-	if x >= 0:
-		return 1
-	return -1
-
+print('\nEXPERIMENT (b) \n')
 def f(x1, x2):
-	return sign(
+	return np.sign(
             (x1 -0.2)**2
             +
             x2**2 -0.6
         ) 
 
-
+#labels 
 y = np.array( [f(x[0],x[1]) for x in training_sample ])
 
 index = list(range(size_training_example))
@@ -352,7 +348,7 @@ plt.show()
 
 
 #### C
-
+print('\nEXPERIMENT (c) \n')
 eta = 0.01
 batch_size = 32
 maximum_number_iterations = 1000
@@ -366,7 +362,7 @@ x = np.array( [
 w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
 
 
-_title = f'SGD, batch size {_batch_size}'
+_title = f'SGD, batch size {batch_size}'
 print( '\n\t'+_title)
 print ("Ein: ", Error(x,noisy_y,w))
 evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
@@ -392,5 +388,143 @@ y_0 = w[1]-w[0]
 y_1 = -( w[1]-w[0])
 
 plt.plot([-1, 1], [y_0, y_1], 'k-', label=('SGD regression'))
+
+plt.show()
+
+
+## d
+
+print('\n EXPERIMENT (d), lineal regression\n')
+number_of_repetitions = 10#1000 # CHANGE
+size_training_example = 1000
+total_in_error = 0
+total_out_error = 0
+
+for i in range( number_of_repetitions):
+        ## data generation q
+        training_sample = simula_unif( size_training_example,
+                                       dimension,
+                                       square_half_size)
+
+        test_sample = simula_unif( size_training_example,
+                                       dimension,
+                                       square_half_size)
+        test_y = np.array( [f(x[0],x[1]) for x in test_sample ])
+        
+        y = np.array( [f(x[0],x[1]) for x in training_sample ])
+
+        #noise
+        index = list(range(size_training_example))
+        np.random.shuffle(index)
+        
+        percent_noisy_data = 10.0
+        size_noisy_data = int((size_training_example *percent_noisy_data)/ 100 )
+
+
+        noisy_y = np.copy(y)
+        for i in index[:size_noisy_data]:
+                noisy_y[i] *= -1
+
+        # fit
+        x = np.array( [
+                np.array([ 1, x_n[0], x_n[1] ])
+                for x_n in training_sample
+        ])
+
+        x_test = np.array( [
+                np.array([ 1, x_n[0], x_n[1] ])
+                for x_n in test_sample
+        ])
+
+        w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
+
+        total_in_error += Error(x,noisy_y,w)
+        total_out_error += Error(x_test, test_y, w)
+
+
+error_in = float(total_in_error / number_of_repetitions)
+error_out = float(total_out_error / number_of_repetitions)
+
+print(f'The mean value of E_in in all {number_of_repetitions} experiments is: {error_in}')
+print(f'The mean value of E_out in all {number_of_repetitions} experiments is: {error_out}')
+
+
+
+# e)
+
+print('\nEXPERIMENT (e)\n' )
+eta = 0.01
+batch_size = 32
+maximum_number_iterations = 1000
+
+
+x = np.array( [
+        np.array([ 1,
+                   x_n[0],
+                   x_n[1],
+                   x_n[0]*x_n[1],
+                   x_n[0]* x_n[0],
+                   x_n[1]* x_n[1]  ])
+        for x_n in training_sample
+])
+
+w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
+
+
+_title = f'SGD, batch size {batch_size}'
+print( '\n\t'+_title)
+print ("Ein: ", Error(x,noisy_y,w))
+evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
+
+## plotting
+def lineal_regression_spline(x,w, positive):
+        '''
+        quadratic equation
+        a x^2 + b x + c
+        '''
+
+        c = w[0] + (w[1] + w[4]* x)*x
+        b = w[2] +  w[0]*x
+        a = w[5]
+
+        if positive:
+                signum = 1
+        else:
+                signum = -1
+                
+        return(
+                - b + signum* np.sqrt( b**2 - 4* a*c)/(2*a)
+                )
+x_image = np.linspace(-1,1,1000)
+y_image =[
+       
+        [i,    lineal_regression_spline(i, w, True) ]
+                for i in x_image 
+        ]
+
+
+
+
+
+plt.clf()
+
+for l in labels:
+	
+	index = np.where(noisy_y == l)
+	plt.scatter(training_sample[index, 0],
+                    training_sample[index,1],
+                    c=colors[l],
+                    label=str(l))
+
+plt.title('Linear regression fit')
+plt.xlabel('$x_1$ value')
+plt.ylabel('$x_2$ value')
+plt.plot(x_image,y_image, 'k-')
+y_image =[
+       
+        [i,    lineal_regression_spline(i, w, False) ]
+                for i in x_image 
+        ]
+plt.plot(x_image,y_image, 'k-')
 
 plt.show()
