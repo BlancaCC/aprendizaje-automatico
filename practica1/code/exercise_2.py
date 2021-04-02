@@ -218,7 +218,7 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
-
+''' UNCOMMENT
 batch_sizes = [2,32, 200, 15000]
 for _batch_size in batch_sizes:
         w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
@@ -243,7 +243,7 @@ plotResults(x,y,w, title = 'Pseudo-inverse')
 
 
 input("\n--- Type any key to continue ---\n")
-
+'''
 
 
 
@@ -264,7 +264,7 @@ in the square [-size,size]x[-size,size]
 
 
 ### data
-
+''' UNCOMMENT
 size_training_example = 1000
 dimension = 2
 square_half_size = 1
@@ -344,7 +344,7 @@ plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
 plt.legend()
 plt.show()
-
+'''
 
 
 #### C
@@ -395,58 +395,85 @@ plt.show()
 ## d
 
 print('\n EXPERIMENT (d), lineal regression\n')
-number_of_repetitions = 10#1000 # CHANGE
-size_training_example = 1000
-total_in_error = 0
-total_out_error = 0
+def experiment(featureVector,
+               number_of_repetitions = 1000,
+               size_training_example = 1000,
+               percent_noisy_data = 10.0
+               ):
+        '''
+        INPUT
+        featureVector: function that return  np.array 
+        number_of_repetitions: experiment repetitions ,
+        size_training_example: number of point generated in each experiment,
+        percent_noisy_data: 
 
-for i in range( number_of_repetitions):
-        ## data generation q
-        training_sample = simula_unif( size_training_example,
-                                       dimension,
-                                       square_half_size)
+        OUTPUT
+        (error_in, error_out)
+        ''' # UNCOMMENT
+        total_in_error = 0
+        total_out_error = 0
 
-        test_sample = simula_unif( size_training_example,
-                                       dimension,
-                                       square_half_size)
-        test_y = np.array( [f(x[0],x[1]) for x in test_sample ])
+        for i in range( number_of_repetitions):
+        ## data generation 
+                training_sample = simula_unif( size_training_example,
+                                               dimension,
+                                               square_half_size)
+
+                test_sample = simula_unif( size_training_example,
+                                           dimension,
+                                           square_half_size)
+                test_y = np.array( [f(x[0],x[1]) for x in test_sample ])
         
-        y = np.array( [f(x[0],x[1]) for x in training_sample ])
+                y = np.array( [f(x[0],x[1]) for x in training_sample ])
 
-        #noise
-        index = list(range(size_training_example))
-        np.random.shuffle(index)
+                #noise
+                index = list(range(size_training_example))
+                np.random.shuffle(index)
         
-        percent_noisy_data = 10.0
-        size_noisy_data = int((size_training_example *percent_noisy_data)/ 100 )
+                size_noisy_data = int((size_training_example *percent_noisy_data)/ 100 )
 
 
-        noisy_y = np.copy(y)
-        for i in index[:size_noisy_data]:
-                noisy_y[i] *= -1
+                noisy_y = np.copy(y)
+                for i in index[:size_noisy_data]:
+                        noisy_y[i] *= -1
 
-        # fit
-        x = np.array( [
-                np.array([ 1, x_n[0], x_n[1] ])
-                for x_n in training_sample
-        ])
+                        # fit
+                        x = np.array( [
+                                featureVector(x_n)
+                                for x_n in training_sample
+                        ])
 
-        x_test = np.array( [
-                np.array([ 1, x_n[0], x_n[1] ])
-                for x_n in test_sample
-        ])
+                        x_test = np.array( [
+                                featureVector(x_n)
+                                for x_n in test_sample
+                        ])
 
-        w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
+                        w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
 
-        total_in_error += Error(x,noisy_y,w)
-        total_out_error += Error(x_test, test_y, w)
+                        total_in_error += Error(x,noisy_y,w)
+                        total_out_error += Error(x_test, test_y, w)
 
 
-error_in = float(total_in_error / number_of_repetitions)
-error_out = float(total_out_error / number_of_repetitions)
+                        error_in = float(total_in_error / number_of_repetitions)
+                        error_out = float(total_out_error / number_of_repetitions)
+                        return error_in, error_out
 
-print(f'The mean value of E_in in all {number_of_repetitions} experiments is: {error_in}')
-print(f'The mean value of E_out in all {number_of_repetitions} experiments is: {error_out}')
+
+
+def linearFeatureVector(x_n):
+        return np.array( [
+                1,
+                x_n[0],
+                x_n[1]
+               ] )
+_number_of_repetitions = 10 #1000, UNCOMMENT
+error_in, error_out = experiment( linearFeatureVector,
+                                  number_of_repetitions = _number_of_repetitions,
+                                  size_training_example = 1000,
+                                  percent_noisy_data = 10.0
+               )
+print(f'The mean value of E_in in all {_number_of_repetitions} experiments is: {error_in}')
+print(f'The mean value of E_out in all {_number_of_repetitions} experiments is: {error_out}')
 
 
 
@@ -457,14 +484,16 @@ eta = 0.01
 batch_size = 32
 maximum_number_iterations = 1000
 
-
-x = np.array( [
-        np.array([ 1,
+def quadraticFeatureVector(x_n):
+        return np.array([ 1,
                    x_n[0],
                    x_n[1],
                    x_n[0]*x_n[1],
                    x_n[0]* x_n[0],
                    x_n[1]* x_n[1]  ])
+
+x = np.array( [
+        quadraticFeatureVector(x_n)
         for x_n in training_sample
 ])
 
@@ -491,21 +520,75 @@ def lineal_regression_spline(x,w, positive):
                 signum = 1
         else:
                 signum = -1
-                
+
+        discriminant = b**2 - 4* a*c
+        if discriminant < 0:
+                return None
+   
         return(
-                - b + signum* np.sqrt( b**2 - 4* a*c)/(2*a)
+                - b + signum* np.sqrt(discriminant )/(2*a)
                 )
-x_image = np.linspace(-1,1,1000)
+x_image = np.linspace(-1,1.7,1000)
 y_image =[
        
         [i,    lineal_regression_spline(i, w, True) ]
                 for i in x_image 
         ]
 
+space = np.linspace(-1,1,300)
 
 
+def equation (x,y,w):
+        return ( w[0]
+                 + w[1] * x
+                 + w[2] * y
+                 + w[3] * x * y
+                 + w[4] * x**2
+                 + w[5] * y**2
+                )
+error = 10**(-2.1)
+x_image = []
+y_image = []
 
+last_value =  equation(-1,-1,w)
+li = -1
+lj = -1
+aniadido = False
+for i in space:
+        for j in np.linspace(-1,0,150):#space:
+                actual_value = equation(i,j,w)
+                if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
+                        if not aniadido :
+                                x_image.append(li)
+                                y_image.append(lj)
+                                
+                                aniadido = True
+                else:
+                        
+                        aniadido = False
+                lj = j
+                last_value = actual_value
+        li = i
+                
+for i in space[::-1]:
+        for j in np.linspace(0,1,150):#space:
+                actual_value = equation(i,j,w)
+                if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
+                        if not aniadido :
+                                x_image.append(li)
+                                y_image.append(lj)
+                                
+                                aniadido = True
+                else:
+                        
+                        aniadido = False
+                lj = j
+                last_value = actual_value
+        li = i
 
+x_image.append(x_image[0])
+y_image.append(y_image[0])
+        
 plt.clf()
 
 for l in labels:
@@ -519,12 +602,18 @@ for l in labels:
 plt.title('Linear regression fit')
 plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
-plt.plot(x_image,y_image, 'k-')
-y_image =[
-       
-        [i,    lineal_regression_spline(i, w, False) ]
-                for i in x_image 
-        ]
-plt.plot(x_image,y_image, 'k-')
-
+plt.plot(x_image,y_image, c = 'black', label='Regression model')
+plt.legend( loc = 'lower left')
 plt.show()
+
+
+
+## EXPERIMENT
+error_in, error_out = experiment( quadraticFeatureVector,
+                                  number_of_repetitions = _number_of_repetitions,
+                                  size_training_example = 1000,
+                                  percent_noisy_data = 10.0
+                                 )
+print(f'The mean value of E_in in all {_number_of_repetitions} experiments is: {error_in}')
+print(f'The mean value of E_out in all {_number_of_repetitions} experiments is: {error_out}')
+
