@@ -8,11 +8,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 np.random.seed(1)
+def STOP_EXECUTION_TO_SEE_RESULT():
+        input('\n--- End of a section, press any enter to continue ---\n')
 
 print('_______LINEAR REGRESSION EXERCISE _______\n')
-print('Exercise 1\n')
-#input('\n Enter to start\n') UNCOMMENT
-
+print('Exercise 1')
+input('\n Enter to start\n') 
 
 label5 = 1
 label1 = -1
@@ -71,7 +72,6 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
     '''
 
     w = np.zeros((x.shape[1], 1), np.float64)
-    #print( f'EN SGD LA W VALE {w}')
     n_iterations = 0
 
     len_x = len(x)
@@ -90,7 +90,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
         n_iterations += 1
 
         batch_start += batch_size
-        if batch_start > len_x:  # Si hemos llegado al final reinicia
+        if batch_start > len_x: # if end, restart
                 batch_start = 0
 
     return w
@@ -207,6 +207,7 @@ def plotResults (x,y,w, title = None):
         plt.ylabel('Simmetry')
         plt.legend()
         plt.show()
+        
 
 ### Draw a line ( it is a regression os a line so must have one line
 
@@ -218,7 +219,7 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
-''' UNCOMMENT
+
 batch_sizes = [2,32, 200, 15000]
 for _batch_size in batch_sizes:
         w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
@@ -230,6 +231,8 @@ for _batch_size in batch_sizes:
         evaluationMetrics (x,y,w, '\nEvaluating output training data set')
         evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
         plotResults(x,y,w, title = _title)
+        
+        STOP_EXECUTION_TO_SEE_RESULT()
 
 
 w_pseudoinverse = pseudoInverse(x, y) 
@@ -242,8 +245,8 @@ evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
 plotResults(x,y,w, title = 'Pseudo-inverse') 
 
 
-input("\n--- Type any key to continue ---\n")
-'''
+STOP_EXECUTION_TO_SEE_RESULT()
+
 
 
 
@@ -264,7 +267,7 @@ in the square [-size,size]x[-size,size]
 
 
 ### data
-''' UNCOMMENT
+
 size_training_example = 1000
 dimension = 2
 square_half_size = 1
@@ -272,6 +275,8 @@ square_half_size = 1
 training_sample = simula_unif( size_training_example,
                                dimension,
                                square_half_size)
+
+STOP_EXECUTION_TO_SEE_RESULT()
 
 plt.clf()
 plt.scatter(training_sample[:, 0], training_sample[:, 1], c='b')
@@ -282,6 +287,7 @@ plt.ylabel('$x_2$ value')
 
 plt.show()
 
+STOP_EXECUTION_TO_SEE_RESULT()
 
 ## b)
 
@@ -328,6 +334,7 @@ plt.ylabel('$x_2$ value')
 plt.legend()
 plt.show()
 
+STOP_EXECUTION_TO_SEE_RESULT()
 
 plt.clf()
 
@@ -344,7 +351,9 @@ plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
 plt.legend()
 plt.show()
-'''
+
+
+STOP_EXECUTION_TO_SEE_RESULT()
 
 
 #### C
@@ -367,7 +376,7 @@ print( '\n\t'+_title)
 print ("Ein: ", Error(x,noisy_y,w))
 evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
 
-
+STOP_EXECUTION_TO_SEE_RESULT()
 
 plt.clf()
 
@@ -391,6 +400,7 @@ plt.plot([-1, 1], [y_0, y_1], 'k-', label=('SGD regression'))
 
 plt.show()
 
+STOP_EXECUTION_TO_SEE_RESULT()
 
 ## d
 
@@ -466,7 +476,7 @@ def linearFeatureVector(x_n):
                 x_n[0],
                 x_n[1]
                ] )
-_number_of_repetitions = 10 #1000, UNCOMMENT
+_number_of_repetitions = 1000
 error_in, error_out = experiment( linearFeatureVector,
                                   number_of_repetitions = _number_of_repetitions,
                                   size_training_example = 1000,
@@ -475,7 +485,7 @@ error_in, error_out = experiment( linearFeatureVector,
 print(f'The mean value of E_in in all {_number_of_repetitions} experiments is: {error_in}')
 print(f'The mean value of E_out in all {_number_of_repetitions} experiments is: {error_out}')
 
-
+STOP_EXECUTION_TO_SEE_RESULT()
 
 # e)
 
@@ -499,44 +509,18 @@ x = np.array( [
 
 w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
 
-
+print('\nFor one experiment:')
 _title = f'SGD, batch size {batch_size}'
-print( '\n\t'+_title)
+print( '\n',_title)
 print ("Ein: ", Error(x,noisy_y,w))
 evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
+print('')
+
+STOP_EXECUTION_TO_SEE_RESULT()
 
 ## plotting
-def lineal_regression_spline(x,w, positive):
-        '''
-        quadratic equation
-        a x^2 + b x + c
-        '''
-
-        c = w[0] + (w[1] + w[4]* x)*x
-        b = w[2] +  w[0]*x
-        a = w[5]
-
-        if positive:
-                signum = 1
-        else:
-                signum = -1
-
-        discriminant = b**2 - 4* a*c
-        if discriminant < 0:
-                return None
-   
-        return(
-                - b + signum* np.sqrt(discriminant )/(2*a)
-                )
-x_image = np.linspace(-1,1.7,1000)
-y_image =[
-       
-        [i,    lineal_regression_spline(i, w, True) ]
-                for i in x_image 
-        ]
 
 space = np.linspace(-1,1,300)
-
 
 def equation (x,y,w):
         return ( w[0]
@@ -555,7 +539,7 @@ li = -1
 lj = -1
 aniadido = False
 for i in space:
-        for j in np.linspace(-1,0,150):#space:
+        for j in np.linspace(-1,0,150):
                 actual_value = equation(i,j,w)
                 if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
                         if not aniadido :
@@ -571,7 +555,7 @@ for i in space:
         li = i
                 
 for i in space[::-1]:
-        for j in np.linspace(0,1,150):#space:
+        for j in np.linspace(0,1,150):
                 actual_value = equation(i,j,w)
                 if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
                         if not aniadido :
@@ -606,7 +590,7 @@ plt.plot(x_image,y_image, c = 'black', label='Regression model')
 plt.legend( loc = 'lower left')
 plt.show()
 
-
+STOP_EXECUTION_TO_SEE_RESULT()
 
 ## EXPERIMENT
 error_in, error_out = experiment( quadraticFeatureVector,
@@ -616,4 +600,5 @@ error_in, error_out = experiment( quadraticFeatureVector,
                                  )
 print(f'The mean value of E_in in all {_number_of_repetitions} experiments is: {error_in}')
 print(f'The mean value of E_out in all {_number_of_repetitions} experiments is: {error_out}')
-
+print('==========================================')
+STOP_EXECUTION_TO_SEE_RESULT()
