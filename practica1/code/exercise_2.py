@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Exercise 2 
 Author: Blanca Cano Camaro
@@ -52,13 +52,13 @@ def Error(x,y,w):
     '''
     error_times_n = np.linalg.norm(x.dot(w) - y.reshape(-1,1))**2
   
-    return error_times_n/len(y)
+    return error_times_n/len(x)
 
 
 def dError(x,y,w):
     ''' partial derivative
     '''
-    
+
     return (2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1))))
 
 # Gradiente Descendente Estocastico
@@ -403,8 +403,26 @@ plt.show()
 STOP_EXECUTION_TO_SEE_RESULT()
 
 ## d
-
 print('\n EXPERIMENT (d), lineal regression\n')
+
+def noisyVector(y,example_size, percent_noisy_data):
+        '''
+        y target vector to introduce noise
+        size_training_example: number of point generated in each experiment,
+        percent_noisy_data
+        '''
+        
+        index = list(range(example_size))
+        np.random.shuffle(index)
+        
+        size_noisy_data = int((example_size *percent_noisy_data)/ 100 )
+
+        noisy_y = np.copy(y)
+        for i in index[:size_noisy_data]:
+                noisy_y[i] *= -1
+        return noisy_y
+
+        
 def experiment(featureVector,
                number_of_repetitions = 1000,
                size_training_example = 1000,
@@ -419,11 +437,11 @@ def experiment(featureVector,
 
         OUTPUT
         (error_in, error_out)
-        ''' # UNCOMMENT
+        ''' 
         total_in_error = 0
         total_out_error = 0
 
-        for i in range( number_of_repetitions):
+        for _ in range( number_of_repetitions):
         ## data generation 
                 training_sample = simula_unif( size_training_example,
                                                dimension,
@@ -433,10 +451,12 @@ def experiment(featureVector,
                                            dimension,
                                            square_half_size)
                 test_y = np.array( [f(x[0],x[1]) for x in test_sample ])
+                test_y = noisyVector(test_y, size_training_example, percent_noisy_data)
         
                 y = np.array( [f(x[0],x[1]) for x in training_sample ])
-
+                y = noisyVector(y, size_training_example, percent_noisy_data)
                 #noise
+                '''
                 index = list(range(size_training_example))
                 np.random.shuffle(index)
         
@@ -446,27 +466,28 @@ def experiment(featureVector,
                 noisy_y = np.copy(y)
                 for i in index[:size_noisy_data]:
                         noisy_y[i] *= -1
+                '''
+                # fit
+                x = np.array( [
+                        featureVector(x_n)
+                        for x_n in training_sample
+                ])
 
-                        # fit
-                        x = np.array( [
-                                featureVector(x_n)
-                                for x_n in training_sample
-                        ])
+                x_test = np.array( [
+                        featureVector(x_n)
+                        for x_n in test_sample
+                ])
+                
+                w = sgd(x, y, eta, maximum_number_iterations, batch_size = 32)
 
-                        x_test = np.array( [
-                                featureVector(x_n)
-                                for x_n in test_sample
-                        ])
+                total_in_error += Error(x,y,w)
+                total_out_error += Error(x_test, test_y, w)
+                
+                
+        error_in = float(total_in_error / number_of_repetitions)
+        error_out = float(total_out_error / number_of_repetitions)
 
-                        w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
-
-                        total_in_error += Error(x,noisy_y,w)
-                        total_out_error += Error(x_test, test_y, w)
-
-
-                        error_in = float(total_in_error / number_of_repetitions)
-                        error_out = float(total_out_error / number_of_repetitions)
-                        return error_in, error_out
+        return error_in, error_out
 
 
 
@@ -523,6 +544,15 @@ STOP_EXECUTION_TO_SEE_RESULT()
 space = np.linspace(-1,1,300)
 
 def equation (x,y,w):
+        '''
+        INPUT 
+        x coordinate
+        y coodinate 
+        w weights vector
+        
+        OUTPUT
+        Real number, the scalar product of features vector dot weights vector
+        '''
         return ( w[0]
                  + w[1] * x
                  + w[2] * y
@@ -530,45 +560,46 @@ def equation (x,y,w):
                  + w[4] * x**2
                  + w[5] * y**2
                 )
+
 error = 10**(-2.1)
 x_image = []
 y_image = []
 
 last_value =  equation(-1,-1,w)
-li = -1
-lj = -1
-aniadido = False
+last_i = -1
+last_j = -1
+added = False
 for i in space:
         for j in np.linspace(-1,0,150):
                 actual_value = equation(i,j,w)
                 if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
-                        if not aniadido :
-                                x_image.append(li)
-                                y_image.append(lj)
+                        if not added :
+                                x_image.append(last_i)
+                                y_image.append(last_j)
                                 
-                                aniadido = True
+                                added = True
                 else:
                         
-                        aniadido = False
-                lj = j
+                        added = False
+                last_j = j
                 last_value = actual_value
-        li = i
+        last_i = i
                 
 for i in space[::-1]:
         for j in np.linspace(0,1,150):
                 actual_value = equation(i,j,w)
                 if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
-                        if not aniadido :
-                                x_image.append(li)
-                                y_image.append(lj)
+                        if not added :
+                                x_image.append(last_i)
+                                y_image.append(last_j)
                                 
-                                aniadido = True
+                                added = True
                 else:
                         
-                        aniadido = False
-                lj = j
+                        added = False
+                last_j = j
                 last_value = actual_value
-        li = i
+        last_i = i
 
 x_image.append(x_image[0])
 y_image.append(y_image[0])
