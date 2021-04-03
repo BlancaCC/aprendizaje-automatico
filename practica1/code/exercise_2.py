@@ -18,28 +18,31 @@ input('\n Enter to start\n')
 label5 = 1
 label1 = -1
 
-# Funcion para leer los datos
-def readData(file_x, file_y):
-	# Leemos los ficheros	
-	datax = np.load(file_x)
-	datay = np.load(file_y)
-	y = []
-	x = []	
-	# Solo guardamos los datos cuya clase sea la 1 o la 5
-	for i in range(0,datay.size):
-		if datay[i] == 5 or datay[i] == 1:
-			if datay[i] == 5:
-				y.append(label5)
-			else:
-				y.append(label1)
-			x.append(np.array([1, datax[i][0], datax[i][1]]))
-			    
-	x = np.array(x, np.float64)
-	y = np.array(y, np.float64)
-	
-	return x, y
 
-# Funcion para calcular el error
+def readData(file_x, file_y):
+        '''
+        function for read data
+        '''
+	# reads files
+        datax = np.load(file_x)
+        datay = np.load(file_y)
+        y = []
+        x = []	
+        # Solo guardamos los datos cuya clase sea la 1 o la 5
+        for i in range(0,datay.size):
+                if datay[i] == 5 or datay[i] == 1:
+                        if datay[i] == 5:
+                                y.append(label5)
+                        else:
+                                y.append(label1)
+                        x.append(np.array([1, datax[i][0], datax[i][1]]))
+
+        x = np.array(x, np.float64)
+        y = np.array(y, np.float64)
+	
+        return x, y
+
+
 def Error(x,y,w):
     '''quadratic error 
     INPUT
@@ -56,21 +59,26 @@ def Error(x,y,w):
 
 
 def dError(x,y,w):
-    ''' partial derivative
+    ''' gradient
+    OUTPUT
+    column vector
     '''
-
     return (2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1))))
 
-# Gradiente Descendente Estocastico
+
 def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
     '''
-    Stochastic gradeint descent
+    Stochastic gradient descent
+    INPUT 
     x: data set
     y: target vector
     eta: learning rate
-    max_iter     
-    '''
+    max_iter 
 
+    OUTPUT 
+    w: weight vector
+    '''
+    #initialize data
     w = np.zeros((x.shape[1], 1), np.float64)
     n_iterations = 0
 
@@ -80,7 +88,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
 
     while n_iterations < max_iter:
             
-            #shuffle and split the same into a sequence of mini-batches
+        #shuffle and split the same into a sequence of mini-batches
         if batch_start == 0:
                 x_index = np.random.permutation(x_index)
         iter_index = x_index[ batch_start : batch_start + batch_size]
@@ -90,16 +98,17 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
         n_iterations += 1
 
         batch_start += batch_size
-        if batch_start > len_x: # if end, restart
+        if batch_start >= len_x: # if end, restart
                 batch_start = 0
 
     return w
 
 def pseudoInverseMatrix ( X ):
     '''
-    input: 
+    INPUT 
     X: is a matrix (must be a np.array) to use transpose and dot method
-    return: hat matrix 
+    OUTPUT
+    hat matrix 
     '''
 
     '''
@@ -114,10 +123,10 @@ def pseudoInverseMatrix ( X ):
 
 # Pseudoinverse	
 def pseudoInverse(X, Y):
-    ''' TO-DO matrix dimension is correct?
-    input:
-    X is  matrix, R^{m} \time R^{m} 
-    Y is a vector (y_1, ..., y_m)
+    ''' 
+    INPUT
+    X is the feature matrix 
+    Y is the target vector (y_1, ..., y_m)
     
     OUTPUT: 
     w: weight vector
@@ -135,10 +144,17 @@ def pseudoInverse(X, Y):
 def performanceMeasurement(x,y,w):
     '''Evaluating the output binary case
 
+    INPUT
+    X is the feature matrix 
+    Y is the target vector (y_1, ..., y_m)
+    
+    OUTPUT: 
+    w: weight vector
     OUTPUT: 
     bad_negative, bad_positives, input_size
     '''
 
+    # defference between the sign of the regression and the target vector
     sign_column = np.sign(x.dot(w)) - y.reshape(-1,1)
 
     bad_positives = 0
@@ -192,11 +208,14 @@ def plotResults (x,y,w, title = None):
                 plt.scatter(x[index, 1], x[index, 2], c=colors[number_label], label=values[number_label])
 
         # regression line
+        # x = 0
         symmetry_for_cero_intensity = -w[0]/w[2]
 
-        # en el caso de x1 = 1, tenemos 0 = w0 + w1 * w2 * x2
-        # luego x2 = (-w0 - w1) /w2
+        #  x = 1, 0 = w0 + w1 * w2 * x2
+        # then y = (-w0 - w1) /w2
         symmetry_for_one_intensity= (-w[0] - w[1])/w[2]
+
+        #plotting order
         plt.plot([0, 1], [symmetry_for_cero_intensity, symmetry_for_one_intensity], 'k-', label=(title+ ' regression'))
 
                 
@@ -209,18 +228,18 @@ def plotResults (x,y,w, title = None):
         plt.show()
         
 
-### Draw a line ( it is a regression os a line so must have one line
+
 
 ### _____________ DATA ____________________
 
-# Lectura de los datos de entrenamiento
+# Reading training data set 
 x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
-# Lectura de los datos para el test
+# Reading test data set 
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
 
-batch_sizes = [2,32, 200, 15000]
+batch_sizes = [1,32, 200, 15000] #batch sizes compared in the experiment
 for _batch_size in batch_sizes:
         w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
 
@@ -455,18 +474,7 @@ def experiment(featureVector,
         
                 y = np.array( [f(x[0],x[1]) for x in training_sample ])
                 y = noisyVector(y, size_training_example, percent_noisy_data)
-                #noise
-                '''
-                index = list(range(size_training_example))
-                np.random.shuffle(index)
-        
-                size_noisy_data = int((size_training_example *percent_noisy_data)/ 100 )
-
-
-                noisy_y = np.copy(y)
-                for i in index[:size_noisy_data]:
-                        noisy_y[i] *= -1
-                '''
+ 
                 # fit
                 x = np.array( [
                         featureVector(x_n)
@@ -516,6 +524,11 @@ batch_size = 32
 maximum_number_iterations = 1000
 
 def quadraticFeatureVector(x_n):
+        '''
+        INPUT 
+         xn = (x1,x2) vector of coordinates 
+        
+        '''
         return np.array([ 1,
                    x_n[0],
                    x_n[1],
@@ -541,8 +554,6 @@ STOP_EXECUTION_TO_SEE_RESULT()
 
 ## plotting
 
-space = np.linspace(-1,1,300)
-
 def equation (x,y,w):
         '''
         INPUT 
@@ -560,15 +571,24 @@ def equation (x,y,w):
                  + w[4] * x**2
                  + w[5] * y**2
                 )
+'''
+PLOTING LINEAR REGRESSION 
 
+We are going to plot the (x,y) \in [-1,-1]^2 that their value after 
+the linear regression for classification  is near to 0. 
+
+That means that they are in the limit area.  
+'''
 error = 10**(-2.1)
+space = np.linspace(-1,1,300)
 x_image = []
 y_image = []
 
 last_value =  equation(-1,-1,w)
 last_i = -1
 last_j = -1
-added = False
+added = False # to know if it it decreasing
+
 for i in space:
         for j in np.linspace(-1,0,150):
                 actual_value = equation(i,j,w)
