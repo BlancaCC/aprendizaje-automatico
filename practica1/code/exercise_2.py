@@ -10,11 +10,12 @@ import matplotlib.pyplot as plt
 np.random.seed(1)
 def STOP_EXECUTION_TO_SEE_RESULT():
         input('\n--- End of a section, press any enter to continue ---\n')
+        
 
 print('_______LINEAR REGRESSION EXERCISE _______\n')
 print('Exercise 1')
 input('\n Enter to start\n') 
-
+#UNCOMMENT
 label5 = 1
 label1 = -1
 
@@ -53,9 +54,9 @@ def Error(x,y,w):
     OUTPUT
     quadratic error >= 0
     '''
-    error_times_n = np.linalg.norm(x.dot(w) - y.reshape(-1,1))**2
+    error_times_n = np.float64(np.linalg.norm(x.dot(w) - y.reshape(-1,1))**2)
   
-    return error_times_n/len(x)
+    return np.float64(error_times_n/len(x))
 
 
 def dError(x,y,w):
@@ -63,45 +64,88 @@ def dError(x,y,w):
     OUTPUT
     column vector
     '''
-    return (2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1))))
+    return  2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1)))
+    
 
 
-def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32):
-    '''
-    Stochastic gradient descent
-    INPUT 
-    x: data set
-    y: target vector
-    eta: learning rate
-    max_iter 
+def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
+        '''
+        Stochastic gradient descent
+        INPUT 
+        x: data set
+        y: target vector
+        eta: learning rate
+        max_iter 
 
-    OUTPUT 
-    w: weight vector
-    '''
-    #initialize data
-    w = np.zeros((x.shape[1], 1), np.float64)
-    n_iterations = 0
+        OUTPUT 
+        w: weight vector
+        '''
+  
+        #initialize data
+        w = np.zeros((x.shape[1], 1), np.float64)
+        n_iterations = 0
 
-    len_x = len(x)
-    x_index = np.arange( len_x )
-    batch_start = 0
+        len_x = len(x)
+        x_index = np.arange( len_x )
+        batch_start = 0
+        w_error = Error(x,y,w)
 
-    while n_iterations < max_iter:
-            
-        #shuffle and split the same into a sequence of mini-batches
-        if batch_start == 0:
-                x_index = np.random.permutation(x_index)
-        iter_index = x_index[ batch_start : batch_start + batch_size]
+        while n_iterations < max_iter and w_error > error :
+  
+                #shuffle and split the same into a sequence of mini-batches
+                np.random.shuffle(x_index)
+                for batch_start in range(0,  len_x, batch_size):
+                        iter_index = x_index[ batch_start : batch_start + batch_size]
 
-        w = w - eta* dError(x[iter_index, :], y[iter_index], w)
-       
-        n_iterations += 1
+        
+                        w = w - eta* dError(x[iter_index, :], y[iter_index], w)
+        
+                n_iterations += 1
+                w_error = Error(x,y,w)
 
-        batch_start += batch_size
-        if batch_start >= len_x: # if end, restart
-                batch_start = 0
+   
+        return w
 
-    return w
+
+def sgd_exact_number_iter(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error = 10**(-10)):
+        '''
+        Stochastic gradient descent
+        INPUT 
+        x: data set
+        y: target vector
+        eta: learning rate
+        max_iter 
+        OUTPUT 
+        w: weight vector
+        '''
+        #initialize data
+        w = np.zeros((x.shape[1], 1), np.float64)
+    
+        n_iterations = 0
+        batch_start = 0
+        len_x = len(x)
+    
+        x_index = np.arange( len_x )
+        w_error = Error(x,y,w)
+ 
+        while n_iterations < max_iter and w_error > error:
+                #shuffle and split the same into a sequence of mini-batches
+                if batch_start == 0:
+                        x_index = np.random.permutation(x_index)
+                iter_index = x_index[ batch_start : batch_start + batch_size]
+
+                w = w - eta* dError(x[iter_index, :], y[iter_index], w)
+                
+                n_iterations += 1
+
+                batch_start += batch_size
+                if batch_start >= len_x: # if end, restart
+                        batch_start = 0
+                
+                w_error = Error(x,y,w)
+
+
+        return w
 
 def pseudoInverseMatrix ( X ):
     '''
@@ -179,6 +223,7 @@ def evaluationMetrics (x,y,w, label = None):
 
     if label :
         print(label)
+    print (f'For w^T = {w.reshape(1,-1)}')
     print ( 'Input size: ', input_size )    
     print( 'Bad negatives :', bad_negatives)
     print( 'Bad positives :', bad_positives)
@@ -228,7 +273,54 @@ def plotResults (x,y,w, title = None):
         plt.show()
         
 
+def plotResultMultiplesLines(x,y,multiple_w, main_title = None, multiples_title = None):
+        '''
+        INPUT 
+        x featue matrx
+        y labels vector 
+        multiple_w vector of different weight vector
+        multiple_titles
+        '''
+        label_5 = 1
+        label_1 = -1
 
+        labels = (label_5, label_1)
+        colors = {label_5: 'b', label_1: 'r'}
+        values = {label_5: 'Number 5', label_1: 'Number 1'}
+
+        plt.clf()
+
+        # data set plot 
+        for number_label in labels:
+                index = np.where(y == number_label)
+                plt.scatter(x[index, 1], x[index, 2], c=colors[number_label], label=values[number_label])
+
+        for i in range(len(multiple_w)):
+                w = multiple_w[i]
+                title = multiple_title[i]
+                # regression line
+                # x = 0
+                symmetry_for_cero_intensity = -w[0]/w[2]
+
+                #  x = 1, 0 = w0 + w1 * w2 * x2
+                # then y = (-w0 - w1) /w2
+                symmetry_for_one_intensity= (-w[0] - w[1])/w[2]
+
+                #plotting order
+                plt.plot([0, 1],
+                         [symmetry_for_cero_intensity, symmetry_for_one_intensity],
+                         #'k-',
+                         label=(title+ ' regression'))
+
+                
+
+        if main_title :
+                plt.title(main_title)
+        plt.xlabel('Average intensity')
+        plt.ylabel('Simmetry')
+        plt.legend()
+        plt.show()
+        
 
 ### _____________ DATA ____________________
 
@@ -237,34 +329,49 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Reading test data set 
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
-print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
-
-batch_sizes = [1,32, 200, 15000] #batch sizes compared in the experiment
-for _batch_size in batch_sizes:
-        w = sgd(x,y, eta = 0.01, max_iter = 2000, batch_size = _batch_size)
-
-        _title = f'SGD, batch size {_batch_size}'
-        print( '\n\t'+_title)
-        print ("Ein: ", Error(x,y,w))
-        print ("Eout: ", Error(x_test, y_test, w))
-        evaluationMetrics (x,y,w, '\nEvaluating output training data set')
-        evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
-        plotResults(x,y,w, title = _title)
-        
-        STOP_EXECUTION_TO_SEE_RESULT()
-
-
 w_pseudoinverse = pseudoInverse(x, y) 
 print("\n___ Goodness of the Pseudo-inverse fit ___\n")
 print("  Ein:  ", Error(x, y, w_pseudoinverse))
 print("  Eout: ", Error(x_test, y_test, w_pseudoinverse))
 
-evaluationMetrics (x,y,w, '\nEvaluating output training data set')
-evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
-plotResults(x,y,w, title = 'Pseudo-inverse') 
+evaluationMetrics (x,y,w_pseudoinverse, '\nEvaluating output training data set')
+evaluationMetrics (x_test, y_test, w_pseudoinverse, '\nEvaluating output test data set')
+plotResults(x,y,w_pseudoinverse, title = 'Pseudo-inverse') 
 
+print(f'\nThe weight vector is {w_pseudoinverse}')
 
 STOP_EXECUTION_TO_SEE_RESULT()
+
+
+print("\n___ Goodness of the Stochastic Gradient Descendt (SGD) fit ___\n")
+
+batch_sizes =[1,32,200,len(y)] #batch sizes compared in the experiment
+
+n_iterations = [50,300] 
+for iteration in n_iterations:
+        multiple_w = [w_pseudoinverse]
+        multiple_title = ['pseudo-inverse']
+
+        for _batch_size in batch_sizes:
+                w = sgd(x,y, eta = 0.01, max_iter = iteration, batch_size = _batch_size)
+
+                _title = f'SGD, batch size {_batch_size}'
+                print( '\n\t'+_title)
+                print ("Ein: ", Error(x,y,w))
+                print ("Eout: ", Error(x_test, y_test, w))
+                evaluationMetrics (x,y,w, '\nEvaluating output training data set')
+                evaluationMetrics (x_test, y_test, w, '\nEvaluating output test data set')
+                #plotResults(x,y,w, title = _title)
+                multiple_w.append(w)
+                multiple_title.append(_title)
+        
+                STOP_EXECUTION_TO_SEE_RESULT()
+
+        plotResultMultiplesLines(x,y,multiple_w,f'Comparative batch sizes, {iteration} iterations',multiple_title)        
+
+STOP_EXECUTION_TO_SEE_RESULT()
+ 
+
 
 
 
@@ -318,19 +425,32 @@ def f(x1, x2):
             x2**2 -0.6
         ) 
 
+
+def noisyVector(y, percent_noisy_data):
+        '''
+        y target vector to introduce noise
+        size_training_example: number of point generated in each experiment,
+        percent_noisy_data
+        '''
+        len_y = len(y)
+        
+        index = list(range(len_y))
+        np.random.shuffle(index)
+        
+        size_noisy_data = int((len_y*percent_noisy_data)/ 100 )
+
+        noisy_y = np.copy(y)
+        for i in index[:size_noisy_data]:
+                noisy_y[i] *= -1
+        return noisy_y
+
 #labels 
 y = np.array( [f(x[0],x[1]) for x in training_sample ])
 
-index = list(range(size_training_example))
-np.random.shuffle(index)
 
 percent_noisy_data = 10.0
-size_noisy_data = int((size_training_example *percent_noisy_data)/ 100 )
 
-
-noisy_y = np.copy(y)
-for i in index[:size_noisy_data]:
-    noisy_y[i] *= -1
+y = noisyVector(y,  percent_noisy_data)
 
     
 ## draw
@@ -359,7 +479,7 @@ plt.clf()
 
 for l in labels:
 	
-	index = np.where(noisy_y == l)
+	index = np.where(y == l)
 	plt.scatter(training_sample[index, 0],
                     training_sample[index,1],
                     c=colors[l],
@@ -378,7 +498,7 @@ STOP_EXECUTION_TO_SEE_RESULT()
 #### C
 print('\nEXPERIMENT (c) \n')
 eta = 0.01
-batch_size = 32
+batch_size = 5
 maximum_number_iterations = 1000
 
 
@@ -387,13 +507,15 @@ x = np.array( [
         for x_n in training_sample
 ])
 
-w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
+y = np.array( [f(x_n[0],x_n[1]) for x_n in training_sample ])
+y = noisyVector(y,  percent_noisy_data)
+w = sgd_exact_number_iter(x, y, eta, maximum_number_iterations, batch_size )
 
 
 _title = f'SGD, batch size {batch_size}'
 print( '\n\t'+_title)
-print ("Ein: ", Error(x,noisy_y,w))
-evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
+print ("Ein: ", Error(x,y,w))
+evaluationMetrics (x,y,w, '\nEvaluating output training data set')
 
 STOP_EXECUTION_TO_SEE_RESULT()
 
@@ -401,7 +523,7 @@ plt.clf()
 
 for l in labels:
 	
-	index = np.where(noisy_y == l)
+	index = np.where(y == l)
 	plt.scatter(training_sample[index, 0],
                     training_sample[index,1],
                     c=colors[l],
@@ -412,34 +534,20 @@ plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
 
 # regression line
-y_0 = w[1]-w[0]
-y_1 = -( w[1]-w[0])
+# x_0 = -1
+y_0 = (w[1] - w[0]) /w[2]
+#x_1 = 1
+y_1 = -( w[1]+w[0]) /w[2]
 
 plt.plot([-1, 1], [y_0, y_1], 'k-', label=('SGD regression'))
-
+plt.xlim([-1,1])
+plt.ylim([-1,1])
 plt.show()
 
 STOP_EXECUTION_TO_SEE_RESULT()
 
 ## d
 print('\n EXPERIMENT (d), lineal regression\n')
-
-def noisyVector(y,example_size, percent_noisy_data):
-        '''
-        y target vector to introduce noise
-        size_training_example: number of point generated in each experiment,
-        percent_noisy_data
-        '''
-        
-        index = list(range(example_size))
-        np.random.shuffle(index)
-        
-        size_noisy_data = int((example_size *percent_noisy_data)/ 100 )
-
-        noisy_y = np.copy(y)
-        for i in index[:size_noisy_data]:
-                noisy_y[i] *= -1
-        return noisy_y
 
         
 def experiment(featureVector,
@@ -470,10 +578,10 @@ def experiment(featureVector,
                                            dimension,
                                            square_half_size)
                 test_y = np.array( [f(x[0],x[1]) for x in test_sample ])
-                test_y = noisyVector(test_y, size_training_example, percent_noisy_data)
+                test_y = noisyVector(test_y, percent_noisy_data)
         
                 y = np.array( [f(x[0],x[1]) for x in training_sample ])
-                y = noisyVector(y, size_training_example, percent_noisy_data)
+                y = noisyVector(y,  percent_noisy_data)
  
                 # fit
                 x = np.array( [
@@ -486,7 +594,7 @@ def experiment(featureVector,
                         for x_n in test_sample
                 ])
                 
-                w = sgd(x, y, eta, maximum_number_iterations, batch_size = 32)
+                w = sgd_exact_number_iter(x, y, eta, maximum_number_iterations, batch_size = 32)
 
                 total_in_error += Error(x,y,w)
                 total_out_error += Error(x_test, test_y, w)
@@ -505,7 +613,8 @@ def linearFeatureVector(x_n):
                 x_n[0],
                 x_n[1]
                ] )
-_number_of_repetitions = 1000
+
+_number_of_repetitions = 1000 
 error_in, error_out = experiment( linearFeatureVector,
                                   number_of_repetitions = _number_of_repetitions,
                                   size_training_example = 1000,
@@ -520,7 +629,7 @@ STOP_EXECUTION_TO_SEE_RESULT()
 
 print('\nEXPERIMENT (e)\n' )
 eta = 0.01
-batch_size = 32
+batch_size = 5
 maximum_number_iterations = 1000
 
 def quadraticFeatureVector(x_n):
@@ -540,17 +649,23 @@ x = np.array( [
         quadraticFeatureVector(x_n)
         for x_n in training_sample
 ])
+y = np.array( [f(x[0],x[1]) for x in training_sample ])
+y = noisyVector(y,  percent_noisy_data)
 
-w = sgd(x, noisy_y, eta, maximum_number_iterations, batch_size = 32)
 
-print('\nFor one experiment:')
-_title = f'SGD, batch size {batch_size}'
-print( '\n',_title)
-print ("Ein: ", Error(x,noisy_y,w))
-evaluationMetrics (x,noisy_y,w, '\nEvaluating output training data set')
+for i in [10, 50, 100, 200, 500, 700, 1000]:
+        maximum_number_iterations = i
+        w = sgd_exact_number_iter(x, y, eta, maximum_number_iterations , batch_size = 17)
+
+        print('\nFor one experiment:')
+        _title = f'SGD, batch size {batch_size}, number iterations {maximum_number_iterations}'
+        print( '\n',_title)
+        print ("Ein: ", Error(x,y,w))
+        evaluationMetrics (x,y,w, '\nEvaluating output training data set')
 print('')
 
 STOP_EXECUTION_TO_SEE_RESULT()
+
 
 ## plotting
 
@@ -564,12 +679,12 @@ def equation (x,y,w):
         OUTPUT
         Real number, the scalar product of features vector dot weights vector
         '''
-        return ( w[0]
-                 + w[1] * x
-                 + w[2] * y
-                 + w[3] * x * y
-                 + w[4] * x**2
-                 + w[5] * y**2
+        return ( w[0,0]
+                 + w[1,0] * x
+                 + w[2,0] * y
+                 + w[3,0] * x * y
+                 + w[4,0] * x**2
+                 + w[5,0] * y**2
                 )
 '''
 PLOTING LINEAR REGRESSION 
@@ -580,64 +695,23 @@ the linear regression for classification  is near to 0.
 That means that they are in the limit area.  
 '''
 error = 10**(-2.1)
-space = np.linspace(-1,1,300)
-x_image = []
-y_image = []
+space = np.linspace(-1,1,100)
 
-last_value =  equation(-1,-1,w)
-last_i = -1
-last_j = -1
-added = False # to know if it it decreasing
+z = [[ equation(i,j,w) for i in space] for j in space ]
 
-for i in space:
-        for j in np.linspace(-1,0,150):
-                actual_value = equation(i,j,w)
-                if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
-                        if not added :
-                                x_image.append(last_i)
-                                y_image.append(last_j)
-                                
-                                added = True
-                else:
-                        
-                        added = False
-                last_j = j
-                last_value = actual_value
-        last_i = i
-                
-for i in space[::-1]:
-        for j in np.linspace(0,1,150):
-                actual_value = equation(i,j,w)
-                if abs(last_value) < abs(actual_value) and abs(actual_value)<error :
-                        if not added :
-                                x_image.append(last_i)
-                                y_image.append(last_j)
-                                
-                                added = True
-                else:
-                        
-                        added = False
-                last_j = j
-                last_value = actual_value
-        last_i = i
-
-x_image.append(x_image[0])
-y_image.append(y_image[0])
-        
-plt.clf()
+plt.contour(space,space, z, 0, colors=['black'],linewidths=2 )
 
 for l in labels:
 	
-	index = np.where(noisy_y == l)
+	index = np.where(y == l)
 	plt.scatter(training_sample[index, 0],
                     training_sample[index,1],
                     c=colors[l],
                     label=str(l))
 
-plt.title('Linear regression fit')
+plt.title('Quadratic regression fit')
 plt.xlabel('$x_1$ value')
 plt.ylabel('$x_2$ value')
-plt.plot(x_image,y_image, c = 'black', label='Regression model')
 plt.legend( loc = 'lower left')
 plt.show()
 

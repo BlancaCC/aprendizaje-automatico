@@ -1,6 +1,6 @@
 
 
-\section{ Gradient descent's algorithm }
+\section{ Gradient descent 's algorithm }
 \subsection{Introduction}
 
 Gradient descent is a general technique for minimizing  differentiable functions through its slope. \cite{LFD}
@@ -97,7 +97,7 @@ Set $(u,v)=(1,1)$ as initial point and use learning rate $\eta = 0.1$.
 
 \begin{multline*}
   \nabla E(u,v) = \left( \frac{\partial}{\partial u}(u^3 e^{(v-2)} - 2* v^2 e^{-u})^2 , \frac{\partial}{\partial v} (u^3 e^{(v-2)} - 2 v^2 e^{-u})^2 \right) = \\
- =  \left(2(u^3 e^{(v-2)} - 2* v^2 e^{-u})(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), 2(u^3 e^{(v-2)} - 2* v^2 e^{-u})(u^3 e^{(v-2)} - 4 v e^{-u}) \right)
+ =  \left(2(u^3 e^{(v-2)} - 2* v^2 e^{-u})(3u^2e^{(v-2)} + 2 v^2 e^{-u} ), 2(u^3 e^{(v-2)} - 2* Due to all this limitations thev^2 e^{-u})(u^3 e^{(v-2)} - 4 v e^{-u}) \right)
 \end{multline*}
 
 
