@@ -195,7 +195,7 @@ def gradient_descent_trace(initial_point, loss_function, gradient_function,  eta
         error = loss_function(new_w[0], new_w[1])
         w.append( new_w ) 
     
-    return w, iterations
+    return w
 
 
 

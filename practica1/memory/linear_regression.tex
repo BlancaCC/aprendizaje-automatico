@@ -24,16 +24,16 @@ $N \in \mathbb N$ the training data size.
 
 Where $\|.\|$ is the Euclidean norm of a vector.
 
-Since $E_{in}(w)$ is differentiable we can use standard matrix calculus to find the $w$ that minimizes  $E_{in}$ with respect to w is the zero vector:
+Since $E_{in}(w)$ is differentiable we can use standard matrix calculus to find the $w$ that minimizes  $E_{in}$ with respect to w:
 
 $$\nabla E_{in}(w) = \frac{2}{N}(X^TXw - X^T y) =0$$
-Finally to get $\nabla  E_{in}(w)$ to be $0$, we should solve for $w$ that satisfies
+Finally to get $\nabla  E_{in}(w)$ to be $0$, we should find a $w$ that satisfies
 
 $$X^TXw = X y$$
 
-If $X^TX$ is invertible, $w = X^\dagger y$ where $X^\dagger = (X^T X)^{-1}$ is the \texttt{pseudo-inverse} of $X$. The resulting $w$ is the unique optimal solution that minimizes $E_{in}$.  Otherwise a pseudo-inverse can still be defined, but the solution will not be unique.
+If $X^TX$ is invertible, $w = X^\dagger y$ where $X^\dagger = (X^T X)^{-1}$ is the \texttt{pseudo-inverse} of $X$. The resulted $w$ is the unique optimal solution that minimizes $E_{in}$.  Otherwise a pseudo-inverse can still be defined, but the solution will not be unique.
 
-In practice, $X^TX$ is invertible in most of the cases since $N$ is often much bigger than $d+1$, so there will likely be $d+1$ linearly independent vector $x_n$.
+In practice, $X^TX$ is invertible in most of the cases since $N$ is often much more bigger than $d+1$, so there will likely be $d+1$ linearly independent vector $x_n$.
 
 
 
@@ -95,7 +95,7 @@ A direct implementation is
   \end{minted}
 
   \subsubsection{Interpretation of the mean squared error, E}
-  The mean squared error function $E: \mathbb R ^d \longrightarrow \mathbb R^+_0$ measures the average of the squared difference between the estimated values ant the actual value\cite{MSE}. Hence, the nearer to zero, the better.
+  The mean squared error function $E: \mathbb R ^d \longrightarrow \mathbb R^+_0$ measures the average of the squared difference between the estimated values and the actual value\cite{MSE}. Hence, the nearer to zero, the better.
 
   
   
@@ -147,7 +147,7 @@ Finally we have to compute $w = X^\dagger y$
 
   \subsubsection{Pseudo-inverse linear regression model}
 
-  After execute the algorithm we obtain:
+  After computing the algorithm we obtain:
 
 \begin{verbatim}
 ___ Goodness of the Pseudo-inverse fit ___
@@ -169,8 +169,8 @@ Accuracy rate : 98.11320754716981 %
 
 \end{verbatim}
 
-  Which means that the $w$ computed by our pseudo-inverse algorithm we the training data set has a $E_{in}(w) = 0.079$ and with the test data $E_{out}(w) = 0.131$, for our experiment it is a good fit, because it is close enough to zero. In addition, if we evaluate the data classification,
-  from $1561$ training data it only misclassify $10$, whereof 7 was truly positives. The accuracy rate $(\frac{\text{good classified data}}{\text{data set size}})$
+  Which means that the $w$ computed by our pseudo-inverse algorithm by the training data set has a $E_{in}(w) = 0.079$ and by the test data $E_{out}(w) = 0.131$, for our experiment it is a good fit, because it is closed enough to zero. In addition, if we evaluate the data classification,
+  from $1561$ training data it only misclassify $10$ points, whereof 7 was truly positives. The accuracy rate $(\frac{\text{good classified data}}{\text{data set size}})$
   is $99.358 \%$, which continues being really good.
 
   Initially, we could think that it classifies the positives values better, but if we analyse the output from test data set, there are more negatives values misclassified, so we cannot establish any relation. Moreover here the accuracy rate is $98.113 \%$
@@ -181,7 +181,8 @@ Accuracy rate : 98.11320754716981 %
   \includegraphics[width=\linewidth]{2_1_pseudo_inverse.png}
 
 
-  Something really import about this method is that it would be better o equal than the gradient descent, therefore in the next experiment we are going to compare the results which it. 
+  Something really import about this method is that it is equal or better than the gradient descent, therefore in the next experiments
+  we are going to compare the results which it. 
 
   \subsubsection{How have we plotted the regression line.}
 
@@ -189,10 +190,10 @@ Accuracy rate : 98.11320754716981 %
 
   Therefore we use the sign um to classify the numbers, we are going to find two points in $\mathbb R^2$ that their estimation is zero, which means that they are in the middle of classification (the regression line).
 
-  The obtained weight vector $w^T = (w_1,w_2,w_3)^T$, means that for a point $(x,y) \in \mathbb R^2$
+  The obtained weight vector $w^T = (w_1,w_2,w_3)$, means that for a point $(x,y) \in \mathbb R^2$
   its estimation is $h(x,y) = (1,x,y) w = w_1 + w_2x + w_3y$.
 
-  To calculate the two points we are going to equal $h(x,y)=0$ and from the infinities solution we can calculate:
+  To calculate the two points we are going to equalize $h(x,y)=0$ and from the infinity solutions we would compute two:
 
   if $x=0$ then $y = \frac{- w_1}{w_3}$, and if  $x=1$ then $y = \frac{- w_1 - w_2}{w_3}.$
   
@@ -266,7 +267,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
         return w
       \end{minted}
 
-      In order to control exactly the numbers of iterations apart from exercise 1, we are going to use this 
+      In order to control exactly the numbers of iterations we are going to use this function: 
 
       \begin{minted}{python}
         def sgd_exact_number_iter(x,y, eta = 0.01,
@@ -313,7 +314,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
       \end{minted}
 
 
-      Due to the fact that this is a stochastic method and the gradient descendent do not reduce the error in every step,  there are other variations, for example we can save and return only the $w$ found which has the less error.
+      Due to the fact that this is a stochastic method and the gradient's descent does not reduce the error in every step,  there are other variations, for example we can save and return only the $w$ found which has the less error.
 
 
        \begin{minted}{python}
@@ -369,7 +370,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
 
       \end{minted}
 
-    This algorithm is interesting because it return the best $w$ found and has (in order) the same computational cost. 
+    This algorithm is interesting because it returns the best $w$ found and has (in order) the same computational cost. 
 
 
     \paragraph{Initial point}
@@ -377,7 +378,7 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
     Another consideration is that as we know, it is really important the chosen of the initial point in gradient descendent. However, due to the fact that we are working with the mean quadratic error, we know that only exists  one global minimum, so here the relevance of the initial point is to reduce iterations. Therefore we theoretically do not have more information,  we have chosen the $w_0 = 0 \in \mathbb R^d.$
 
 
-    \paragraph{The experiment result}  We are going to execute the \texttt{sgd} algorithm (one iteration is one step)  with $\eta = 0.01$ batch sizes $1,32, 200 \text{ and } \texttt{len(y)}$ and the numbers of steps $50 \text{ and } 300$.
+    \paragraph{The experiment result}  We are going to execute the \texttt{sgd} algorithm (our version)  with $\eta = 0.01$ batch sizes $1,32, 200 \text{ and } \texttt{len(y)}$ and the numbers of steps $50 \text{ and } 300$.
 
 
    
@@ -396,11 +397,11 @@ def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
 
 
 As we can see, as bigger is the batch size the worse is the error.
-Something really interesting is that we are minimizing based on the quadratic error, but it does not mean we are minimizing the accuracy error ( there is a correlation but not a coincidence. A good example of that is if we compare bath size 200's with bath size 32.  
+Something really interesting is that we are minimizing based on the quadratic error, but it does not mean we are minimizing the accuracy error ( there is a correlation but not a coincidence. A good example of that is if we compare bath's size 200 with bath's size 32.  
 As we increase the numbers of iterations the general error decrease (see 300 steps). 
 
 
-Another interesting observation is that for batch 1:   200 iterations is worst than 50, this is because we are oscillating over the solution. The algorithm which save the best $w$, \texttt{sgd\_save\_w} would solve this problem. 
+Another interesting observation is that for batch's size one,   200 iterations is worse than 50, this is because we are oscillating over the solution. The algorithm we have described which saves the best $w$, \texttt{sgd\_save\_w} would solve this problem. 
 
 \includegraphics[angle=90,width=\linewidth]{2_1_comparatives_50.png}
 
@@ -615,7 +616,7 @@ b) Let's consider the function $f(x_1, x_2) = sign((x_1 - 0.2)^2 + x_2^2 - 0.6)$
 Draw the obtained labels map.
 
 
-Before plotting, It is important to have in mind that a circumference with radius $r$ and center $(c_1, c_2) \in \mathbb R^2$ are the points $(x_1, x_2) \in \mathbb R^2$ that verify 
+Before plotting, it is important to have in mind that a circumference with radius $r$ and center $(c_1, c_2) \in \mathbb R^2$ are the points $(x_1, x_2) \in \mathbb R^2$ that verify 
 
 \[ (x_1 - c_1)^2 + (x_2 - c_2)^2 = r^2\]
 
@@ -646,7 +647,7 @@ for i in index[:size_noisy_data]:
 
   \end{minted}
 
-  As we can see the idea behind the snippet is simple: The noised labels would be a copy of the original one and $10\%$ of the data would change their sign.
+  As we can see the idea behind the snippet is simple: The noised labels would be a copy of the original ones and $10\%$ of the data would change their sign.
 
   The final map is :
 
@@ -656,12 +657,12 @@ for i in index[:size_noisy_data]:
 
   \subsection{ Estimate the fitting error of $E_{in}$ using SGD}
 
-  \subsubsection{c}
+  \subsubsection{Experiment c}
   Using $(1, x_1, x_2)$ as feature vector, fit a linear regression model to the generated datasets and estimate the weights w. Estimate the fitting error of Ein using Stochastic Gradient Descent (SGD).
 
-  Having in mind the observation in the last subsection that the labels follows a circumference equation with a bit of noise, a linear regression model it is not going to be the best approach.
+  Having in mind the observation in the last subsection that the labels follow a circumference's equation with a bit of noise, a linear regression model it is not going to be the best approach.
 
-  The experiment result are:
+  The experiment results are:
 \begin{verbatim}
 EXPERIMENT (c) 
 
@@ -677,7 +678,7 @@ Accuracy rate : 62.5 %
 \end{verbatim}
 
 
-Remember that the bad negatives are the points that the regression classify in negative but they are positives and the bad positives are the negatives one that are classify as a positives.
+Remember that the bad negatives are the points that the regression classify in negative but they are positives and the bad positives are the negative ones that are classify as a positives.
 
 Finally the accuracy rate was the corrected classify data divided by the input size, so it is not a good model due to the fact that the accuracy rate is so close to a random one, that it would theoretically have a $50\%$ of accuracy rate.
 
@@ -688,7 +689,7 @@ A visual representation of the projection is
 
 \subsubsection{d) Repetition of the experiment}
 
-In order to see the last result was not hazaour we are going to repeat the experiment 1000 times, the result is:
+In order to see that the last result was not hazaour we are going to repeat the experiment 1000 times, the result is:
 
 \begin{verbatim}
 
@@ -763,7 +764,7 @@ Accuracy rate : 85.1 %
 
                 However if we analyse how the error, accuracy rate and $w$ are evoluting over $10, 50, 100, 200, 500, 700, 1000$ we clearly see that the error is improving, so the iterations were not enought.
 
-                Something interesting is that the $700$ iterations have better accuracy rate, this is for the same reason explained at exercise 1.   
+                Something interesting is that the $700$ iterations have better accuracy rate than 1000, this is for the same reason we explained at exercise 1; we are minimazing the error, not the accuracy rate.    
        
 
  \begin{verbatim}
@@ -873,5 +874,5 @@ The mean value of E_out in all 1000 experiments is: 0.6058641910896161
 
 More or less the error is the same, so we can trust that a good adjustment is a quadratic one.
 
-Something which we have known a priori, because we knew our target vector (something that in real life do not happen).
+Something which we have known a priori, because we knew our target vector (something that in real life does not happen).
 

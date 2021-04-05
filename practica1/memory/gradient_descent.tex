@@ -17,7 +17,7 @@ In order to understand the algorithm we are going to define:
 
 Let $w(0) \in \mathbb{R}^d$ be an arbitrary initial point,
 $E : \mathbb{R}^d \times \mathbb{R}^d \longrightarrow \mathbb R$
-a class $C^1$ function. The learning rate or step size $\eta \in \mathbb{R}^+$
+a differentiable function. The learning rate or step size $\eta \in \mathbb{R}^+$
 is a experimental coefficient about how much are we going to follow the slope to obtain the new weight.  
 Let  $w(t) \in \mathbb{R}^d  \quad t \in \mathbb N$ be the weight for $t$ iteration which is defined as
 
@@ -37,11 +37,12 @@ Let  $w(t) \in \mathbb{R}^d  \quad t \in \mathbb N$ be the weight for $t$ iterat
 
 \subsection{Algorithm}
 
-The following code snippet implement the algorithm, where $w(0)$ is the $initial\_point$, $E$ is the error, $\nabla E_{in}(w)$ is $gradient\_function$ and
-finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic basic on purely practical observation \cite{LFD}.
+The following code snippet implements the algorithm, where $w(0)$ is the $\texttt{initial\_point}$, $E$ is the error, $\nabla E_{in}(w)$
+is $\texttt{gradient\_function}$ and
+finally $\eta$ is $eta.$ The value $\eta = 0.1$ is a heuristic based on purely practical observation \cite{LFD}.
 
 
-In order to avoid an infinite search, our stop criteria are a limit in the number of iterations $max\_sitter$ and an error tolerance. 
+In order to avoid an infinite search, our stop criteria are a limit in the number of iterations $\texttt{max\_iter}$ and an error tolerance. 
 
 \begin{minted}{python} 
 
@@ -137,7 +138,7 @@ def gradE(u,v):
 
 \end{minted}
 
-To obtain the number of iterations and the final coordinates, the only thing we need to do is to call $gradien\_descent$ function with the initial conditions:
+To obtain the number of iterations and the final coordinates, the only thing we need to do is to call $\texttt{gradien\_descent}$ function with the initial conditions:
 
 \begin{minted}{python}
 eta = 0.01 
@@ -152,7 +153,7 @@ w, it = gradient_descent( initial_point,
                           target_error )
 \end{minted}
 
-The result are:
+The results are:
 
 \begin{itemize}
 \item Numbers of iterations: $178.$
@@ -168,7 +169,7 @@ A 3d graph with the result is
 \subsection{Problem 2}
 
 
-For function $f(x,y) = (x+2)^2 + 2(y-2)^2 + 2 \sin (2 \pi x) \sin (2 \pi y)$
+Let's define the function $f(x,y) = (x+2)^2 + 2(y-2)^2 + 2 \sin (2 \pi x) \sin (2 \pi y)$.
 
 \subsubsection{ Use gradient descent to minimize $f$}
 
@@ -183,7 +184,7 @@ Firstly we are going to calculate partial derivatives and gradient of $f$.
 \end{equation*}
 
 \begin{equation*}
-  \frac{\partial }{\partial y} f = 2 (y - 2) +  4 \pi \sin (2 \pi x) \cos ( 2 \pi y)   
+  \frac{\partial }{\partial y} f = 4 (y - 2) +  4 \pi \sin (2 \pi x) \cos ( 2 \pi y)   
 \end{equation*}
 
 
@@ -228,16 +229,16 @@ Now the new algorithm is
   \end{minted}
 
 
-  After 50 iterations for  $\eta = 0.01$, the  final coordinates are $(-1.269, 1.287)$ and their value is $-0.381$. The graph, which shows the relation between iterations and the function minimization is
+  After 50 iterations for  $\eta = 0.01$, the  final coordinates are $(-1.269, 1.287)$ and their value is $-0.381$. The graph which shows the relation between iterations and the function minimization is
 
 
   \includegraphics[width=\linewidth]{1_3_smaller_eta}
 
-  As far as we have seen, before the $10^{th}$ iteration we are really close to  the minimum and stay there without fluctuate.
+  As far as we have seen, before the $10^{th}$ iteration we are really close to the minimum and stay there without fluctuating.
 
-  On the other hand, after 50 iterations for  $\eta = 0.1$ the final coordinates are $(-2.939, 1.608)$ and their value is $0.724$, so as we can see that this result is worse than the last one.
+  On the other hand, after 50 iterations for  $\eta = 0.1$ the final coordinate is $(-2.939, 1.608)$ and its value is $f(-2.939, 1.608) = 0.724$, so as we can see, this result is worse than the last one.
 
-  In the following graph we can see the evolution fluctuation of the images iteration by iteration 
+  In the following graph we can see how the images' value fluctuates iteration by iteration. 
 
   \includegraphics[width=\linewidth]{1_3_bigger_eta}.
 
@@ -250,13 +251,13 @@ Now the new algorithm is
 
     Moreover, based on its mathematical proof, which use Taylor's series, we know that it should be small, but if it is too small the algorithm will never reach the minimum in time.
 
- Let see a new example, now $\eta = 10^{-14}$, after 50 iteration  the final coordinates are $(-1, 1)$  and the value is $3$, so this new selection is even worse that the one with the bigger step size, although it goes without oscillate.  
+ Let's see a new example: now $\eta = 10^{-14}$, after 50 iterations  the final coordinates are $(-1, 1)$  and the value is $3$, so this new selection is even worse that the one with the bigger step's size, although it goes without oscillating.  
 
  \includegraphics[width=\linewidth]{1_3_epsilon_eta}
  
  \includegraphics[width=\linewidth]{1_3_eta_and_smaller.png}
  
-  As a conclusion, a priory, it is difficult to select a step size value, each problem should have an appropriate one, and the selection must be empirical. Even though some heuristic \cite{LFD} tell that $\eta = 0.01$ it is a good try.  
+  As a conclusion, a priory, it is difficult to select a step's size value, each problem should have an appropriate one and the selection must be empirical. Even though some heuristic \cite{LFD} tell that $\eta = 0.01$ it is a good try.  
 
  
   
@@ -267,7 +268,7 @@ Now the new algorithm is
 Before running the algorithm is important to think about a good value for the learning rate $\eta$. Based on the last section, $\eta = 0.1$ is a good one. 
 
 
-After run the program the  results are
+The results are
 
 \begin{center}
   \begin{tabular}{ |c|c|c| }
@@ -290,19 +291,21 @@ After run the program the  results are
 This example gives the idea that the local minimums found depend on the start point $w_0$ and a priory, unless we know some properties
 of the function such as convexity or monotony we are not able to assure that the minimum found is global.
 
-For a mathematical study we need differentiable functions, and a technique to  find where their zeros are, so we need to solve their equations. Some time
-this is not possible and we use numeric methods.
 
+Under a mathematical point of view, to study a function's monotony we need some more complex tools and conditions, such as solve equations; something that
+the majority of times is impossible.
+
+Fortunately, for the error functions such a the mean quadratic error, this is totally possible. 
 
 
 
 \subsection{ Final conclusion about finding global functions' minimum by gradient descent}  
 
-To sum up this first chapter,  gradient descent algorithm is a technique to minimize differentiable functions. Dramatically depends  on the initial point and the learning rate. Moreover, it does not give global a minimum unless the  function is convex.
+To sum up this first chapter,  gradient descent's algorithm is a technique to minimize differentiable functions. It dramatically depends  on the initial point and the learning rate. Moreover, it does not give global  minimums unless the  function is convex.
 
 The computational cost of the function is $\mathcal O (N i)$ where $N$ is the size of the data set and $i$ the maximum number of iterations.
 
-Some useful examples of functions used in this algorithm are the mean quadratic error or the logistic functions are used as the functions to minimize the error.
+Some useful examples of functions that can be successfully mimimized with used this algorithm are the mean quadratic's error or the logistic's function.
 
 
 
