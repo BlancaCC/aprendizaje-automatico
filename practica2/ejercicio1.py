@@ -68,6 +68,7 @@ def scatter_plot(x, plot_title):
 def classified_scatter_plot(x,y, function, plot_title, labels, colors):
         '''Dibuja los datos x con sus respectivas etiquetas y
         Dibuja la función: function 
+        labels: son las etiquetas posibles que queremos que distinga para colorear, 
         (todo esto en el mismo gráfico  
         '''
         plt.clf()
@@ -92,7 +93,7 @@ def classified_scatter_plot(x,y, function, plot_title, labels, colors):
 
         # título 
         plt.title(plot_title)
-
+        plt.legend()
         plt.show()
         
 ############################################
@@ -109,12 +110,25 @@ scatter_plot(x, plot_title = f'Nube de puntos uniforme (N = {N}, rango = {rango_
 
 stop('Apartado 1.1.b')
 sigma_gauss =  [5,7]
-x = simula_gaus(N, dimension,rango_gauss)
+x = simula_gaus(N, dimension,sigma_gauss)
 scatter_plot(x, plot_title = f'Nube de puntos Gausiana (N = {N}, sigma = {sigma_gauss}) ')
 
 
 # EJERCICIO 1.2: Dibujar una gráfica con la nube de puntos de salida correspondiente
-stop('Apartado 1.2')
+
+stop('Apartado 1.2.a')
+# La funcion np.sign(0) da 0, lo que nos puede dar problemas
+def signo(x):
+	if x >= 0:
+		return 1
+	return -1
+
+def f(x, y, a, b):
+	return signo(y - a*x - b)
+
+#1.2 a)
+
+stop('Apartado 1.2.a')
 # La funcion np.sign(0) da 0, lo que nos puede dar problemas
 def signo(x):
 	if x >= 0:
@@ -126,27 +140,142 @@ def f(x, y, a, b):
 	return signo(y - a*x - b)
 
 
-def f_a (x,y,a,b):
+def f_sin_signo (x,y,a,b):
         return y - a*x - b
 
 # datos del problema
 rango = [-50, 50]
 N = 100
-a,b = simula_recta(rango)
 dimension = 2
 
-x = simula_unif(N, dimension, rango)
+x = simula_unif(N, dimension,rango)
 
-y = [ signo(f(v[0],v[1],a,b)) for v in x ]
+a,b=simula_recta(rango)
+
+print("Los coeficientes a y b: ", a, b)
+y = [ f(v[0],v[1],a,b) for v in x ]
 
 
 
 
 # datos representación
 labels = [-1,1]
-colors = {-1: 'blue', 1: 'yellow'}
+colors = {-1: 'royalblue', 1: 'limegreen'}
 
-def function (x,y):
-        return f_a(x,y,a,b)
 
-classified_scatter_plot(x,y,function, f'Apartado 2.a f(x,y) = y - {a}x -{b}', labels, colors)
+
+classified_scatter_plot(x,y,
+                        lambda x,y: f_sin_signo(x,y,a,b),
+                        f'Apartado 2.a sin ruido',
+                        labels, colors)
+
+
+
+
+stop('Apartado 1.2.b')
+
+def analisis_clasificado(y_obtenida, y_target):
+        '''
+        Imprime y devuelve además la precisión 
+        '''
+        diferencias = (y_target - y_obtenida) / 2 # el dos proviene de que las etiquetas son +1 y -1
+        positivos_fallados =  sum(filter (lambda x: x>0, diferencias))
+        negativos_fallados =  abs(sum(filter (lambda x: x<0, diferencias)))
+
+        numero_positivos = sum(filter (lambda x: x>0, y_target))
+        numero_negativos = abs(sum(filter (lambda x: x<0, y_target)))
+                               
+        porcentaje_positivos_fallados = positivos_fallados /numero_positivos * 100
+        porcentaje_negativos_fallados = negativos_fallados /numero_negativos * 100
+
+        total_fallados =  positivos_fallados +  negativos_fallados
+        numero_total =  numero_positivos +   numero_negativos
+        porcentaje_fallado_total = total_fallados / numero_total * 100
+
+        precision = 100 - porcentaje_fallado_total
+        
+        print('Resultado clasificación: ')
+        
+        print(f'\t Positivos fallados {positivos_fallados}',
+              f' de {numero_positivos},',
+              f'lo que hace un porcentaje de {porcentaje_positivos_fallados}'
+              )
+        
+        print(f'\t Negativos fallados {negativos_fallados}',
+              f' de {numero_negativos},',
+              f'lo que hace un porcentaje de {porcentaje_negativos_fallados}'
+              )
+
+        print(f'\t Total fallados {total_fallados}',
+              f' de {numero_total},',
+              f'lo que hace un porcentaje de {porcentaje_fallado_total}'
+              )
+        print(f'\t La precisión es ',
+              f' de {100 - porcentaje_fallado_total} %'
+              )
+
+        return precision
+
+                               
+
+def noisyVector(y, percent_noisy_data, labels):
+        '''
+        y vector sobre el que introducir ruido
+q        labels: etiquetas sobre las que vamso a introducir ruido
+        percent_noisy_data: porcentaje de ruido de cada etiqueta , debe ser menro o igual que 100
+        
+        '''
+        
+        noisy_y = np.copy(y)
+        
+        for l in labels:
+                index = [i for i,v in enumerate(y) if v == l]
+                np.random.shuffle(index)
+                len_y = len(index)
+                size_noisy_data = round((len_y*percent_noisy_data)/ 100 )
+
+        
+                for i in index[:size_noisy_data]:
+                        noisy_y[i] *= -1
+        return noisy_y
+
+porcentaje_ruido = 10 # por ciento 
+noisy_y = noisyVector(y, porcentaje_ruido, labels)
+precision = analisis_clasificado(noisy_y, y)
+
+classified_scatter_plot(x,noisy_y,
+                        lambda x,y: f_sin_signo(x,y,a,b),
+                        f'Apartado 2.b $f$ ruidosa, con precisión del {precision}%',
+                        labels, colors)
+
+
+
+stop('Apartado 2.c')
+
+funciones = [
+        lambda x,y: (x -10)** 2 + (y-20)** 2 - 400,
+        lambda x,y: 0.5*(x +10)** 2 + (y-20)** 2 - 400,
+        lambda x,y: 0.5*(x -10)** 2 - (y+20)** 2 - 400,
+        lambda x,y: y - 20* x**2 - 5 * x + 3
+]
+
+funciones_en_latex = [
+        '$f(x,y) = (x-10)^2 + (y -20) ^2 -400$',
+        '$f(x,y) =  0.5(x +10) ^ 2 + (y-20)^ 2 - 400$',
+        '$f(x,y) =  0.5(x -10)^ 2 - (y-20)^ 2 - 400$',
+        '$f(x,y) =  y - 20 x^2 - 5 x + 3$'
+        ]
+
+
+for i in range(len(funciones)):
+        print(f'\nPara {funciones_en_latex[i]}')
+        y_ajustado = np.array([ signo( funciones[i](v[0], v[1]))   for v in x])
+        precision = analisis_clasificado(y_ajustado, noisy_y)
+        classified_scatter_plot(x,noisy_y,
+                                funciones[i],
+                                'Clasificación para '+funciones_en_latex[i] + f' Precisión del {precision}%',
+                                labels, colors)
+
+        
+
+
