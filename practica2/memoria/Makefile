@@ -1,4 +1,4 @@
-all: ejercicio1.pdf
+all: ejercicio2.pdf
 
 %.pdf: %.md
 	pandoc -o $@ $<
