@@ -8,22 +8,65 @@ header-includes:
 
 # 2 Modelos lineales   
 
-## Algoritmo del Perceptron   
+## Descripción del algoritmo de aprendizaje del perceptrón   
 
-Incluir descripción del alogirtmo del perceptrón   
+Este algoritmo determinará un vector de pesos $w \in \R^d$ ajustado a través de los como sigue: 
+
+Sea $S$ un conjunto de pares $(x_i, y_i)$  con $i < |S|$ natural y denotando por $S$ el tamaño de muestra.     
+
+Pues el algoritmo es el siguiente:   
+
+```
+hay_cambio = True
+w inicializada
+
+mientras hay_cambio:
+
+    hay_cambio = False
+    
+    Para todo (x_i, y_i) en S:
+        si signo(w^T x_i) != yi:
+            w = w + y_i x_i
+            hay_cambio = True
+            
+devolver w
+```  
+
+
+
+
+
+Si los datos son separables este algoritmo nos asegura la convergencia.     
+
+Sin embargo saber con certeza que un conjunto de datos es separable es un hipótesis bastante fuerte y por ejemplo, en el caso de $\R^d$ sabemos que existen configuraciones de  $d+1$ puntos que ya no son clasificables.   
+
+Es por ello que  para nuestro problema hemos añadido además otro criterio de parada: cuando alcance un número de iteraciones máximo.    
+
+Esta solución introduce dos nuevos problemas:   
+
+1. Que el conjunto sea separable y converja pero se pare antes de alcanzar dicha solución.  
+
+2. Que el $w$ final no sea el mejor de todos los que hemos calculado.  
+
+Para resolverlos, se podría plantear una solución en la que se tenga una función para medir el error de cierto $w$ (por ejemplo la contadora de número de datos más clasificados), una variable para guardar el valor del $w$ de menor error encontrado y una condición de parada nueva que combine la monotomía del error y el número de iteraciones. 
+
+
+
+
 
 ## Apartado 2.a.1.b  
 
-Se ha utilizado un máximo de 500 iteraciones como eurística a ver que ninguno las incumple, tras 10 iteraciones el número de iteraciones obtenido en cada uno de ellas es: 257, 43, 231, 71, 76, 59, 274, 235, 257, 74.   
+Se ha utilizado un máximo de 500 iteraciones como heurística a ver que ninguno las incumple, tras 10 iteraciones el número de iteraciones obtenido en cada uno de ellas es: 257, 43, 231, 71, 76, 59, 274, 235, 257, 74.   
 
-Estos valores tienen una media de 157.7 y una desviación típica de 94.175  
-de aquí deducimos que que nuestro vector inicial sea el nulo es una buena heurística. Además podemos observar que la desviación típica es bastante grande en comparación con los datos que tenemos, esto no hace pensar que en el valor inicial tiene relevancia a la hora del número de pasos necesarios.  
+El número de iteraciones medio es de 157.7 y una desviación típica de 94.175, de aquí deducimos que que nuestro vector inicial sea el nulo es una buena heurística. Además podemos observar que la desviación típica es bastante grande en comparación con los datos que tenemos, esto nos hace pensar que en el valor inicial tiene relevancia a la hora del número de pasos necesarios.  
 
 Analicemos con más detalle el experimiento, 
 
 En esta tabla se han recogido los datos por número de pasos necesarios, 
 
-numero_pasos | 	 w_0 	 |	 w_f   
+$w_0$ es el vector de pesos inicial y $w_f$ el final  
+
+numero pasos | 	 $w_0$ 	 |	 $w_f$   
 --- | --- | ---  
 43  |  [0.228 0.664 0.497]  | [464.228  15.388  23.746]  
 59  |  [0.032 0.093  0.065]  | [558.032 19.363  29.714  ]  
@@ -37,25 +80,28 @@ numero_pasos | 	 w_0 	 |	 w_f
 274  |  [0.452 0.375 0.975]  | [1145.452   40.279   60.814]  
 
 
-
+Otro detalle interesante es que aunque se hable de convergencia de $w$, esto no es a una función concreta, si no a una familia de soluciones que cumple la propiedad de separar tales datos. Esto es notable en que ninguna de las $w_f$ es igual. 
 
 
 
 ## Apartado 2.a.2  
-TO-DO describir el algoritmo PLA  
+
 
 Sabemos que ahora los datos no son separables, luego por más pasos que demos estos no convergirán. 
 
-Además como el ruído introducido es del 10% la precisión máxima a la que podemos optar es a 90%.  
+Además como el ruído introducido es del 10% la precisión máxima a la que podemos aspirar es a 90%.  
 
-Con este algoritmo no se minimiza ningún valor, simplemete se iteran los datos, luego sin introducir un criterio de minimización. vemos que independientemente de las soluciones introducidas estamso oscilando entorno a la solución:  
+Como este algoritmo no es de regresión,  no se está  minimizando ningún valor, simplemete se iteran los datos y oscilamos  entorno a la solución. Para observar esto mejor he planteado el siguiente experimento: 
 
+Manteniendo los vectores iniciales del apartado anterior variaremos el número de épocas y veremos el vector final y su precisión.    
 
-Nota, para este apartado voy a mantener los vectores iniciales del apartado anterior para poder compararlos mejor.   
+Observaremos que la precisión y no guarda ninguan relación de proporcionalidad con el número de pasos, ya que para el primer punto [0.574, 0.349, 0.057] empeora de 100 a 200 pasos pero vuelve a tener la misma precisión para 300 pasos.   
+
 
 
 Para max_iter = 100:  
-numero_pasos | 	 w_0 	 |	 w_f | 	 Precisión (%)  
+
+numero_pasos | 	 $w_0$ 	 |	 $w_f$ | 	 Precisión (%)  
  --- |  ---  |--- |  ---  
 100  |  [0.574, 0.349, 0.057]  | [461.574, 29.602, 54.869] | 86.0   
 100  |  [0.229, 0.664, 0.497]  | [484.229, 28.285, 51.766] | 86.0   
@@ -69,7 +115,8 @@ numero_pasos | 	 w_0 	 |	 w_f | 	 Precisión (%)
 100  |  [0.477, 0.013, 0.353]  | [459.477, 0.021, 24.57] | 77.0   
 
 Para max_iter = 200:  
-numero_pasos | 	 w_0 	 |	 w_f | 	 Precisión (%)  
+
+numero_pasos | 	 $w_0$ 	 |	 $w_f$ | 	 Precisión (%)  
  --- |  ---  |--- |  ---  
 200  |  [0.574, 0.349, 0.057]  | [484.574, 21.757, 62.042] | 82.0   
 200  |  [0.229, 0.664, 0.497]  | [473.229, -1.77, 19.977] | 75.0   
@@ -82,8 +129,10 @@ numero_pasos | 	 w_0 	 |	 w_f | 	 Precisión (%)
 200  |  [0.824, 0.633, 0.669]  | [486.824, 24.497, 38.54] | 86.0   
 200  |  [0.477, 0.013, 0.353]  | [476.477, 23.059, 63.463] | 83.0   
 
+
 Para max_iter = 300:  
-numero_pasos | 	 w_0 	 |	 w_f | 	 Precisión (%)  
+
+numero_pasos | 	 $w_0$ 	 |	 $w_f$ | 	 Precisión (%)  
  --- |  ---  |--- |  ---  
 300  |  [0.574, 0.349, 0.057]  | [495.574, 27.744, 53.525] | 86.0   
 300  |  [0.229, 0.664, 0.497]  | [484.229, 20.829, 64.077] | 81.0   
