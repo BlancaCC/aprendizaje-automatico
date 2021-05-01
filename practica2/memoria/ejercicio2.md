@@ -149,3 +149,28 @@ numero_pasos | 	 $w_0$ 	 |	 $w_f$ | 	 Precisión (%)
 ## Regresión logística   
 
 
+
+
+# Bonus: Clasificación de dígitos    
+
+
+Se pretende clasificar los dígitos 4 y 8 a partir de las característica de intensidad promedio y simetría.   
+
+## 1. Planteamiento del problema de clasificación binaria.  
+
+
+Dado un conjunto de datos de entrenamiento,almacenando sus características de intensidad promedio y simetría  en $x_test$ y su etiqueta en $y_test$ (dígito que corresponde).   
+
+Los modelos vistos en clase de clasificación son la clasificación lineal, la regresión lineal y la regresión logística.   
+
+
+Puesto que podemos suponer que los datos no son separables voy a optar por un modelos de regresión lineal.   
+
+Reutilizo código de la práctica primera.  
+
+
+## PLA-pocket   
+
+Como ya comenté en el algoritmo de perceptrón existen mejoras, como quedarse el mejor vector de pesos encontrado.  
+
+Como criterio de error usaré la precisión, a mayor precisión mejor será el $w$ encontrado. 

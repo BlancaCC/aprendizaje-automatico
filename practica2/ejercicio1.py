@@ -62,14 +62,18 @@ def scatter_plot(x, plot_title):
         plt.scatter(x[:, 0], x[:, 1], c = 'b')
         plt.title(plot_title)
 
-        #plt.show()
-        #uncoment
+        plt.show()
+        
 
 def classified_scatter_plot(x,y, function, plot_title, labels, colors):
-        '''Dibuja los datos x con sus respectivas etiquetas y
+        '''
+        Dibuja los datos x con sus respectivas etiquetas
         Dibuja la función: function 
-        labels: son las etiquetas posibles que queremos que distinga para colorear, 
-        (todo esto en el mismo gráfico  
+        y: son las etiquetas posibles que se colorearán
+        labels: Nombre con el que aparecerán las etiquetas
+        colors: colores de las diferentes etiquetas
+
+        Todo lo dibuja en un gráfico
         '''
         plt.clf()
 
@@ -293,12 +297,12 @@ noisy_y = noisyVector(y, porcentaje_ruido, labels)
 precision = analisis_clasificado(noisy_y, y)
 
 
-'''
+
 classified_scatter_plot(x,noisy_y,
                         lambda x,y: f_sin_signo(x,y,a,b),
                         f'Apartado 2.b $f$ ruidosa, con precisión del {precision}%',
                         labels, colors)
-'''
+
 plot_datos_cuad(x,noisy_y,
                 lambda x: np.array([ f_sin_signo(v[0],v[1],a,b) for v in x]),
                 title=f'Apartado 2.b $f$ ruidosa, con precisión del {precision}%',
@@ -322,24 +326,26 @@ funciones_en_latex = [
         '$f(x,y) =  y - 20 x^2 - 5 x + 3$'
         ]
 
-#uncomment
 
 for i in range(len(funciones)):
         print(f'\nPara {funciones_en_latex[i]}')
         y_ajustado = np.array([ signo( funciones[i](v[0], v[1]))   for v in x])
         precision = analisis_clasificado(y_ajustado, noisy_y)
 
-        plot_datos_cuad(x,y_ajustado,
-                lambda x: np.array([signo( funciones[i](v[0], v[1])) for v in x]),
-                title='Clasificación para '+funciones_en_latex[i] + f' Precisión del {precision}%',
-                xaxis='x axis', yaxis='y axis')
-'''
+        # gráficas
         classified_scatter_plot(x,noisy_y,
                                 funciones[i],
                                 'Clasificación para '+funciones_en_latex[i] + f' Precisión del {precision}%',
                                 labels, colors)
 
-'''
+        plot_datos_cuad(x,y_ajustado,
+                lambda x: np.array([signo( funciones[i](v[0], v[1])) for v in x]),
+                title='Clasificación para '+funciones_en_latex[i] + f' Precisión del {precision}%',
+                xaxis='x axis', yaxis='y axis')
+
+
+
+
 
 
 
@@ -402,10 +408,10 @@ print('Ejercicio 2.a.1')
 rango = [-50, 50]
 N = 100
 dimension = 2
-print("Los coeficientes a y b: ", a, b)
-#y = [ f(v[0],v[1],a,b) for v in x ]
 
-x_redimensionada = [np.array([1,v[0],v[1]]) for v in x]
+
+
+x_redimensionada = np.c_[np.ones(len(x)),x]
 
 print('Apartado 2.a.1 a) vector inicial nulo')
 
@@ -416,18 +422,26 @@ w_final, pasos = ajusta_PLA(x_redimensionada, y,
 
 print(f'Tras ajustar el vector final es { w_final} tras {pasos} pasos' )
 
-# veamso si ajusta bien
 
+# Comparativas con recta inicial
+print(f'Los coeficientes recta originaria y = ax +b son: a = {a}, b = {b}')
+print(f'Mientras que los nuestros son a ={-w_final[1]/w_final[2]}, b = {-w_final[0]/w_final[2]}')
+
+# veamso si ajusta bien
 h = H( w_final)
 
-''' UCOMMENT
 classified_scatter_plot(x,y,
                         h,
                         '2.a.1 Ajuste perceptrón, vector nulo',
                         labels,
                         colors)
 
-'''
+plot_datos_cuad(x,y,
+                lambda x: np.array([signo( h(v[0], v[1])) for v in x]),
+                title='2.a.1 Ajuste perceptrón, vector nulo',
+                xaxis='x axis', yaxis='y axis')
+
+
 veces_experimento = 10
 stop(f'Apartado 2.a.1 b) Con vectores aleatorios en [0,1] {veces_experimento}')
 
@@ -469,7 +483,7 @@ print(f'Tiene una media de {media} y desviación típica {desviacion_tipica}')
 
 stop(f'Apartado 2.a.2 ) Repetición experimento con valores de 2b')
 
-iteraciones_maximas = []#[100, 200, 300] UNCOMMENT
+iteraciones_maximas = [100, 200, 300]
 for j in iteraciones_maximas:
         print(f'\nPara max_iter = {j}:  ')
         sucesion_pasos = []
@@ -547,7 +561,8 @@ def regresionLogistica(x, y, tasa_aprendizaje, w_inicial, max_iteraciones, toler
                tolerancia_actual > tolerancia):
 
                 indices = np.random.permutation(indices)
-                for i in indices: 
+                for i in indices:
+                        # tamaño del bath uno
                         w_nueva = w_nueva - tasa_aprendizaje * gradienteLogistica(x[i],y[i],w_nueva)
 
                 tolerancia_actual = np.linalg.norm(w_nueva - w_final) 
@@ -707,9 +722,6 @@ stop('BONUS')
 # BONUS
 
 ####################################################################################################
-
-
-
 label8 = 1
 label4 = -1
 
@@ -736,5 +748,352 @@ def readData(file_x, file_y):
 
 
 
-# Plantear un plre
+# REGRESIÓN LINEAL
+def Error(x,y,w):
+    '''quadratic error 
+    INPUT
+    x: input data matrix
+    y: target vector
+    w:  vector to 
+    OUTPUT
+    quadratic error >= 0
+    '''
+    error_times_n = np.float64(np.linalg.norm(x.dot(w) - y.reshape(-1,1))**2)
+  
+    return np.float64(error_times_n/len(x))
 
+
+def dError(x,y,w):
+    ''' gradient
+    OUTPUT
+    column vector
+    '''
+    return  2/len(x)*(x.T.dot(x.dot(w) - y.reshape(-1,1)))
+    
+
+
+def sgd(x,y, eta = 0.01, max_iter = 1000, batch_size = 32, error=10**(-10)):
+        '''
+        Stochastic gradient descent
+        INPUT 
+        x: data set
+        y: target vector
+        eta: learning rate
+        max_iter 
+        OUTPUT 
+        w: weight vector
+        '''
+  
+        #initialize data
+        w = np.zeros((x.shape[1], 1), np.float64)
+        n_iterations = 0
+
+        len_x = len(x)
+        x_index = np.arange( len_x )
+        batch_start = 0
+        w_error = Error(x,y,w)
+
+        while n_iterations < max_iter and w_error > error :
+  
+                #shuffle and split the same into a sequence of mini-batches
+                np.random.shuffle(x_index)
+                for batch_start in range(0,  len_x, batch_size):
+                        iter_index = x_index[ batch_start : batch_start + batch_size]
+
+        
+                        w = w - eta* dError(x[iter_index, :], y[iter_index], w)
+        
+                n_iterations += 1
+                w_error = Error(x,y,w)
+
+   
+        return w
+
+
+
+
+## Gráfica para comparar dos líneas
+
+
+def comparaValoresGrafica (x, y_1, y_2, etiqueta_1, etiqueta_2, etiqueta_x, etiqueta_y, titulo):
+
+        plt.clf()
+        plt.title(titulo)
+        
+        plt.plot(x, y_1, label=etiqueta_1,
+                 linestyle = 'solid', color = 'blue')
+        plt.plot(x, y_2, label=etiqueta_2,
+                  linestyle = 'solid', color = 'mediumorchid')
+        plt.xlabel(etiqueta_x)
+        plt.ylabel(etiqueta_y)
+        plt.legend()
+        plt.show()
+
+
+def muestraTabla (titulos, columnas):
+
+        print(' | '.join(titulos) + '\t  ')
+
+        n = len(titulos)
+
+        print( (n-1)*((3*'-') + '|') + 3*'-')
+
+        columnas = np.array(columnas)
+        
+        for f in columnas.T:
+                print(' | '.join((map(str, map(to_round,f)))) + '\t  ')
+                
+        
+        
+
+        
+
+
+# Reading training data set 
+x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
+# Reading test data set 
+x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
+
+
+
+
+batch_sizes =[32] #batch sizes compared in the experiment
+
+n_iterations = [10,20,50,100,200,500,100]
+titulos = ['Iteraciones', 'Ein', 'Eout', 'Precision In', 'Precision out']
+len_iter = len(n_iterations)
+
+Ein_SGD = np.empty(len_iter)
+Eout_SGD = np.empty(len_iter)
+accuracy_in_SGD = np.empty(len_iter)
+accuracy_out_SGD = np.empty(len_iter)
+
+w_SGD = []
+
+for _batch_size in batch_sizes:
+        print('Para SGD de tamañ de batch {_batch_size}')
+
+        for i, iteration in enumerate(n_iterations):
+                w_SGD = sgd(x,y, eta = 0.01, max_iter = iteration, batch_size = _batch_size)
+                Ein_SGD[i] =  Error(x,y,w_SGD)
+                Eout_SGD[i] =   Error(x_test, y_test, w_SGD)
+
+                y_obtenida_entrenamiento =np.sign(x.dot(w_SGD).T)[0]
+                accuracy_in_SGD[i] = getPrecision(y_obtenida_entrenamiento, y)
+                
+                y_obtenida = np.sign(x_test.dot(w_SGD).T)[0]
+                accuracy_out_SGD[i] = getPrecision(y_obtenida, y_test)
+
+
+        ### Muestra de los datos
+        
+        #comparación Ein_SGD Eout_SGD
+        comparaValoresGrafica (x = n_iterations,
+                               y_1 = Ein_SGD, y_2 = Eout_SGD,
+                               etiqueta_1 = '$E_{in}$', etiqueta_2 ='$E_{out}$',
+                               etiqueta_x = 'Iteraciones',
+                               etiqueta_y = 'Error',
+                               titulo = f'Errors para SGD, tamaño de batch {_batch_size}'
+                               )
+
+        comparaValoresGrafica (x = n_iterations,
+                               y_1 = accuracy_in_SGD, y_2 = accuracy_out_SGD,
+                               etiqueta_1 = 'Precisión entrenamiento',
+                               etiqueta_2 ='Precisión test',
+                               etiqueta_x = 'Iteraciones',
+                               etiqueta_y = 'Precisión',
+                               titulo = f'Precisión para SGD, tamaño de batch {_batch_size}'
+                               )
+        muestraTabla (titulos, [n_iterations, Ein_SGD, Eout_SGD, accuracy_in_SGD, accuracy_out_SGD])
+
+        print('Grafica para clasificación test SGD, con zona de clasificación')
+        plot_datos_cuad(x_test[:, 1:],y_test,
+                #lambda x: np.sign( np.c_[np.ones(len(x), x)].dot(w_SGD)),
+                lambda x: np.array([signo( np.array([1,v[0], v[1]]).dot(w_SGD)) for v in x]),
+                title=f'Clasificación para SGD {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_SGD[-1])}, precisión {to_round(accuracy_out_SGD[-1])}',
+                xaxis='Intensidad media', yaxis='Simetría media')
+
+        print('\nGrafica para clasificación test SGD, sin zona de clasificación')
+
+        classified_scatter_plot(x_test[:, 1:],y_test,
+                                lambda x,y : np.array([1,x,y]).dot(w_SGD)[0],
+                                f'Clasificación para SGD {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_SGD[-1])}, precisión {to_round(accuracy_out_SGD[-1])}',
+                                labels, colors)
+
+#-------------------------------------------------------
+stop('Clasificación para PLA')
+# Utilizaremos ahora el algoritmo PLA
+
+Ein_PLA = np.empty(len_iter)
+Eout_PLA = np.empty(len_iter)
+accuracy_in_PLA = np.empty(len_iter)
+accuracy_out_PLA = np.empty(len_iter)
+w_PLA = []
+for i, iteration in enumerate(n_iterations):
+        
+        w_PLA , _ = ajusta_PLA(x, y,
+                   max_iter=iteration, vector_inicial= np.zeros(3))
+        Ein_PLA[i] =  Error(x,y,w_PLA)
+        Eout_PLA[i] =   Error(x_test, y_test, w_PLA)
+        
+        y_obtenida_entrenamiento = np.sign(x.dot(w_PLA))
+        accuracy_in_PLA[i] = getPrecision(y_obtenida_entrenamiento, y)
+                
+        y_obtenida = np.sign(x_test.dot(w_PLA))
+        accuracy_out_PLA[i] = getPrecision(y_obtenida, y_test)
+
+
+        ### Muestra de los datos
+        
+        #comparación Ein_PLA Eout_PLA
+comparaValoresGrafica (x = n_iterations,
+                       y_1 = Ein_PLA, y_2 = Eout_PLA,
+                       etiqueta_1 = '$E_{in}$', etiqueta_2 ='$E_{out}$',
+                       etiqueta_x = 'Iteraciones',
+                       etiqueta_y = 'Error',
+                       titulo = f'Errors para PLA'
+                       )
+
+comparaValoresGrafica (x = n_iterations,
+                       y_1 = accuracy_in_PLA, y_2 = accuracy_out_PLA,
+                       etiqueta_1 = 'Precisión entrenamiento',
+                       etiqueta_2 ='Precisión test',
+                       etiqueta_x = 'Iteraciones',
+                       etiqueta_y = 'Precisión',
+                       titulo = 'Precisión para PLA'
+                               )
+muestraTabla (titulos, [n_iterations, Ein_PLA, Eout_PLA, accuracy_in_PLA, accuracy_out_PLA])
+
+## Dibujamos gráficas
+print('Grafica para clasificación test PLA, con zona de clasificación')
+plot_datos_cuad(x_test[:, 1:],y_test,
+                lambda x: np.array([signo( np.array([1,v[0], v[1]]).dot(w_PLA.T)) for v in x]),
+                title=f'Clasificación para PLA {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_PLA[-1])}, precisión {to_round(accuracy_out_PLA[-1])}',
+                xaxis='Intensidad media', yaxis='Simetría media')
+
+print('\nGrafica para clasificación test PLA, sin zona de clasificación')
+
+classified_scatter_plot(x_test[:, 1:],y_test,
+                        lambda x,y : np.array([1,x,y]).dot(w_PLA.T),
+                        f'Clasificación para PLA {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_PLA[-1])}, precisión {to_round(accuracy_out_PLA[-1])}',
+                        labels, colors)
+
+
+
+stop('Comparamos errores del test')
+# COMPARAMOS VALORES
+comparaValoresGrafica (x = n_iterations,
+                       y_1 = Eout_SGD, y_2 = Eout_PLA,
+                       etiqueta_1 = '$E_{out} SGD$', etiqueta_2 ='$E_{out} PLA$',
+                       etiqueta_x = 'Iteraciones',
+                       etiqueta_y = '$E_{out}$',
+                       titulo = 'Comparativa error $E_{out}$ PLA y SGD'
+                       )
+
+
+
+### Implementación de PLA-Pocket
+
+
+stop('Clasificación para PLA-pocket')
+
+def ajusta_PLA_pocket(x, y,  max_iter, vector_inicial):
+    '''
+    DATOS DE ENTRADA
+    x: matriz donde cada item y etiqueta es una fila 
+    y: vector de eitquetas +- 1 
+    max_iter: número máximo de iteraciones 
+    valor iniciar del vector (vector fila)
+
+    SALIDA
+    w: ajustado 
+    paso: pasos usados para alcanzar la solución devuelta
+    '''
+
+    w = np.copy(vector_inicial) 
+    w = w.T
+    optimo  = False
+    paso = 0
+
+    w_mejor = np.copy(vector_inicial)
+    y_obtenida = np.sign(x.dot(w_mejor))
+    precision_mejor =getPrecision(y_obtenida, y)
+    traza_precision = []
+    
+    while not optimo  and paso < max_iter:
+        optimo = True
+        paso += 1
+
+        for i,v in enumerate(x):
+                if signo(v.dot(w)) != y[i]:
+                        optimo = False
+                        w = w + y[i]*v.T #transpones
+
+        # actualizamso si es mejor (tiene más precisión)
+        y_obtenida = np.sign(x.dot(w))
+        precision_nueva = getPrecision(y_obtenida, y)
+        
+        if(precision_nueva > precision_mejor):
+                precision_mejor = precision_nueva
+                w_mejor = w
+        
+        #traza_precision.append(precision_mejor)
+          
+        
+    return w_mejor , paso, precision_mejor#traza_precision
+
+
+
+
+# Utilizaremos ahora el algoritmo PLA_POCKET
+
+Ein_PLA_POCKET = np.empty(len_iter)
+Eout_PLA_POCKET = np.empty(len_iter)
+accuracy_in_PLA_POCKET = np.empty(len_iter)
+accuracy_out_PLA_POCKET = np.empty(len_iter)
+w_PLA_POCKET = []
+for i, iteration in enumerate(n_iterations):
+        
+        w_PLA_POCKET , _, accuracy_in_PLA_POCKET[i] = ajusta_PLA_pocket(x, y,
+                   max_iter=iteration, vector_inicial= np.zeros(3))
+        Ein_PLA_POCKET[i] =  Error(x,y,w_PLA_POCKET)
+        Eout_PLA_POCKET[i] =   Error(x_test, y_test, w_PLA_POCKET)
+                
+        y_obtenida = np.sign(x_test.dot(w_PLA_POCKET))
+        accuracy_out_PLA_POCKET[i] = getPrecision(y_obtenida, y_test)
+
+
+        ### Muestra de los datos
+        
+        #comparación Ein_PLA_POCKET Eout_PLA_POCKET
+comparaValoresGrafica (x = n_iterations,
+                       y_1 = Ein_PLA_POCKET, y_2 = Eout_PLA_POCKET,
+                       etiqueta_1 = '$E_{in}$', etiqueta_2 ='$E_{out}$',
+                       etiqueta_x = 'Iteraciones',
+                       etiqueta_y = 'Error',
+                       titulo = f'Errors para PLA_POCKET'
+                       )
+
+comparaValoresGrafica (x = n_iterations,
+                       y_1 = accuracy_in_PLA_POCKET, y_2 = accuracy_out_PLA_POCKET,
+                       etiqueta_1 = 'Precisión entrenamiento',
+                       etiqueta_2 ='Precisión test',
+                       etiqueta_x = 'Iteraciones',
+                       etiqueta_y = 'Precisión',
+                       titulo = 'Precisión para PLA_POCKET'
+                               )
+muestraTabla (titulos, [n_iterations, Ein_PLA_POCKET, Eout_PLA_POCKET, accuracy_in_PLA_POCKET, accuracy_out_PLA_POCKET])
+
+## Dibujamos gráficas
+print('Grafica para clasificación test PLA_POCKET, con zona de clasificación')
+plot_datos_cuad(x_test[:, 1:],y_test,
+                lambda x: np.array([signo( np.array([1,v[0], v[1]]).dot(w_PLA_POCKET.T)) for v in x]),
+                title=f'Clasificación para PLA_POCKET {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_PLA_POCKET[-1])}, precisión {to_round(accuracy_out_PLA_POCKET[-1])}',
+                xaxis='Intensidad media', yaxis='Simetría media')
+
+print('\nGráfica para clasificación test PLA_POCKET, sin zona de clasificación')
+
+classified_scatter_plot(x_test[:, 1:],y_test,
+                        lambda x,y : np.array([1,x,y]).dot(w_PLA_POCKET.T),
+                        f'Clasificación para PLA_POCKET {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_PLA_POCKET[-1])}, precisión {to_round(accuracy_out_PLA_POCKET[-1])}',
+                        labels, colors)

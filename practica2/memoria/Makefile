@@ -1,4 +1,4 @@
-all: ejercicio2.pdf
+all: memoria.pdf
 
 %.pdf: %.md
 	pandoc -o $@ $<

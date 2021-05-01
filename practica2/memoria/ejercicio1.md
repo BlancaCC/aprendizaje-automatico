@@ -207,3 +207,4 @@ luego la precisión obtenida es la de los positivos que consigue clasificar bien
 
 
 TO-DO conclusión 
+ 
