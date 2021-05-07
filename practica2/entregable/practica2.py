@@ -972,8 +972,8 @@ for i, iteration in enumerate(n_iterations):
         
         w_PLA , _ = ajusta_PLA(x, y,
                    max_iter=iteration, vector_inicial= np.zeros(3))
-        Ein_PLA[i] =  Error(x,y,w_PLA.reshape(-1,1))
-        Eout_PLA[i] =   Error(x_test, y_test, w_PLA.reshape(-1,1))
+        Ein_PLA[i] =  Error(x,y,w_PLA)
+        Eout_PLA[i] =   Error(x_test, y_test, w_PLA)
         
         y_obtenida_entrenamiento = np.sign(x.dot(w_PLA))
         accuracy_in_PLA[i] = getPrecision(y_obtenida_entrenamiento, y)
@@ -1097,8 +1097,8 @@ for i, iteration in enumerate(n_iterations):
         
         w_PLA_POCKET , _, accuracy_in_PLA_POCKET[i] = ajusta_PLA_pocket(x, y,
                    max_iter=iteration, vector_inicial= np.zeros(3))
-        Ein_PLA_POCKET[i] =  Error(x,y,w_PLA_POCKET.reshape(-1,1))
-        Eout_PLA_POCKET[i] =   Error(x_test, y_test, w_PLA_POCKET.reshape(-1,1))
+        Ein_PLA_POCKET[i] =  Error(x,y,w_PLA_POCKET)
+        Eout_PLA_POCKET[i] =   Error(x_test, y_test, w_PLA_POCKET)
                 
         y_obtenida = np.sign(x_test.dot(w_PLA_POCKET))
         accuracy_out_PLA_POCKET[i] = getPrecision(y_obtenida, y_test)
@@ -1132,7 +1132,7 @@ plot_datos_cuad(x_test[:, 1:],y_test,
                 lambda x: np.array([signo( np.array([1,v[0], v[1]]).dot(w_PLA_POCKET.T)) for v in x]),
                 title=f'Clasificación para PLA_POCKET {n_iterations[-1]} iteraciones, Eout = {to_round(Eout_PLA_POCKET[-1])}, precisión {to_round(accuracy_out_PLA_POCKET[-1])}',
                 xaxis='Intensidad media', yaxis='Simetría media')
-qqqqqq
+
 print('\nGráfica para clasificación test PLA_POCKET, sin zona de clasificación')
 
 classified_scatter_plot(x_test[:, 1:],y_test,
@@ -1179,8 +1179,8 @@ print(f'w obtenido = {w_PLA_POCKET} tras {epocas} epocas')
 
 # analisis de los resultados
 
-Ein_PLA_POCKET  =  Error(x,y,w_PLA_POCKET.reshape(-1,1))
-Eout_PLA_POCKET  =  Error(x_test, y_test, w_PLA_POCKET.reshape(-1,1))
+Ein_PLA_POCKET  =  Error(x,y,w_PLA_POCKET)
+Eout_PLA_POCKET  =  Error(x_test, y_test, w_PLA_POCKET)
 
                 
 y_obtenida = np.sign(x_test.dot(w_PLA_POCKET))

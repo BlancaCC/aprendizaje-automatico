@@ -1,0 +1,23 @@
+1. Elementos de un problema de Aprendizaje Estadístico.
+
+## a) Un problema de aprendizaje estadístico se nota formalmente por su vector de elementos. Considere el vector $\{ \mathcal P, \mathcal X , \mathcal Y, \mathcal D,f, \mathcal  A, , \mathcal L, \mathcal H, g\}$
+¿Que significan cada uno de los elementos del vector? 
+¿Hay alguna propiedad que deba de cumplir $D$?
+
+
+Solución basada en el libro: Understading machine learning.  
+
+- Domain set $\mathcal X$, dominio del conjunto creo que se traduce. Conjunto de datos que queremso etiquetar. Se suele representar como un conjunto de características (features).   
+
+- $\mathcal Y$ conjunto de equiquetas.  
+- $\mathcal D$ La distribución de probabilidad soybre $\mathcal X.$    
+- Luego $\mathcal P$ es la función de distribución asociadyesa a $\mathcal D$.  
+- la función de etiquetado correcta: $f: \mathcal X \longrightarrow \mathcal Y,$ suponemos que $f(x_i) = y_i$ para todo $i$.   
+
+
+
+
+
+
+b) Identifique los elementos del vector que representan: 1) La entrada al aprendizaje 2) La salida del aprendizaje 3) El clase de funciones usada 4) El algoritmo de búsqueda usado 5) Cómo se mide el error en cada punto 6) ¿Que es el criterio ERM y cómo influye en la búsqueda de la solución? 
+c) Dada, $h \in H$ ¿Cómo se define el error de h dentro (Ein ) y fuera (Eout ) de la muestra ?

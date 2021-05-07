@@ -277,18 +277,20 @@ Otro detalle interesante es que aunque se hable de convergencia de $w$, esto no 
 
 
 
-## Apartado 2.a.2  
+## Apartado 2.a.2  Ejecución para datos con ruido 
 
 
 Sabemos que ahora los datos no son separables, luego por más pasos que demos estos no convergerán. 
 
 Además como el ruido introducido es del 10% la precisión máxima a la que podemos aspirar es a 90%.  
 
-Como este algoritmo no es de regresión,  no se está  minimizando ningún valor, simplemente se iteran los datos y oscilamos  entorno a la solución. Para observar esto mejor he planteado el siguiente experimento: 
+Como este algoritmo no es de regresión,  no se está  minimizando ningún valor, simplemente se iteran los datos y oscilamos  entorno a la solución del apartado anterior, pero sin que se llegue a detener, pues al no ser separables en ninguna épocas se dará que todos los datos estén bien clasificados.
+
+Para observar esto mejor he planteado el siguiente experimento: 
 
 Manteniendo los vectores iniciales del apartado anterior variaremos el número de épocas y veremos el vector final y su precisión.    
 
-Observaremos que la precisión y no guarda ninguna relación de proporcionalidad con el número de pasos, ya que para el primer punto [0.574, 0.349, 0.057] empeora de 100 a 200 pasos pero vuelve a tener la misma precisión para 300 pasos.   
+Observaremos que la precisión no guarda ninguna relación de proporcionalidad con el número de pasos, ya que por poner un caso, para el primer punto [0.574, 0.349, 0.057] empeora de 100 a 200 pasos pero vuelve a tener la misma precisión para 300 pasos.   
 
 
 
@@ -341,29 +343,373 @@ numero_pasos | 	 $w_0$ 	 |	 $w_f$ | 	 Precisión (%)
 
 ## Regresión logística   
 
+La regresión logística es un tipo de regresión lineal, puede entenderse como una variación del método de clasifición lineal donde la salida es una probabilidad (un valor entre cero y uno).
 
+Por tratarse de un métdo de regresión lineal, disponenos de un error, el denominado error cruzado de entropía, 
+el cual calculamos en la función `errorRegresionLofistica(x,y,x)` y que viene dado por 
+
+$$E_in(w) = \frac{1}{N} \sum_{n=1}^{N} \ln ({1+e^{- y_n w^T x_n}})$$  
+
+Además su gradiente es 
+
+$$\nabla E_{in}(w) = - \frac{1}{N} \sum_{n=1}^{N} \frac{y_n x_n}{1+e^{- y_n w^T x_n}}$$  
+
+Para facilitar los cálculos, nosotros hemos utilizado $N = 1$ y este viene imprementado en la función `gradienteLogistica(x,y,w)`.   
+
+La implementación del algoritmo se encuentra en la función 
+`regresionLogistica(x, y, tasa_aprendizaje, w_inicial, max_iteraciones, tolerancia)`  
+
+## Experimento regresión logística    
+
+Los requisitos previos al experimento los puede encontrar bien explicados en la sección `##2b Experimento` del código (al rededor de la línea 574). 
+
+La nube de puntos, ya etiquetada y clasificada con la frontera determinada por la recta generada por dos puntos aleatorios es:  
+
+\media{2_b_1}  
+
+
+La función de clasificación construida tiene la forma (datos de la recta redondeados a dos decimales)  
+
+$f(x,y) = y + 1.891 x - 2.444$
+
+Vamos a ejecutar regresión logística para calcular la función solución $g$ que aproxime a $f$, la tasa de aprencizaje es de $\eta = 0.01$ y el error permitido, la tolerancia del $0.01$.    
+
+Un detalle es que como hemos construído nosotros el experimento, tenemos la certeza de que convergirá a la solución, luego la condición de parada de número máximo de iteraciones la he puesto *infinita* (como si no existitiera). 
+
+Tras 455 épocas el vector obtenido es $w = (-7.673,   6.516,  2.855)$, para el cual, si lo vemos en forma de recta (vuelvo a repetir razonamiento del apartado 2.a.1.a)  se correspondería a $g(x,y) = y + 2.283 x - 2.688$.   
+
+Así que en primera instancia, al ver que existe una diferencia considerable entre $f$ y $g$ ya sabremos que el ajuste no es perfecto.    
+
+Confirmamos nuestra hipótisis gracias a los errores calculados:   
+
+$E_{in}(w) = 0.146$   
+$E_{out}(w) = 0.135$  
+
+Además para tener mayor intuición del significado del error de cruce de entropía hemos calculado la precición en el test:  
+
+```
+Resultado clasificación para el test: 
+	 Positivos fallados 7  de 605, lo que hace un porcentaje de 1.157
+	 Negativos fallados 17  de 395, lo que hace un porcentaje de 4.304
+	 Total fallados 24  de 1000, lo que hace un porcentaje de 2.4%
+	 La precisión es de 97.6 %
+```
+Veamos ahora un gráfico de los datos y la $g$:  
+
+\media{2_b_2}
+
+Visualmente volvemos a corroborar que el ajuste no es perfecto.
+
+Como conslusión obtenemos que aunque los datos sean separables y conozcamos la clase de funciones a la que pertenece la solución, nunca tendremos la certeza de haber calculado la función objetivo, solo tendremos una cota de error.  
+
+Esta conclusión proviene de la desigualdad de Hoeffding y de manera más genera de la cota de error de la dimensión de Vapnik-Chervonenkis:  
+
+$$E_{out}(g) \leq E_{in}(g) + \sqrt{\frac{8}{N} \log{\frac{4((2N)^{d_{vc}} +1)}{\delta}}}$$  
+
+Donde $N$ es el tamaño de entrenamiento, $d_{vc}$ la dimensión de Vapnik-Chervonenkis y $\delta$ la tolerancia.  
+
+Conocido esto podremos mejorar el margen de error:
+- Aumentando el tamaño de la muestra.  
+- Aumentando la tolerancia.   
+
+Sin embargo deberemos de tener presente que esta cota es teórica, es decir, no se está teniendo presente errores de redondeo introducidos por el ordenador. O incluso si nos ponemos estrictamente matemáticos si $H$ toma valores reales, nunca jamás podremos representarlos (no existe un biyección entre los números enteros, los *representables con un ordernador* a los reales).  
+
+
+Finalmete corrobaremos que nuestro experimento inicial, del que partieron las deducciones; tiene valores significativos repitiendo el experimento 100 veces.   
+
+```
+Resultados redondeados a tres decimales
+El número medio de épocas es 458.06, con desviación típica 35.097
+El E_out medio es 0.126, con desviación típica 0.011
+La precisión media es 97.46, con desviación típica 1.342
+```
+Como vemos nuestro primer experimento presenta valores normales.  
 
 
 # Bonus: Clasificación de dígitos    
-
-
-Se pretende clasificar los dígitos 4 y 8 a partir de las característica de intensidad promedio y simetría.   
-
-## 1. Planteamiento del problema de clasificación binaria.  
-
-
-Dado un conjunto de datos de entrenamiento,almacenando sus características de intensidad promedio y simetría  en $x_test$ y su etiqueta en $y_test$ (dígito que corresponde).   
-
-Los modelos vistos en clase de clasificación son la clasificación lineal, la regresión lineal y la regresión logística.   
-
-
-Puesto que podemos suponer que los datos no son separables voy a optar por un modelos de regresión lineal.   
-
-Reutilizo código de la práctica primera.  
-
 
 ## PLA-pocket   
 
 Como ya comenté en el algoritmo de perceptrón existen mejoras, como quedarse el mejor vector de pesos encontrado.  
 
 Como criterio de error usaré la precisión, a mayor precisión mejor será el $w$ encontrado. 
+
+## Problema a afrontar
+
+Se pretende clasificar los dígitos 4 y 8 a partir de las característica de intensidad promedio y simetría.   
+
+## 1. Planteamiento del problema de clasificación binaria.  
+
+
+Dado un conjunto de datos de entrenamiento, almacenando sus características de intensidad promedio y simetría  en $x_{test}$ y su etiqueta en $y_{test}$ (dígito que corresponde).   
+
+(Las etiquetas negativas se corresponde al dígito cuatro y las positivas al 8).   
+\media{bonus_datos_entrenamiento}  
+\media{bonus_datos_test}  
+ 
+Los modelos vistos en clase de clasificación son la clasificación lineal, la regresión lineal y la regresión logística.   
+
+
+Puesto que podemos suponer que los datos no son separables a priori  optaría por un modelos de regresión lineal sin embargo ¿existiría alguna ventaja en usar el PLA o el PLA-Pocket? .   
+
+Voy a realizar un experimento previo analizando los distintos errores, usaré PLA y El error del SGD, aunque para PLA este error no está pensado, nos servirá para tener una referencia. 
+
+(Nota: Reutilizo código de la práctica primera, por eso no explico el algoritmo)  
+
+
+### Experimento   
+
+Para $10,20,50,100,200,500,750,1000$ iteraciones analizaré los resultados.  
+
+El algoritmo utilizado para regresión lineal es el SGD con tamaño de batch 32, porque en la práctica primera obuvimos resultados buenos con él.  
+
+El resultado de las distintas ejecuciones es  
+
+#### SGD   
+
+Iteraciones | Ein | Eout | Precision In | Precision out	  
+---|---|---|---|---  
+10.0 | 0.939 | 0.963 | 63.4 | 60.929	  
+20.0 | 0.919 | 0.948 | 66.667 | 61.749	  
+50.0 | 0.871 | 0.907 | 68.677 | 63.388	  
+100.0 | 0.804 | 0.857 | 71.441 | 71.311	  
+200.0 | 0.76 | 0.803 | 75.544 | 70.219	  
+500.0 | 0.699 | 0.765 | 77.471 | 70.765	  
+750.0 | 0.653 | 0.711 | 77.136 | 75.137	  
+1000.0 | 0.643 | 0.707 | 77.303 | 75.137  
+
+Los cuales se visualizan mejor   
+\media{bonus_sgd_e}  
+\media{bonus_sgd_precision}   
+
+El ajuste quedaría de la forma:  
+
+\media{bonus_sgd_grafica_2}  
+\media{bonus_sgd_grafica}  
+
+NOTA ME HE DADP CUENTA DE UN ERROR DE ÚLTIMO MOMENTO PIDO POR FAVOR QUE LOS GRÁFICOS Y VALORES TOMADOS COMO CIERTOS SEAN LOS DEL PROGRAMA Y LOS DE LA EJECUCIÓN    (PORDON) LA 
+
+
+```
+Clasificación para PLA
+
+--- Pulsar tecla para continuar ---
+
+
+--- Pulsar tecla para continuar ---
+
+Iteraciones | Ein | Eout | Precision In | Precision out	  
+---|---|---|---|---
+10.0 | 234.301 | 233.089 | 61.223 | 60.656	  
+20.0 | 129.905 | 125.85 | 72.278 | 73.497	  
+50.0 | 185.352 | 179.928 | 74.121 | 75.137	  
+100.0 | 162.984 | 161.412 | 76.801 | 75.137	  
+200.0 | 342.869 | 332.132 | 69.095 | 69.945	  
+500.0 | 342.587 | 331.843 | 69.095 | 69.945	  
+750.0 | 342.328 | 331.587 | 69.095 | 69.945	  
+1000.0 | 342.07 | 331.332 | 69.095 | 69.945	  
+
+--- Pulsar tecla para continuar ---
+
+Grafica para clasificación test PLA, con zona de clasificación
+/home/blanca/repositorios/aprendizaje-automatico/practica2/ejercicio1.py:234: UserWarning: No contour levels were found within the data range.
+  ax.contour(XX,YY,fz(positions.T).reshape(X.shape[0],X.shape[0]),[0], colors='black')
+
+--- Pulsar tecla para continuar ---
+
+
+Grafica para clasificación test PLA, sin zona de clasificación
+
+--- Pulsar tecla para continuar ---
+
+Comparamos errores del test
+
+--- Pulsar tecla para continuar ---
+
+Clasificación para PLA-pocket
+
+--- Pulsar tecla para continuar ---
+
+
+--- Pulsar tecla para continuar ---
+
+Iteraciones | Ein | Eout | Precision In | Precision out	  
+---|---|---|---|---
+10.0 | 6.963 | 7.408 | 76.884 | 74.863	  
+20.0 | 6.963 | 7.408 | 76.884 | 74.863	  
+50.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+100.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+200.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+500.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+750.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+1000.0 | 102.367 | 102.372 | 77.136 | 75.41	  
+
+--- Pulsar tecla para continuar ---
+
+Grafica para clasificación test PLA_POCKET, con zona de clasificación
+/home/blanca/repositorios/aprendizaje-automatico/practica2/ejercicio1.py:234: UserWarning: No contour levels were found within the data range.
+  ax.contour(XX,YY,fz(positions.T).reshape(X.shape[0],X.shape[0]),[0], colors='black')
+
+Gráfica para clasificación test PLA_POCKET, sin zona de clasificación
+
+--- Pulsar tecla para continuar ---
+
+Fin experimento previo
+Ajusto primero usando SGD
+eta = 0.01,  error 0.01 y máximo iteraciones 50 
+w obtenido = [[0.41013082]
+ [1.3563353 ]
+ [0.20352679]]
+
+--- Pulsar tecla para continuar ---
+
+__ Análisis de los resultados__
+Ein_SGD = 0.8709668929832045
+Eout_SGD = 0.9066741855472633
+accuracy_in_SGD = 68.7604690117253
+accuracy_out_SGD = 63.66120218579234
+
+--- Pulsar tecla para continuar ---
+
+Procedemos a concatenar al w conseguida con SGD con el Pla-pocket
+con un máximo de 50  iteraciones 
+w obtenido = [-7.58986918 98.34965813  4.89202679] tras 50 epocas
+
+--- Pulsar tecla para continuar ---
+
+__ Análisis de los resultados__
+Ein_PLA_POCKET = 41.757121355516595
+Etest_PLA_POCKET = 44.10136255980877
+accuracy_in_PLA_POCKET = 77.21943048576215
+accuracy_test_PLA_POCKET = 73.77049180327869
+
+--- Pulsar tecla para continuar ---
+
+Análisis de la cota
+N = 366, H = 55340232221128654848, dvc = 3, delta = 0.05, E_test = 44.10136255980877
+Usando desigualdad de Hoeffding E_out <= 44.36048284355012
+Usando la generalización VC E_out <= 44.82819968092755
+
+``` 
+#### PLA   
+
+Clasificación para PLA  
+
+
+Iteraciones | Ein | Eout | Precision In | Precision out	  
+---|---|---|---|---  
+10.0 | 290299.348 | 88097.573 | 61.223 | 60.656	  
+20.0 | 168336.859 | 49696.562 | 72.278 | 73.497	  
+50.0 | 238436.31 | 70641.13 | 74.121 | 75.137	  
+100.0 | 212128.357 | 64003.368 | 76.801 | 75.137	  
+200.0 | 427982.958 | 126626.179 | 69.095 | 69.945	  
+500.0 | 427658.949 | 126524.163 | 69.095 | 69.945	  
+750.0 | 427346.177 | 126429.767 | 69.095 | 69.945	  
+1000.0 | 427033.546 | 126335.417 | 69.095 | 69.945  
+
+
+Los cuales se visualizan mejor   
+\media{bonus_pla_e}  
+\media{bonus_pla_precision}   
+
+El ajuste quedaría de la forma:  
+
+\media{bonus_pla_grafica_2}  
+\media{bonus_pla_grafica}  
+
+Como víamos en los ejercicios anteriores las soluciones oscilan independiente de su error y precisión.   
+
+
+#### PLA_POCKET   
+
+Clasificación para PLA-pocket  
+
+Iteraciones | Ein | Eout | Precision In | Precision out	  
+---|---|---|---|---  
+10.0 | 12590.265 | 3934.544 | 76.884 | 74.863	  
+20.0 | 12590.265 | 3934.544 | 76.884 | 74.863	  
+50.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+100.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+200.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+500.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+750.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+1000.0 | 136518.098 | 41494.31 | 77.136 | 75.41	  
+
+Los cuales se visualizan mejor   
+\media{bonus_pla_pocket_e}  
+\media{bonus_pla_pocket_precision}   
+
+El ajuste quedaría de la forma:  
+
+\media{bonus_pla_pocket_grafica_2}  
+\media{bonus_pla_pocket_grafica}  
+
+En este caso la precisión se mantiene siendo incluso superior a la del SGD.  
+
+Puesto que PLA-Pocket tiene mejores resultados pero su coste computacional es mayor y  hemos visto en los algoritmos basados en perceptrón el vector inicial es crucial, 
+este experimento preliminar nos conduce a pensar que un buen modelo de búsqueda es acercarnos a una solución con SGD y mejorarla con pocket PLA. 
+
+
+## Experimento  
+
+Utilizaré 50 iteraciones para el SGD y tras esto otras 50 para el PLA - Pocket  y veremos si esta técnica supera a las 100 iteraciones de cualquiera de los métodos de forma individual.  
+
+```
+
+__ Análisis de los resultados__
+Ein_SGD = 0.8709668929832045
+Eout_SGD = 0.9066741855472633
+accuracy_in_SGD = 68.7604690117253
+accuracy_out_SGD = 63.66120218579234
+
+
+
+Procedemos a concatenar al w conseguida con SGD con el Pla-pocket
+con un máximo de 50  iteraciones 
+w obtenido = [-7.58986918 98.34965813  4.89202679] tras 50 epocas
+
+__ Análisis de los resultados__
+Ein_PLA_POCKET = 59581.08303825323
+Etest_PLA_POCKET = 18945.58756763352
+accuracy_in_PLA_POCKET = 77.21943048576215
+accuracy_test_PLA_POCKET = 73.77049180327869
+
+```
+
+(Nota: Aunque con el pocket no se minimiza el Ein, me extraña que el error Ein Etest sea tan grande, ya que guarda cierta correlación con la precisión. Me da que pensar que se me está escapando algún detalle en los cálculos)
+
+
+El pla pocket individual ha obtenido mejores resultados, luego como conclusión no utilizaría nunca el SGD solo ni tampoco el PlA convencional, pero sin embargo el PLA-Pocket tiene un coste computacional mayor.  
+
+Así que probablemente el modelo más adecuado sea el combiando SGD y PLA convencional, pero todo dependerá del problema.  
+
+
+### Obtención de cotas 
+
+Para acotar el error fuer de la muestra $E_{out}$ usaré la ya mencionada desiguardad de Hoeffing, con los errores $E_{test}$ y $E_{out}$.  La tolerancia o nivel de confiaza es de $\delta = 0.05$ (es decir ciertas con una probabilidad de al menos 0.95).   
+
+Además el tamaño $|H|$ proviene de discretizar el problema a float de 64 bits  $|\mathcal{H}| = 3  2^{64}$ 
+$$E_out(g) \leq E_{test}(g) + \sqrt{\frac{1}{2N} \ln \frac{2|H|}{\delta}}$$
+
+(Sale muy grande debido a $E_{test}$)  
+
+
+Alternativamente podríamos usar la cota de VC
+
+Para el caso perceptrón $d_{vc} = 3$  
+
+
+$$E_{out}(g) \leq E_{in}(g) + \sqrt{\frac{8}{N} \log{\frac{4((2N)^{d_{vc}} +1)}{\delta}}}$$   
+
+
+```
+Análisis de la cota
+N = 366, H = 55340232221128654848, dvc = 3, delta = 0.05, E_test = 18945.58756763352
+Usando desigualdad de Hoeffding E_out <= 18945.846687917263
+Usando la generalización VC E_out <= 18946.314404754638
+```
+La cota más informativa es la del test (más que si hubieéramos hecho la de E_in, ya que es independiente de los datos utilizados durante el aprendizaje.  
+
+
+Respecto si usar VC o Hoeffding, la cota menor es la más precisa, ya que ambas están avaladas por la teoría. 
+
