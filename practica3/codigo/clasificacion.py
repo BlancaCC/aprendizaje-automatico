@@ -220,8 +220,32 @@ ExploracionInicial(X_train)
 print ('Datos normalizados')
 
 ## Normalización de los datos
-'''
+
 scaler = StandardScaler()
-train_X = scaler.fit_transform( train_X )
-test_X = scaler.transform( test_X )
-'''
+X_train = scaler.fit_transform( X_train )
+X_test = scaler.transform( X_test )
+
+# No es necesario volver a comprobar la normalización
+# La media deberá ser cero y la desviación típica 1, lo que no sea serán errores de redondeo.
+# ExploracionInicial(X_train)
+
+Separador('Correlación')
+#------- correlacion ----
+
+r = np.corrcoef(X_train.T)
+longitud_r  = len(r[0])
+sin_diagonal = r - np.identity(len(r[0]))
+relaciones = []
+umbral = 0.9
+for i in range(1, longitud_r):
+    for j in range(i+1, longitud_r):
+        if abs(sin_diagonal[i,j]) > umbral:
+            relaciones.append((sin_diagonal[i,j], i,j))
+            print(sin_diagonal[i,j], i,j)
+
+from operator import itemgetter
+relaciones.sort(reverse=True, key =itemgetter(0))
+            
+
+print(r)
+
