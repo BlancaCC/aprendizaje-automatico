@@ -170,31 +170,77 @@ Veamso ahora si podemso encontrar alguna relación entre las características, p
 
 ( TO-DO Añadir información sobre la correlación )
 
-Para calcularla utilizaremos `corrcoef` de la bibliote de numpy [@CorrcoefNumpy] que devuelve el el producto de los momentos de los coeficientes  
+Para calcularla utilizaremos `corrcoef` de la bibliote de numpy [@CorrcoefNumpy] que devuelve el el producto de los momentos de los coeficientes.  
+
+Queda recogido el código utilizado en la función `Pearson(x,umbral,traza)`.  
+
+Para un umbral de 0.9 hemos obtenido los siguientes coeficientes:  
+
+Coeficiente | Índice 1 | Índice 2    
+--- | --- | ---    
+0.9999999848109128  |  21  |  22     
+0.9999999822104457  |  18  |  19     
+0.9999995890206894  |  9  |  10     
+0.9999995669836421  |  22  |  23     
+0.99999955603151  |  19  |  20     
+0.9999995050949259  |  21  |  23     
+0.9999994842185346  |  18  |  20     
+0.999998703692659  |  6  |  7     
+0.9999940569381244  |  10  |  11     
+0.9999930415927719  |  9  |  11     
+0.9999790106652213  |  7  |  8     
+0.9999755087084263  |  6  |  8     
+0.9999725598028012  |  33  |  34     
+0.999949107548143  |  18  |  23     
+0.9999489468171506  |  19  |  23     
+0.9999482678605511  |  18  |  22     
+0.9999480910272748  |  18  |  21     
+0.9999480589259971  |  19  |  22     
+0.9999478753629836  |  19  |  21     
+0.9999476614349387  |  20  |  23     
+0.9999462814165702  |  20  |  22     
+0.9999460533676524  |  20  |  21     
+0.9999314039884376  |  30  |  31     
+0.9996912953730146  |  42  |  43     
+0.9996506253036762  |  45  |  46     
+0.9996206790946303  |  34  |  35     
+0.9995813582717437  |  33  |  35     
+0.9993189379606644  |  31  |  32     
+0.9991906311233252  |  30  |  32     
+0.9970729715793113  |  43  |  44     
+0.9967946202246001  |  42  |  44     
+0.996435194391921  |  46  |  47     
+0.9963402918378648  |  45  |  47     
+0.9266535247934785  |  15  |  16     
+0.9105009972932715  |  12  |  13    
+
+Si además nos fijamos se cumple la propieda transitiva, esto es, si entendemos la correlación como *Si dos vectores guardan cierta correlación superior al umbral, entonces se podría decir que uno es combinación lineal del otro*  
+
+Luego podríamos aplicar la propiedad transitiva, esto es si $i$ explica $j$ y $j$ explica $k$ entonces $i$ explica $k$.   
+
+Una vez explicado esto, utilizaremos este critero para reducier la dimensionalidad del vector de características, de tal manera que pueda verse como una base linealmente independiente.  
+
+
+Experimentamos con los umbrales 0.9999, 0.999, 0.95, 0.9 para ver cómo se reduce la dimensión. 
+
+Estas han sido las conclusiones (recordemos que el tamaño inicial del vector de características era de 49):   
+
+| umbral | tamaño tras reducción | reducción total |
+|:------:|:---------------------:|:---------------:|
+| 0.9999 | 38 | 11 |    
+| 0.999 | 34 | 15 |    
+| 0.95 | 32 | 17 |    
+| 0.9 | 30 | 19 |  
+
+
+Más adelante, en la validación cruzada, experimentaremos cómo afectan las reducciones.  
 
 
 
-```
-Blanca, [21.05.21 19:55]
-[(0.996435194391921, 46, 47), (0.9996506253036762, 45, 46), (0.9963402918378648, 45, 47), (0.9970729715793113, 43, 44), (0.9996912953730146, 42, 43), (0.9967946202246001, 42, 44), (0.9996206790946303, 34, 35), (0.9999725598028012, 33, 34), (0.9995813582717437, 33, 35), (0.9993189379606644, 31, 32), (0.9999314039884376, 30, 31), (0.9991906311233252, 30, 32), (0.9999995669836421, 22, 23), (0.9999999848109128, 21, 22), (0.9999995050949259, 21, 23), (0.9999460533676524, 20, 21), (0.9999462814165702, 20, 22), (0.9999476614349387, 20, 23), (0.99999955603151, 19, 20), (0.9999478753629836, 19, 21), (0.9999480589259971, 19, 22), (0.9999489468171506, 19, 23), (0.9999999822104457, 18, 19), (0.9999994842185346, 18, 20), (0.9999480910272748, 18, 21), (0.9999482678605511, 18, 22), (0.999949107548143, 18, 23), (0.9266535247934785, 15, 16), (0.9105009972932715, 12, 13), (0.9999940569381244, 10, 11), (0.9999995890206894, 9, 10), (0.9999930415927719, 9, 11), (0.9999790106652213, 7, 8), (0.999998703692659, 6, 7), (0.9999755087084263, 6, 8)]
 
-(est con 0.9 de umbral y ordenado)
 
-Blanca, [21.05.21 19:55]
-Está muy guay esto, porque si os fijási hay como transitividad de correlaciones
 
-Blanca, [21.05.21 19:56]
-y gracias esto podriamos cargarnos el número de columnas
 
-Blanca, [21.05.21 19:56]
-¿o no sería recomendable?
-
-Blanca, [21.05.21 19:56]
-¿menos columnas simplificaría el modelo?
-
-Blanca, [21.05.21 19:57]
-[In reply to Blanca]
-Por cierto, esto significa Coeficiente, numero de columna 1, numero de columna 2)
-```
+`
 
 # Fuentes   

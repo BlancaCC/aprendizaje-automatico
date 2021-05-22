@@ -236,13 +236,22 @@ Separador('Correlación')
 #------- correlacion ----
 
 def Pearson( x, umbral, traza = False):
+    '''INPUT 
+    x vector de caracteríscas 
+    umbral: valor mínimo del coefiente para ser tenido en cuenta
+    traza: Imprime coeficiente de Pearson e índices que guardan esa relación.   
+
+    OUTPUT
+    indice_explicativo: índice de columnas linealente independientes (con ese coeficiente)
+    relaciones: lista de tuplas (correlacion, índice 1, índice 2)
+
+    '''
     r = np.corrcoef(x.T)
     longitud_r  = len(r[0])
     # Restamos la matriz identidad con la diagonal
     # Ya que queremos encontrar donde alcanza buenos niveles de correlación no triviales 
     sin_diagonal = r - np.identity(len(r[0])) 
     relaciones = [] # guardaremso tupla y 
-    #umbral = 0.999 # Mínimo nivel de correlación para que lo muestra
 
 
     # Devolveré un vector con lo índices que no puedan ser explicado,
@@ -282,7 +291,7 @@ print(indice_explicativo)
 
 
 ### Cálculos para distinto umbrales
-umbrales = [0.9999, 0.999, 0.95]
+umbrales = [0.9999, 0.999, 0.95, 0.9]
 indice_explicativo = dict()
 relaciones = dict()
 
@@ -290,9 +299,14 @@ for umbral in umbrales:
     indice_explicativo[umbral], relaciones[umbral] = Pearson( X_train,
                                                               umbral,
                                                               traza = True)
-
+numero_caracteristicas = len(X_train[0])
+print(f'\nEl número inical de características es de { numero_caracteristicas}\n' )
+print('Las reducciones de dimensión total son: \n')
+print('| umbral | tamaño tras reducción | reducción total |    ')
+print('|:------:|:---------------------:|:---------------:|    ')
 for  umbral, ie in indice_explicativo.items():
-    print(f'Con un umbral de correlación de {umbral} hemos pasado de tener un vector de {len(X_train[0])} a {len(ie)}')
+    len_ie = len(ie)
+    print(f'| {umbral} | {len_ie} | {numero_caracteristicas - len_ie} |    ')
 
 
 
