@@ -27,6 +27,9 @@ from sklearn.preprocessing import scale
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+# Otros
+from operator import itemgetter #ordenar lista
+
 ###############################
 
 
@@ -232,20 +235,68 @@ X_test = scaler.transform( X_test )
 Separador('Correlación')
 #------- correlacion ----
 
-r = np.corrcoef(X_train.T)
-longitud_r  = len(r[0])
-sin_diagonal = r - np.identity(len(r[0]))
-relaciones = []
-umbral = 0.9
-for i in range(1, longitud_r):
-    for j in range(i+1, longitud_r):
-        if abs(sin_diagonal[i,j]) > umbral:
-            relaciones.append((sin_diagonal[i,j], i,j))
-            print(sin_diagonal[i,j], i,j)
+def Pearson( x, umbral, traza = False):
+    r = np.corrcoef(x.T)
+    longitud_r  = len(r[0])
+    # Restamos la matriz identidad con la diagonal
+    # Ya que queremos encontrar donde alcanza buenos niveles de correlación no triviales 
+    sin_diagonal = r - np.identity(len(r[0])) 
+    relaciones = [] # guardaremso tupla y 
+    #umbral = 0.999 # Mínimo nivel de correlación para que lo muestra
 
-from operator import itemgetter
-relaciones.sort(reverse=True, key =itemgetter(0))
+
+    # Devolveré un vector con lo índices que no puedan ser explicado,
+    # Esto es, si existe una correlación mayor que el umbra entre i,j
+    # y I es el conjunto de características el nuevo I = I -{j}
+    # Denotarelos a I con la variable índice explicativo 
+    indice_explicativo = np.arange( len(x[0]))
+
+
+    # muestra tupla con el coefiente de pearson y los dos índices con ese vector de características
+    for i in range(longitud_r):
+        for j in range(i+1, longitud_r):
+            if abs(sin_diagonal[i,j]) > umbral:
             
+                relaciones.append((sin_diagonal[i,j], i,j))
+                #print(sin_diagonal[i,j], i,j)
 
-print(r)
+                indice_explicativo [j] = 0 # El 0 siempre explicará, ya que va de mayor a menor
+
+    indice_explicativo = np.unique(indice_explicativo)
+
+    
+    relaciones.sort(reverse=True, key =itemgetter(0))
+
+    # imprimimos las relaciones en orden
+    if(traza):
+        print(f'\nCoeficiente pearson para umbral {umbral}')
+        print('Coeficiente | Índice 1 | Índice 2    ')
+        print( '--- | --- | ---    ')
+        for i,j,k in relaciones:
+            print(i,' | ' , j, ' | ', k , '    ')
+
+    return indice_explicativo, relaciones
+
+Separador('Índice de las características a mantener')
+print(indice_explicativo)
+
+
+### Cálculos para distinto umbrales
+umbrales = [0.9999, 0.999, 0.95]
+indice_explicativo = dict()
+relaciones = dict()
+
+for umbral in umbrales:
+    indice_explicativo[umbral], relaciones[umbral] = Pearson( X_train,
+                                                              umbral,
+                                                              traza = True)
+
+for  umbral, ie in indice_explicativo.items():
+    print(f'Con un umbral de correlación de {umbral} hemos pasado de tener un vector de {len(X_train[0])} a {len(ie)}')
+
+
+
+
+
+            
 
