@@ -5,7 +5,8 @@ Blanca Cano Camarero
 #############################
 #######  BIBLIOTECAS  #######
 #############################
-# Biblioteca lectura de datos   
+# Biblioteca lectura de datos
+# ==========================
 import pandas as pd
 
 # matemáticas
@@ -13,7 +14,13 @@ import pandas as pd
 import numpy as np
 
 
-# Preprocesado y modelado
+# Modelos a usar
+# ==========================
+from sklearn.linear_model import SGDClassifier
+
+
+
+# Preprocesado 
 # ==========================
 from sklearn.model_selection import train_test_split
 
@@ -27,8 +34,24 @@ from sklearn.preprocessing import scale
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+# Validación cruzada
+# ==========================
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import LeaveOneOut
+
+# metricas
+# ==========================
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+
+
 # Otros
+# ==========================
 from operator import itemgetter #ordenar lista
+import time
+
+np.random.seed(1)
 
 ###############################
 
@@ -203,7 +226,7 @@ Separador('Separamos test y entrenamiento')
 
 ###### separación test y entrenamiento  #####
 ratio_test_size = 0.2
-X_train, X_test, y_train, y_test = train_test_split(
+x_train, x_test, y_train, y_test = train_test_split(
     x, y,
     test_size= ratio_test_size,
     shuffle = True, 
@@ -218,19 +241,19 @@ ImprimeDiccionario(
 Separador('Normalización')  
 
 print('Datos sin normalizar ')
-ExploracionInicial(X_train)
+ExploracionInicial(x_train)
 
 print ('Datos normalizados')
 
 ## Normalización de los datos
 
 scaler = StandardScaler()
-X_train = scaler.fit_transform( X_train )
-X_test = scaler.transform( X_test )
+x_train = scaler.fit_transform( x_train )
+x_test = scaler.transform( x_test )
 
 # No es necesario volver a comprobar la normalización
 # La media deberá ser cero y la desviación típica 1, lo que no sea serán errores de redondeo.
-# ExploracionInicial(X_train)
+# ExploracionInicial(x_train)
 
 Separador('Correlación')
 #------- correlacion ----
@@ -287,7 +310,7 @@ def Pearson( x, umbral, traza = False):
     return indice_explicativo, relaciones
 
 Separador('Índice de las características a mantener')
-print(indice_explicativo)
+#print(indice_explicativo)
 
 
 ### Cálculos para distinto umbrales
@@ -296,10 +319,10 @@ indice_explicativo = dict()
 relaciones = dict()
 
 for umbral in umbrales:
-    indice_explicativo[umbral], relaciones[umbral] = Pearson( X_train,
+    indice_explicativo[umbral], relaciones[umbral] = Pearson( x_train,
                                                               umbral,
                                                               traza = True)
-numero_caracteristicas = len(X_train[0])
+numero_caracteristicas = len(x_train[0])
 print(f'\nEl número inical de características es de { numero_caracteristicas}\n' )
 print('Las reducciones de dimensión total son: \n')
 print('| umbral | tamaño tras reducción | reducción total |    ')
@@ -309,6 +332,91 @@ for  umbral, ie in indice_explicativo.items():
     print(f'| {umbral} | {len_ie} | {numero_caracteristicas - len_ie} |    ')
 
 
+### Validación cruzada
+
+
+def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
+    '''
+    Función para automatizar el proceso de experimento: 
+    1. Ajustar modelo.
+    2. Aplicar validación cruzada.
+    3. Medir tiempo empleado en ajuste y validación cruzada.
+    4. Medir la precisión.   
+
+    INPUT:
+    - Clasificador: Modelo con el que buscar el clasificador
+    - X datos entrenamiento. 
+    - Y etiquetas de los datos de entrenamiento
+    - x_test, y_test
+    - k-folds: número de particiones para la validación cruzada
+
+    OUTPUT:
+    '''
+    
+    print('\n','-'*20)
+    print (f' Evaluando {nombre_modelo}')
+    print('-'*20)
+
+    
+    print('\n------ Ajustando modelo------\n')        
+    tiempo_inicio_ajuste = time.time()
+    
+    #ajustamos modelo 
+    clasificador.fit(x,y) 
+    tiempo_fin_ajuste = time.time()
+
+    tiempo_ajuste = tiempo_fin_ajuste - tiempo_inicio_ajuste
+    print(f'Tiempo empleado para el ajuste: {tiempo_ajuste}s')
+
+    #validación cruzada
+    tiempo_inicio_validacion_cruzada = time.time()
+    resultado_validacion_cruzada = cross_val_score(clasificador,
+                                                   x, y,
+                                                   scoring = 'accuracy',
+                                                   cv = k_folds)
+
+    tiempo_fin_validacion_cruzada = time.time()
+    tiempo_validacion_cruzada =   (tiempo_fin_validacion_cruzada
+                                   - tiempo_inicio_validacion_cruzada)
+
+    print(f'Tiempo empleado para validación cruzada: {tiempo_validacion_cruzada}s')
+
+    print('Evaluación media de aciertos usando cross-validation: ',
+        resultado_validacion_cruzada.mean())
+    print('E_in usando cross-validation: ',
+          resultado_validacion_cruzada.mean())
+
+    # Precisión
+    # predecimos test acorde al modelo
+    y_predecida_test = clasificador.predict(x_test).round()
+    # miramos la tasa de aciertos, es decir, cuantos ha clasificado bien
+    print("\tObteniendo E_test a partir de la predicción")
+    numero_aciertos = accuracy_score(y_test, y_predecida_test)
+    print("\tPorcentaje de aciertos en test: ", numero_aciertos)
+    print("\tE_test: ", 1 - numero_aciertos)
+
+
+    
+
+
+
+
+############################################################
+############ EVALUACIÓN DE LOS MODELOS #####################
+############################################################
+
+
+k_folds = 10 # valor debe de estar entre 5 y 10
+
+
+SGD = SGDClassifier(loss='hinge', penalty='l2', alpha=0.01, max_iter=5000)
+Evaluacion(SGD,
+        x_train, y_train,
+        x_test, y_test,
+        k_folds,
+        'SGD Classifier con tasa de aprendizaje optima (variable) y factor de regularización 0.01 y función de perdida hinge'
+        )
+    
 
 
 

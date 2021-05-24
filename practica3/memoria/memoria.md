@@ -82,7 +82,7 @@ Como podemos ver está perfectamente balanceado.
 
 Debemos determinar ahora qué datos usaremos para test y cuáles para entrenamiento.   
 
-El porcentaje que voy a usar será un $20%$ de los datos reservados para test. La elección de esta se debe a heurísticas generales usadas y porque tenemos los suficientes datos para el entrenamiento.  
+El porcentaje que voy a usar será un $20\%$ de los datos reservados para test. La elección de esta se debe a heurísticas generales usadas y porque tenemos los suficientes datos para el entrenamiento.  
 
 
 
@@ -90,9 +90,9 @@ En cuanto a las opciones de cómo separarlos estos deben ser seleccionados de ma
 
 
 Para separarlos usaré la función 
-`sklearn.model_selection.train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None)[source]` de la biblioteca de scikilearn, concretamente con los siguientes parámetros:   
+`sklearn.model_selection.train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None)` de la biblioteca de scikilearn, concretamente con los siguientes parámetros:   
 
-```
+```python
 ratio_test_size = 0.2
 X_train, X_test, y_train, y_test = train_test_split(
     x, y,
@@ -101,7 +101,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=1)
 ```  
 
-- `test_size` se corresponde a la proporción de los datos que usaremos para el test, está a 0.2 porque ya hemos comentado que trabajaremos con el $20%$.  
+- `test_size` se corresponde a la proporción de los datos que usaremos para el test, está a 0.2 porque ya hemos comentado que trabajaremos con el $20\%$.  
 - `shuffle` a `True` porque queremos coger los datos al azar.   
 - `random_state` es una semilla para la mezcla.  
 
@@ -122,9 +122,9 @@ Etiqueta | Número apariciones
 11.0  |  1059  
  
 
-Vemos que la mayor diferencia es de $| 1138 - 1029 | = 109$  si recordamos que cada clase contaba con $5319$ esto supone una diferencia de $\frac{109}{5319} 100 = 2.0493 %$ es decir que en el peor de los caos estamso entrenando con dos datos más por cada cien.   
+Vemos que la mayor diferencia es de $| 1138 - 1029 | = 109$  si recordamos que cada clase contaba con $5319$ esto supone una diferencia de $\frac{109}{5319} 100 = 2.0493 %$ es decir que en el peor de los casos estamos entrenando con dos datos más por cada cien.   
 
-Esto no me parece del todo significativo, así que continuaré sin hacerlos por clases. (TO-DO Hay que justificar esto, ya sea por un paper o por ).   
+Esto no me parece del todo significativo, así que continuaré sin hacerlo por clases. (TO-DO Hay que justificar esto, ya sea por un paper o por ).   
 
 Nótese que desde ahora solo trabajaremos con los datos de entrenamiento, para no cometer ningún tipo de data snooping.  
 
@@ -162,11 +162,11 @@ $$Z =\frac{X -U}{s}$$
 Donde $u$ es la media de los dtos de entrenamiento o cero si el parámetro `with_mean=False`  y $s$ es la desviación típica de los datos del ejemplo y $1$ en caso de que `with_std=False`.     
 
 
-No es más que una normalización del estimado (Como se hace con una distribución de normal de varianza y media... TO-DO completar).   
+No es más que una normalización del estimador (Como se hace con una distribución de normal de varianza y media... TO-DO completar).   
 
 
 ### Correlación de los datos   
-Veamso ahora si podemso encontrar alguna relación entre las características, para ello vamso a utilizar la matriz de correlación.   
+Veamos ahora si podemos encontrar alguna relación entre las características, para ello vamos a utilizar la matriz de correlación.   
 
 ( TO-DO Añadir información sobre la correlación )
 
@@ -218,7 +218,7 @@ Si además nos fijamos se cumple la propieda transitiva, esto es, si entendemos 
 
 Luego podríamos aplicar la propiedad transitiva, esto es si $i$ explica $j$ y $j$ explica $k$ entonces $i$ explica $k$.   
 
-Una vez explicado esto, utilizaremos este critero para reducier la dimensionalidad del vector de características, de tal manera que pueda verse como una base linealmente independiente.  
+Una vez explicado esto, utilizaremos este critero para reducir la dimensionalidad del vector de características, de tal manera que pueda verse como una base linealmente independiente.  
 
 
 Experimentamos con los umbrales 0.9999, 0.999, 0.95, 0.9 para ver cómo se reduce la dimensión. 
