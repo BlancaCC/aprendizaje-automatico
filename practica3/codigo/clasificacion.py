@@ -352,6 +352,10 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 
     OUTPUT:
     '''
+
+    ###### constantes a ajustar
+    numero_trabajos_paralelos_en_validacion_cruzada = 2 
+    ##########################
     
     print('\n','-'*20)
     print (f' Evaluando {nombre_modelo}')
@@ -370,14 +374,17 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 
     #validación cruzada
     tiempo_inicio_validacion_cruzada = time.time()
-    resultado_validacion_cruzada = cross_val_score(clasificador,
-                                                   x, y,
-                                                   scoring = 'accuracy',
-                                                   cv = k_folds)
+    resultado_validacion_cruzada = cross_val_score(
+        clasificador,
+        x, y,
+        scoring = 'accuracy',
+        cv = k_folds,
+        n_jobs = numero_trabajos_paralelos_en_validacion_cruzada
+    )
 
     tiempo_fin_validacion_cruzada = time.time()
-    tiempo_validacion_cruzada =   (tiempo_fin_validacion_cruzada
-                                   - tiempo_inicio_validacion_cruzada)
+    tiempo_validacion_cruzada = (tiempo_fin_validacion_cruzada
+                                 - tiempo_inicio_validacion_cruzada)
 
     print(f'Tiempo empleado para validación cruzada: {tiempo_validacion_cruzada}s')
 

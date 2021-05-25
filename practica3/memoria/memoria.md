@@ -235,12 +235,71 @@ Estas han sido las conclusiones (recordemos que el tamaño inicial del vector de
 
 Más adelante, en la validación cruzada, experimentaremos cómo afectan las reducciones.  
 
+## Modelos a utilizar   
+
+Compararemos los modelos a través de la función de `Evaluacion`:   
+
+```python 
+def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
+    '''
+    Función para automatizar el proceso de experimento: 
+    1. Ajustar modelo.
+    2. Aplicar validación cruzada.
+    3. Medir tiempo empleado en ajuste y validación cruzada.
+    4. Medir la precisión.   
+
+    INPUT:
+    - Clasificador: Modelo con el que buscar el clasificador
+    - X datos entrenamiento. 
+    - Y etiquetas de los datos de entrenamiento
+    - x_test, y_test
+    - k-folds: número de particiones para la validación cruzada
+
+    OUTPUT:
+    '''
+```  
+
+En ella se emplea la función `cross_val_score` [@crossValScore].  
+La cabecera de dicha función es la siguiente: 
+```python
+ sklearn.model_selection.cross_val_score(
+    estimator,
+    X, y=None, *, 
+    groups=None, 
+    scoring=None, 
+    cv=None, 
+    n_jobs=None, 
+    verbose=0, 
+    fit_params=None,
+    pre_dispatch='2*n_jobs', 
+    error_score=nan
+    )
+```
+
+Y los argumentos que nos conciernen son: 
+
+- `estimator`:  el objeto usado para ajustar los datos (por ejemplo `SGDClassifier`.   
+- `X` array o lista con los datos a ajustar.   
+- `Y` array  de etiquetas.  ( En el caso de aprendizaje automático como els el nuestro.  
+- `cv` Estrategia de validación cruzada, número de particiones.  
+- Salida: `scores` ndarray  de flotantes del tamaño `len(list(cv))` que son las puncuaciones que recibe cada ejecución de la validación cruzada.  
+  
+  
+
+
+Se ha optado por esta función y no por `cross_validate` [@crossValidate] porque la diferencia entre estas dos funciones son que éste segundo permite especificar múltiples métricas para la evaluación, pero éstas no nos son útiles ya que que miden cuestiones de tiempo que por ahora no nos interesa.    
+
+
+### Por qué hemos optado por esta técnica de validación 
+
+[@crossValEvaluating] 
+
+## Modelos lineales que se van a utilizar del paquete de sklearn   
+
+#### SGDClassifier  
 
 
 
 
-
-
-`
 
 # Fuentes   
