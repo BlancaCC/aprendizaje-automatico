@@ -13,12 +13,11 @@ import pandas as pd
 # ==========================
 import numpy as np
 
-
-# Modelos a usar
+# Modelos lineales a usar   
 # ==========================
+from sklearn.linear_model import Perceptron
 from sklearn.linear_model import SGDClassifier
-
-
+from sklearn.linear_model import LogisticRegression
 
 # Preprocesado 
 # ==========================
@@ -36,6 +35,7 @@ import matplotlib.pyplot as plt
 
 # Validación cruzada
 # ==========================
+from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import LeaveOneOut
 
@@ -43,7 +43,9 @@ from sklearn.model_selection import LeaveOneOut
 # ==========================
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import accuracy_score
+
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
 
 
 # Otros
@@ -354,7 +356,7 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     '''
 
     ###### constantes a ajustar
-    numero_trabajos_paralelos_en_validacion_cruzada = 2 
+    numero_trabajos_paralelos_en_validacion_cruzada = 4
     ##########################
     
     print('\n','-'*20)
@@ -374,6 +376,7 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 
     #validación cruzada
     tiempo_inicio_validacion_cruzada = time.time()
+    #accuracy
     resultado_validacion_cruzada = cross_val_score(
         clasificador,
         x, y,
@@ -383,6 +386,15 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     )
 
     tiempo_fin_validacion_cruzada = time.time()
+    # la predecida ¿cómo funciona, proque tiene k folds
+    y_predecida_vc = cross_val_predict(
+        clasificador,
+        x, y,
+        #scoring = 'accuracy',
+        cv = k_folds,
+        n_jobs = numero_trabajos_paralelos_en_validacion_cruzada
+    )
+    
     tiempo_validacion_cruzada = (tiempo_fin_validacion_cruzada
                                  - tiempo_inicio_validacion_cruzada)
 
@@ -392,18 +404,32 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
         resultado_validacion_cruzada.mean())
     print('E_in usando cross-validation: ',
           resultado_validacion_cruzada.mean())
+    
+    plot_confusion_matrix(clasificador, x_train, y_train)
+    plot_confusion_matrix(clasificador, x_train, y_train, normalize = 'true')
+    plt.show()
+    #confusion_matrix(y_train, )
+    
 
+    
+    # AQUÍ SE ESTÁ HACIENDO DATA SNOPIING !!!!!!!!!!
+    '''
     # Precisión
     # predecimos test acorde al modelo
     y_predecida_test = clasificador.predict(x_test).round()
+    
     # miramos la tasa de aciertos, es decir, cuantos ha clasificado bien
+   
     print("\tObteniendo E_test a partir de la predicción")
-    numero_aciertos = accuracy_score(y_test, y_predecida_test)
+    numero_aciertos = accuracy_score(y_test, y_predecida_test) # porcentaje de aciertos   
     print("\tPorcentaje de aciertos en test: ", numero_aciertos)
     print("\tE_test: ", 1 - numero_aciertos)
 
-
     
+    # matriz de confusión
+    confusion_matrix(y_test, y_predecida_test)
+    '''
+    return y_predecida_vc
 
 
 
@@ -417,7 +443,7 @@ k_folds = 10 # valor debe de estar entre 5 y 10
 
 
 SGD = SGDClassifier(loss='hinge', penalty='l2', alpha=0.01, max_iter=5000)
-Evaluacion(SGD,
+y_predecida = Evaluacion(SGD,
         x_train, y_train,
         x_test, y_test,
         k_folds,

@@ -56,6 +56,13 @@ Nota: suponemso que la estructura de carpetas es:
 Donde `clasificacion.py` es el nombre del ejecutable de nuestra práctica, `datos` es una carpeta y `Sensorless_drive_diagnosis.txt` es el fichero que contiene los datos.  
 
 
+
+### Encode   
+
+Las etiquetas ya se encuentran como enteros, luego las dejaremos de esta manera, es decir estamos utilizando una codificación por enteros.   En caso de haber tenido una codificación categórica, hubiera sido interesante plantearse el one-Hot encoding.  
+
+
+
 ### Selección de test y entrenamiento  
 
 Comprobaremos antes si los datos están balanceados, para ello contaré el número de distintas etiquetas.  
@@ -290,6 +297,14 @@ Y los argumentos que nos conciernen son:
 Se ha optado por esta función y no por `cross_validate` [@crossValidate] porque la diferencia entre estas dos funciones son que éste segundo permite especificar múltiples métricas para la evaluación, pero éstas no nos son útiles ya que que miden cuestiones de tiempo que por ahora no nos interesa.    
 
 
+
+Como medida de la bondad del ajuste hemos usado `accuracy_score`[@accuracyScore] que devuelve un florando con la número de acierto, hemos optado por esta por tratarse de un problema de clasificación, ya que esta medida es la más intuitiva.     
+
+
+
+
+
+
 ### Por qué hemos optado por esta técnica de validación 
 
 [@crossValEvaluating] 
@@ -297,6 +312,74 @@ Se ha optado por esta función y no por `cross_validate` [@crossValidate] porque
 ## Modelos lineales que se van a utilizar del paquete de sklearn   
 
 #### SGDClassifier  
+
+[@https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html ]  
+
+Teste estimador implementa el graciente descendente estocástico.   
+
+Vamos a normalizar los datos ya que la documentación no dice que para mejores resutlado deben de tener media cero y varianza uno.   
+
+Por defecto este ajuste soporta SVM.   
+
+Por defecto esta función utiliza la normal euflide.   
+
+
+##### Como funciona el gradiente descendiente para clasificación en varias dimensiones  
+
+Como hemos visto en la teoría el gradiente descendente no es más que una técnica de optimización que no se corresponde a ninguna familia concreta de modelos de optimización.  
+
+Las ventajas que presenta este método son: 
+
+- Eficiencia   
+- Facilidad de ajuste de los datos.  
+
+Las desventajas que presenta este método son:   
+- Sensibla a la característica de las escalas. 
+- Requiere parámeteros como el de regularización y el número máximo de iteraciones.   
+
+
+Por ser ser sensible a las escalas normalizaré los datos, además en teoría hemos visto que sí que influye el orden de los datos, luego procederé a un desordenado de los datos ( con el parámetro `shuffle = True`).   
+
+
+
+Además entreré el modelo con la función de pérdida de sciki-learn llamada `hinge` ya que de esta manera será equivalente a SVM.  
+
+
+Otros parámetros que nos podríamos haber planteado eran:  
+
+- `loss="hinge"`: (soft-margin) linear Support Vector Machine  
+- `loss="modified_huber"`: smoothed hinge loss  
+- `loss="log"`: logistic regression  
+
+TO-DO ¿Por qué usamso hinge?
+
+La función `SGDClassifier` soporta clasificació combinando múltiples clasificadores binarios en un esquema OVA *ine versus all*.   
+
+Esto quiere decir que para $K$ clases el clasificador binario discrimian una clase frente a las $K -1$ clases restantes.  
+
+Cuando legue el momento de testeo, el se calcula el valor de confianza, es decir la distancias con signo al hiperplano y se elege aquella que se la má salta.  
+
+
+TO-DO falta añadir más información sobre este método, como que devuelve   
+
+https://scikit-learn.org/stable/modules/sgd.html  
+(después de la imagen te encontrarás la información.  
+
+
+[@StochasticGradientDescent]
+
+
+#### Resultados obtenidos   
+
+```
+Tiempo empleado para el ajuste: 1.0308427810668945s
+Tiempo empleado para validación cruzada: 3.9933764934539795s
+Evaluación media de aciertos usando cross-validation:  0.8557272854255336
+
+```  
+
+Las respectivas matrices de confusión: 
+
 
 
 
