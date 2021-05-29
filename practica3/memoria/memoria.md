@@ -371,6 +371,7 @@ https://scikit-learn.org/stable/modules/sgd.html
 
 #### Resultados obtenidos   
 
+HAY QUE CAMBIAR ESTOS RESULTADOS 
 ```
 Tiempo empleado para el ajuste: 1.0308427810668945s
 Tiempo empleado para validación cruzada: 3.9933764934539795s
@@ -379,6 +380,8 @@ Evaluación media de aciertos usando cross-validation:  0.8557272854255336
 ```  
 
 Las respectivas matrices de confusión: 
+
+## Utilización del perceptrón   
 
 
 

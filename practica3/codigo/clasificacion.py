@@ -32,6 +32,7 @@ from sklearn.preprocessing import scale
 # ==========================
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import seaborn as sns # utilizado para pintar la matriz de correlación 
 
 # Validación cruzada
 # ==========================
@@ -55,14 +56,12 @@ import time
 
 np.random.seed(1)
 
-###############################
-
-
-
 ########## CONSTANTES #########
 NOMBRE_FICHERO_CLASIFICACION = './datos/Sensorless_drive_diagnosis.txt'
 SEPARADOR_CLASIFICACION = ' '
 
+NUMERO_CPUS_PARALELO = 4
+####################################################
 ################### funciones auxiliares 
 def LeerDatos (nombre_fichero, separador):
     '''
@@ -259,12 +258,24 @@ x_test = scaler.transform( x_test )
 
 Separador('Correlación')
 #------- correlacion ----
+def PlotMatrizCorrelacion(matriz_correlacion):
+    '''
+    Muestra en pantalla la matriz de correlación de x
+    usa la biblioteca de seaborn 
+    '''
+    plt.figure(figsize=(12,8))
+    plt.title('Matriz de correlación')
+    sns.heatmap(matriz_correlacion)
+    plt.show()
 
+
+
+    
 def Pearson( x, umbral, traza = False):
     '''INPUT 
     x vector de caracteríscas 
     umbral: valor mínimo del coefiente para ser tenido en cuenta
-    traza: Imprime coeficiente de Pearson e índices que guardan esa relación.   
+    traza: Imprime coeficiente de Pearson e índices que guardan esa relación.   muestra gráfico: determian si se muestra una tabla con los coeficinetes que superen el umbral
 
     OUTPUT
     indice_explicativo: índice de columnas linealente independientes (con ese coeficiente)
@@ -276,7 +287,7 @@ def Pearson( x, umbral, traza = False):
     # Restamos la matriz identidad con la diagonal
     # Ya que queremos encontrar donde alcanza buenos niveles de correlación no triviales 
     sin_diagonal = r - np.identity(len(r[0])) 
-    relaciones = [] # guardaremso tupla y 
+    relaciones = [] # guardaremos tupla y 
 
 
     # Devolveré un vector con lo índices que no puedan ser explicado,
@@ -294,9 +305,10 @@ def Pearson( x, umbral, traza = False):
                 relaciones.append((sin_diagonal[i,j], i,j))
                 #print(sin_diagonal[i,j], i,j)
 
-                indice_explicativo [j] = 0 # El 0 siempre explicará, ya que va de mayor a menor
+                indice_explicativo [j] = 0 # Indicamos que la columna j ya no es explicativa
+                #para ello la pongo a cero, ya que el 0 siempre explicará, por ir  de menor a mayor los subíndices
 
-    indice_explicativo = np.unique(indice_explicativo)
+    indice_explicativo = np.unique(indice_explicativo) # dejamos solo un cero
 
     
     relaciones.sort(reverse=True, key =itemgetter(0))
@@ -311,9 +323,11 @@ def Pearson( x, umbral, traza = False):
 
     return indice_explicativo, relaciones
 
-Separador('Índice de las características a mantener')
-#print(indice_explicativo)
+Separador('Matriz de correlación asociada a los datos de entrenamiento')
+PlotMatrizCorrelacion(np.corrcoef(x_train.T))
 
+
+Separador('Índice de las características a mantener')
 
 ### Cálculos para distinto umbrales
 umbrales = [0.9999, 0.999, 0.95, 0.9]
@@ -323,7 +337,8 @@ relaciones = dict()
 for umbral in umbrales:
     indice_explicativo[umbral], relaciones[umbral] = Pearson( x_train,
                                                               umbral,
-                                                              traza = True)
+                                                              traza = True,
+                                                            )
 numero_caracteristicas = len(x_train[0])
 print(f'\nEl número inical de características es de { numero_caracteristicas}\n' )
 print('Las reducciones de dimensión total son: \n')
@@ -334,7 +349,21 @@ for  umbral, ie in indice_explicativo.items():
     print(f'| {umbral} | {len_ie} | {numero_caracteristicas - len_ie} |    ')
 
 
+
+  
+
+
 ### Validación cruzada
+def MostrarMatrizConfusion(clasificador, x, y, titulo, normalizar):
+    '''
+    normalizar: 'true' o 'false', deben de ser los valores de normalice en mostrar_plot
+    '''
+    
+    mostrar_plot = plot_confusion_matrix(clasificador,
+                                         x , y,
+                                         normalize = normalizar)
+    mostrar_plot.ax_.set_title(titulo)
+    plt.show()
 
 
 def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
@@ -356,15 +385,15 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     '''
 
     ###### constantes a ajustar
-    numero_trabajos_paralelos_en_validacion_cruzada = 4
+    numero_trabajos_paralelos_en_validacion_cruzada = NUMERO_CPUS_PARALELO
     ##########################
     
     print('\n','-'*20)
     print (f' Evaluando {nombre_modelo}')
-    print('-'*20)
+ #   print('-'*20)
 
     
-    print('\n------ Ajustando modelo------\n')        
+  #  print(f'\n------ Ajustando modelo------\n')        
     tiempo_inicio_ajuste = time.time()
     
     #ajustamos modelo 
@@ -404,11 +433,21 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
         resultado_validacion_cruzada.mean())
     print('E_in usando cross-validation: ',
           resultado_validacion_cruzada.mean())
+
+
+    MostrarMatrizConfusion(clasificador,
+                           x_train, y_train,
+                           f'Matriz si normalizar, para {nombre_modelo}',
+                           normalizar = None)
     
-    plot_confusion_matrix(clasificador, x_train, y_train)
-    plot_confusion_matrix(clasificador, x_train, y_train, normalize = 'true')
-    plt.show()
-    #confusion_matrix(y_train, )
+    Separador()
+    
+
+    MostrarMatrizConfusion(clasificador,
+                           x_train, y_train,
+                           f'Matriz de confusión normalizada, para {nombre_modelo}',
+                           normalizar = 'true')
+
     
 
     
@@ -437,12 +476,12 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 ############################################################
 ############ EVALUACIÓN DE LOS MODELOS #####################
 ############################################################
+ITERACION_MAXIMAS = 2000
 
+k_folds = 5 # valor debe de estar entre 5 y 10
 
-k_folds = 10 # valor debe de estar entre 5 y 10
-
-
-SGD = SGDClassifier(loss='hinge', penalty='l2', alpha=0.01, max_iter=5000)
+'''
+SGD = SGDClassifier(loss='hinge', penalty='l2', alpha=0.01, max_iter=ITERACION_MAXIMAS)
 y_predecida = Evaluacion(SGD,
         x_train, y_train,
         x_test, y_test,
@@ -450,8 +489,32 @@ y_predecida = Evaluacion(SGD,
         'SGD Classifier con tasa de aprendizaje optima (variable) y factor de regularización 0.01 y función de perdida hinge'
         )
     
-
+'''
 
 
             
+# _____ Perceptrón __________
+Separador('_____ Perceptrón________')
+tasas_de_aprendizaje = [0.001, 0.01, 0.1, 1]
+PERCEPTRON = dict()
+y_predecida_perceptron = dict()
 
+for eta in tasas_de_aprendizaje:
+
+    Separador(f'Análisis para perceprón de tasa de aprendizaje {eta}')
+    PERCEPTRON[eta] = Perceptron(
+        eta0 = eta, 
+        shuffle = True,
+        n_jobs = NUMERO_CPUS_PARALELO,
+        max_iter = ITERACION_MAXIMAS
+    )
+
+
+    Separador()
+    y_predecida_perceptron[eta] = Evaluacion(PERCEPTRON[eta],
+                                             x_train, y_train,
+                                             x_test, y_test,
+                                             k_folds,
+                                             f'Perceptrón con tasa aprendizaje = {eta}'
+                                            )
+    
