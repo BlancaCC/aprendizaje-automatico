@@ -187,7 +187,7 @@ modelo_pca = pca_pipe.named_steps['pca']
 print('Vamos a representar los datos usando el algoritmo TSNE, este tarda un par de minutos')
 x_tsne = TSNE(n_components=2).fit_transform(modelo_pca.components._modelo_pca.components_T)
 
-
+'''
 
 tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
 tsne_results = tsne.fit_transform(x)
@@ -195,7 +195,7 @@ print('t-SNE done! Time elapsed: ')
 
 VisualizarClasificacion2D(tsne_results, y)
 Separador('fin de la visualización')
-'''
+
 
 ### Comprobación si los datos están balanceados   
 def NumeroDeEtiquetas(y):
@@ -477,11 +477,15 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 ############ EVALUACIÓN DE LOS MODELOS #####################
 ############################################################
 ITERACION_MAXIMAS = 2000
-
+# ¿sería interesante ver la variabilidad con los folds ?
 k_folds = 5 # valor debe de estar entre 5 y 10
 
-'''
-SGD = SGDClassifier(loss='hinge', penalty='l2', alpha=0.01, max_iter=ITERACION_MAXIMAS)
+
+SGD = SGDClassifier(loss='hinge',
+                    penalty='l2',
+                    alpha=0.01,
+                    n_jobs = NUMERO_CPUS_PARALELO,
+                    max_iter=ITERACION_MAXIMAS)
 y_predecida = Evaluacion(SGD,
         x_train, y_train,
         x_test, y_test,
@@ -489,13 +493,14 @@ y_predecida = Evaluacion(SGD,
         'SGD Classifier con tasa de aprendizaje optima (variable) y factor de regularización 0.01 y función de perdida hinge'
         )
     
-'''
+
 
 
             
 # _____ Perceptrón __________
 Separador('_____ Perceptrón________')
-tasas_de_aprendizaje = [0.001, 0.01, 0.1, 1]
+
+tasas_de_aprendizaje = [1]#[0.001, 0.01, 0.1, 1]
 PERCEPTRON = dict()
 y_predecida_perceptron = dict()
 
@@ -518,3 +523,24 @@ for eta in tasas_de_aprendizaje:
                                              f'Perceptrón con tasa aprendizaje = {eta}'
                                             )
     
+
+
+
+
+#_____ regresión logística _______
+Separador('Regresión logística')
+
+iteraciones_maximas_regresion_logistica =  ITERACION_MAXIMAS // 20
+REGRESION_LOGISTICA = LogisticRegression( n_jobs = NUMERO_CPUS_PARALELO,
+                                          warm_start = False,
+                                          max_iter= iteraciones_maximas_regresion_logistica)
+y_predecida_regresion_logistica = Evaluacion(REGRESION_LOGISTICA,
+                                             x_train, y_train,
+                                             x_test, y_test,
+                                             k_folds,
+                                             f'Regresión logística max_iter = {iteraciones_maximas_regresion_logistica}'
+                                             )
+
+
+
+# Falta comprobar valanceo de la solución   ¿esto cómo se haría ?
