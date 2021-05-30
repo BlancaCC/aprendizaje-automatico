@@ -187,7 +187,7 @@ modelo_pca = pca_pipe.named_steps['pca']
 print('Vamos a representar los datos usando el algoritmo TSNE, este tarda un par de minutos')
 x_tsne = TSNE(n_components=2).fit_transform(modelo_pca.components._modelo_pca.components_T)
 
-'''
+
 
 tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
 tsne_results = tsne.fit_transform(x)
@@ -195,7 +195,7 @@ print('t-SNE done! Time elapsed: ')
 
 VisualizarClasificacion2D(tsne_results, y)
 Separador('fin de la visualización')
-
+'''
 
 ### Comprobación si los datos están balanceados   
 def NumeroDeEtiquetas(y):
@@ -429,30 +429,37 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 
     print(f'Tiempo empleado para validación cruzada: {tiempo_validacion_cruzada}s')
 
-    print('Evaluación media de aciertos usando cross-validation: ',
+    print('Evaluación media de aciertos usando cross-validation (accuracy): ',
         resultado_validacion_cruzada.mean())
-    print('E_in usando cross-validation: ',
-          resultado_validacion_cruzada.mean())
+    print('E_in usando cross-validation (1-accuracy): ',
+          1-resultado_validacion_cruzada.mean())
 
 
     MostrarMatrizConfusion(clasificador,
-                           x_train, y_train,
-                           f'Matriz si normalizar, para {nombre_modelo}',
+                           x, y,
+                           f'Matriz sin normalizar, para {nombre_modelo}',
                            normalizar = None)
-    
+
+    '''
     Separador()
     
 
     MostrarMatrizConfusion(clasificador,
-                           x_train, y_train,
+                           x, y,
                            f'Matriz de confusión normalizada, para {nombre_modelo}',
                            normalizar = 'true')
 
     
-
+    '''
     
     # AQUÍ SE ESTÁ HACIENDO DATA SNOPIING !!!!!!!!!!
+
+    # Precisión
+    print('______Test____')
+    print(f'Accuracy en test {clasificador.score(x_test, y_test)}')
+
     '''
+   
     # Precisión
     # predecimos test acorde al modelo
     y_predecida_test = clasificador.predict(x_test).round()
@@ -468,7 +475,7 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     # matriz de confusión
     confusion_matrix(y_test, y_predecida_test)
     '''
-    return y_predecida_vc
+    return clasificador
 
 
 
@@ -522,17 +529,27 @@ for eta in tasas_de_aprendizaje:
                                              k_folds,
                                              f'Perceptrón con tasa aprendizaje = {eta}'
                                             )
-    
 
 
+# ____ regresión lineal   
+Separador('Regresión lineal')
 
+iteraciones_maximas_regresion_lineal =  20#ITERACION_MAXIMAS // 40
+REGRESION_LINEAL = LogisticRegression( n_jobs = NUMERO_CPUS_PARALELO,
+                          
+                                          max_iter= iteraciones_maximas_regresion_lineal)
+
+y_predecida_regresion_lineal = Evaluacion(REGRESION_LINEAL,
+                                             x_train, y_train,
+                                             x_test, y_test,
+                                             k_folds,
+                                             f'Regresión lineal max_iter = {iteraciones_maximas_regresion_lineal}')
 
 #_____ regresión logística _______
 Separador('Regresión logística')
 
-iteraciones_maximas_regresion_logistica =  ITERACION_MAXIMAS // 20
+iteraciones_maximas_regresion_logistica =  20#ITERACION_MAXIMAS // 40
 REGRESION_LOGISTICA = LogisticRegression( n_jobs = NUMERO_CPUS_PARALELO,
-                                          warm_start = False,
                                           max_iter= iteraciones_maximas_regresion_logistica)
 y_predecida_regresion_logistica = Evaluacion(REGRESION_LOGISTICA,
                                              x_train, y_train,
@@ -543,4 +560,13 @@ y_predecida_regresion_logistica = Evaluacion(REGRESION_LOGISTICA,
 
 
 
-# Falta comprobar valanceo de la solución   ¿esto cómo se haría ?
+# Falta comprobar balanceo de la solución   ¿esto cómo se haría ?
+
+################################################
+####       Análisis de los resultados       ####
+################################################
+
+
+Separador('Comprobación error test en ajuste y predecidad')
+
+print(f'La precisión en test con logística es {y_predecida_regresion_logistica.score(x_test, y_test)} ')
