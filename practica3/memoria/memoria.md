@@ -384,8 +384,44 @@ Las respectivas matrices de confusión:
 ## Utilización del perceptrón   
 
 
+# Regresión   
+
+## Problema de los superconductores   
+
+### Descripción del problema   
+
+Se tienen dos ficheros que contienen 21263 datos sobre superconductores y sus características relevantes.   
+
+- Características de los ficheros: Multivariante  
+- Atributos: reales
+- Tarea de regresión   
+- Número de instancias: 21263   
+- Número de atributos: 81  
+- No se sabe si faltan valores.  
+- Área de físicas   
+
+
+
+Se pretende predecir el punto crítico de ruptura.   
+De las características obtenidas   
+
+[@UCISuperconductivtyDataSet]
+
+### Tratamiento de los datos   
+
+Trabajaremso solo con el primer fichero, ya que el segundo contiene los compuestos químicos de los que hemos extraído los datos y no nos es relevante.  [@HAMIDIEH2018346]  
+
+
+### Error a utilizar   
+
+De todos los errores candidatos a usar que nos ofrece scikit-learn:   
+
+
+
+vamos a utilizar la varianza explicada $mean_squared_error$ [@Varianza explicada]. Este error penaliza más a las grandes diferencias.  
 
 
 
 
 # Fuentes   
+
