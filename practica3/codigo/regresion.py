@@ -17,6 +17,9 @@ import numpy as np
 # =========================================
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
+from sklearn.svm import SVR
+from sklearn.linear_model import SGDRegressor
+
 
 # Preprocesado 
 # ==========================
@@ -442,7 +445,7 @@ regresion_lineal_p2 = Evaluacion(
 print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
 ## Número máximo de iteraciones
 
-NUMERO_MAXIMO_ITERACIONES = 1000
+NUMERO_MAXIMO_ITERACIONES = 5000
 
 ##_________ método Ridge ______
 
@@ -466,4 +469,87 @@ ridge =  Evaluacion(  RIDGE,
 print('Máximo parámetro ridge ', max(ridge.coef_))
 # La variación es muy poca, y el error en cross validation se mantien, luego descartamso esta opción
 
-       
+
+#tenemso los datos sufiecientes para aplicar 
+# https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR
+'''
+SUPPORT_VECTOR_REGRESSION = SVR(C=1.0, epsilon=0.2)
+grado = 1
+svr = Evaluacion(
+    SUPPORT_VECTOR_REGRESSION,
+    TransformacionPolinomica( grado, x_train_reducido),
+    y_train,
+    TransformacionPolinomica( grado, x_test_reducido,),
+    y_test,
+    k_folds,
+    'Suppot vector regression',
+    metrica_error  = 'r2'
+    #metrica_error  = 'neg_mean_squared_error'
+)
+
+
+# datos obtenidos
+
+ Evaluando Regresión lineal transformación lineal cuadrática
+Tiempo empleado para el ajuste: 37.32402229309082s
+score_validacion_cruzada
+[0.32158177 0.25984677 0.31485914 0.28903334 0.32404925]
+Media error de validación cruzada 0.3018740548850907
+Varianza del error de validación cruzada: 0.02441279456279483
+Ein_train 0.3148199169185655
+______Test____
+En_test r2 0.29736389886545533
+
+Conclusión: no merece la pena
+'''
+
+### ______ sgd regresor ________
+
+algoritmos = ['squared_loss', 'epsilon_insensitive']
+penalizaciones = ['l1', 'l2'] 
+tasa_aprendizaje = ['optimal', 'adaptive']
+alphas = [0.001]
+eta = 0.01
+
+
+cnt = 0 # contado de número de algoritmos lanzados
+ajustes = list()
+
+for a in alphas:
+    for algoritmo in algoritmos:
+        for penalizacion in penalizaciones:
+            for aprendizaje in tasa_aprendizaje:
+                
+                SGD_REGRESSOR = SGDRegressor(
+                    alpha = a,
+                    max_iter = NUMERO_MAXIMO_ITERACIONES,
+                    eta0 = eta,
+                    learning_rate = aprendizaje,
+                    penalty = penalizacion,
+                    loss = algoritmo,
+                    shuffle = True,
+                    early_stopping = True
+                )
+
+                titulo = str(
+                    f'\n___SGD regresión ({cnt})___\n' +
+                    'algoritmo: ' + algoritmo  + '\n' +
+                    'penalización: '+ penalizacion  + '\n' +
+                    'aprendizaje: ' +  aprendizaje + '\n' +
+                    'eta: ' + str(eta) +  '\n' +
+                    'alpha: ' + str(a) + '\n'
+                )
+                    
+                
+                sgd =  Evaluacion(  SGD_REGRESSOR,
+                                      x_train_reducido, y_train,
+                                      x_test_reducido, y_test,
+                                      k_folds,
+                                      titulo,
+                                      metrica_error  = 'r2'
+                      
+                                  )
+
+
+                ajustes.append(sgd)
+                cnt += 1
