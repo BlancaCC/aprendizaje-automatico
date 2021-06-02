@@ -16,6 +16,7 @@ import numpy as np
 # Modelos lineales de clasificación a usar   
 # =========================================
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 
 # Preprocesado 
 # ==========================
@@ -409,5 +410,60 @@ regresion_lineal = Evaluacion(  LINEAL_REGRESSION,
                                 metrica_error  = 'r2'
                                 #metrica_error  = 'neg_mean_squared_error'
                               )
-    
 
+
+print( 'Máximo coeficiente ', max(regresion_lineal.coef_))
+
+#a = np.array([[3,2],[6,5]])## borrar 
+def TransformacionPolinomica( grado,x):
+    x_aux = np.copy(x)
+    for i in range(1,grado):
+        x_aux = x_aux*x_aux
+        x = np.c_[x_aux, x]
+    return x
+
+
+
+grado = 2
+regresion_lineal_p2 = Evaluacion(
+    LINEAL_REGRESSION,
+    TransformacionPolinomica( grado, x_train_reducido),
+    y_train,
+    TransformacionPolinomica( grado, x_test_reducido,),
+    y_test,
+    k_folds,
+    'Regresión lineal transformación lineal cuadrática',
+    metrica_error  = 'r2'
+    #metrica_error  = 'neg_mean_squared_error'
+)
+
+
+# No hay mejora considerable, descartamso este método.   
+print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
+## Número máximo de iteraciones
+
+NUMERO_MAXIMO_ITERACIONES = 1000
+
+##_________ método Ridge ______
+
+
+RIDGE = Ridge(alpha = 1.0,
+              max_iter = NUMERO_MAXIMO_ITERACIONES,
+              
+              )
+
+
+ridge =  Evaluacion(  RIDGE,
+                      x_train_reducido, y_train,
+                      x_test_reducido, y_test,
+                      k_folds,
+                      'Ridge alpha = 1.0',
+                      metrica_error  = 'r2'
+                      
+                    )
+
+#print(f'Parámetro de ridge: {ridge.coef_}')
+print('Máximo parámetro ridge ', max(ridge.coef_))
+# La variación es muy poca, y el error en cross validation se mantien, luego descartamso esta opción
+
+       
