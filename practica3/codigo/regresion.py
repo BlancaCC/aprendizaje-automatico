@@ -244,7 +244,59 @@ for restriccion_y in restricciones_y:
 
 ## Quitamos outliers
 
+def EliminaOutliers(y, proporcion_distancia_desviacion_tipica = 3.0):
+    '''
+    OUTPUT
+    (muestra en pantalla alguna información sobre el cálculo de la máscara)
+    mascara_y_sin_outliers
+    INPUT
+    y: etiquetas a las que quitar el outliers
 
+    proporcion_distancia_desviacion_tipica = 3.0
+   
+    Información sobre cómo elegir la proporcion_distancia_desviacion_tipica:
+    Alguna relaciones: 
+    distancia | intervalo de confianza:
+    1         | 0.683
+    1.282     | 0.8
+    1.644     | 0.9
+    2         | 0.954
+    3         | 0.997
+    3.090     | 0.998
+    4         | 0.9999367
+    5         | 0.99999942
+    
+    
+
+    https://es.wikipedia.org/wiki/Distribuci%C3%B3n_normal#Desviaci%C3%B3n_t%C3%ADpica_e_intervalos_de_confianza
+    '''
+    media = y.mean()
+    desviacion_tipica = y.std()
+
+    corte = desviacion_tipica * proporcion_distancia_desviacion_tipica
+    limite_inferior = media - corte
+    limite_superior = media + corte
+
+    mascara_y_sin_outliers = (limite_inferior <= y ) & (y <= limite_superior)
+       
+    # imprimimos información
+    print('\n___ Información eliminando outliers___')
+    print('Proporcion de deistancia a la desviación típica tomada ',
+          proporcion_distancia_desviacion_tipica)
+    print('Media de los datos %.4f'% media)
+    print('Desviación típica %.4f'% desviacion_tipica)
+    print('Rango de valores aceptado [%.4f, %.4f]' %
+          (limite_inferior, limite_superior ))
+
+    print(f'Número de outliers eliminados { np.count_nonzero(mascara_y_sin_outliers == False)}')
+
+    return mascara_y_sin_outliers
+
+
+mascara_sin_outliers = EliminaOutliers(y_train, proporcion_distancia_desviacion_tipica = 3)
+
+x_train = x_train[mascara_sin_outliers]
+y_train = y_train[mascara_sin_outliers]
 
 
 Separador('Normalizamos los datos')
