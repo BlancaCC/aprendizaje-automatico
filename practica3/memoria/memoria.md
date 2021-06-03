@@ -581,7 +581,7 @@ Además es interesante comparar el valor 68, con experimentos posteriores, ya qu
 
 Además de manera general reducir dimensiones emperora drásticamente la verosimilitud, sobretodo si no hay variables redundantes (nótese el caso en el que se habían reducido previamente las dimensiones con Pearson).  
 
-Aprovechando que hemos calculado una con dimensión uno vamso a visualizar los datos:   
+Aprovechando que hemos calculado una con dimensión uno vamos a visualizar los datos:   
 
 
 

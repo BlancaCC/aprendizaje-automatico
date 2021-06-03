@@ -1,5 +1,5 @@
 '''
-PRÁCTICA 3 Refresión 
+PRÁCTICA 3 Regresión 
 Blanca Cano Camarero   
 '''
 #############################
@@ -116,7 +116,7 @@ def VisualizarClasificacion2D(x,y, titulo=None):
     if titulo is not None:
         plt.title(titulo)
     plt.show()
-
+q
 
 def Separador(mensaje = None):
     '''
@@ -296,6 +296,10 @@ def EliminaOutliers(y, proporcion_distancia_desviacion_tipica = 3.0):
 
 mascara_sin_outliers = EliminaOutliers(y_train, proporcion_distancia_desviacion_tipica = 3)
 
+#mantenemos copia para después compararlos  
+x_train_con_outliers = np.copy(x_train)
+y_train_con_outliers = np.copy(y_train)
+
 x_train = x_train[mascara_sin_outliers]
 y_train = y_train[mascara_sin_outliers]
 
@@ -310,7 +314,8 @@ scaler = StandardScaler()
 x_train = scaler.fit_transform( x_train )
 x_test = scaler.transform( x_test) 
 
-
+scaler_outliers = StandardScaler()
+x_train_outliers_normalizado = scaler_outliers.fit_transform( x_train_con_outliers )
     
 #------- correlacion ----
 def PlotMatrizCorrelacion(matriz_correlacion):
@@ -487,7 +492,7 @@ def MostrarMatrizConfusion(clasificador, x, y, titulo, normalizar):
     plt.show()
 
 
-def Evaluacion( clasificador,
+def Evaluacion2( clasificador,
                 x, y, x_test, y_test,
                 k_folds,
                 nombre_modelo,
@@ -540,7 +545,12 @@ def Evaluacion( clasificador,
         n_jobs = numero_trabajos_paralelos_en_validacion_cruzada
     )
     tiempo_fin_validacion_cruzada = time.time()
+    
+    tiempo_validacion_cruzada = tiempo_fin_validacion_cruzada - tiempo_inicio_validacion_cruzada
+    print(f'Tiempo empleado para el validacion cruzada: {tiempo_validacion_cruzada}s')
 
+    
+    '''
     print('score_validacion_cruzada')
     print(score_validacion_cruzada)
     print (f'Media error de validación cruzada {score_validacion_cruzada.mean()}')
@@ -550,10 +560,76 @@ def Evaluacion( clasificador,
     
     print('______Test____')
     print(f'En_test {metrica_error} { ajuste.score(x_test, y_test)}' )
-   
+   '''
 
     return ajuste
 
+
+
+def Evaluacion( clasificador,
+                x, y, 
+                k_folds,
+                nombre_modelo,
+                metrica_error):
+    '''
+    Función para automatizar el proceso de experimento: 
+    1. Ajustar modelo.
+    2. Aplicar validación cruzada.
+    3. Medir tiempo empleado en ajuste y validación cruzada.
+    4. Medir la precisión.   
+
+    INPUT:
+    - Clasificador: Modelo con el que buscar el clasificador
+    - X datos entrenamiento. 
+    - Y etiquetas de los datos de entrenamiento
+    - k-folds: número de particiones para la validación cruzada
+    - metrica_error: debe estar en el formato sklearn (https://scikit-learn.org/stable/modules/model_evaluation.html)
+
+    OUTPUT:
+    '''
+
+    ###### constantes a ajustar
+    numero_trabajos_paralelos_en_validacion_cruzada = NUMERO_CPUS_PARALELO
+    ##########################
+    
+    print('\n','-'*20)
+    print (f' Evaluando {nombre_modelo}')
+    
+    #print(f'\n------ Ajustando modelo------\n')        
+    tiempo_inicio_ajuste = time.time()
+    
+    #ajustamos modelo 
+    ajuste = clasificador.fit(x,y) 
+    tiempo_fin_ajuste = time.time()
+
+    tiempo_ajuste = tiempo_fin_ajuste - tiempo_inicio_ajuste
+
+    
+    
+
+    #validación cruzada
+    tiempo_inicio_validacion_cruzada = time.time()
+
+    score_validacion_cruzada = cross_val_score(
+        clasificador,
+        x, y,
+        scoring = metrica_error,
+        cv = k_folds,
+        n_jobs = numero_trabajos_paralelos_en_validacion_cruzada
+    )
+    tiempo_fin_validacion_cruzada = time.time()
+    
+    tiempo_validacion_cruzada = tiempo_fin_validacion_cruzada - tiempo_inicio_validacion_cruzada
+    print('\tscore_validacion_cruzada')
+    print(score_validacion_cruzada)
+    print ('\tMedia error de validación cruzada {:5f}'.format(score_validacion_cruzada.mean()))
+    print('\tVarianza del error de validación cruzada{:5f}'.format(score_validacion_cruzada.std()))
+    print('\tTiempo empleado para el ajuste: {:4f}s'.format(tiempo_ajuste))
+    print('\tTiempo empleado para el validacion cruzada{:4f}s'.format(tiempo_validacion_cruzada))
+
+
+
+    return ajuste
 
 
 
@@ -569,20 +645,55 @@ k_folds = 5 # valor debe de estar entre 5 y 10
 
 #_________ regresión lineal __________
 Separador('____ Regresión lineal______')
+
+## experimentos con PCA, reducción pearon y transformaciones
+
 LINEAL_REGRESSION = LinearRegression(normalize = False, 
                     n_jobs = NUMERO_CPUS_PARALELO)
 
-regresion_lineal = Evaluacion(  LINEAL_REGRESSION,
-                                x_train_reducido, y_train,
-                                x_test_reducido, y_test,
+regresion_lineal_con_outliers = Evaluacion(  LINEAL_REGRESSION,
+                                x_train_con_outliers,
+                                y_train_con_outliers,
                                 k_folds,
-                                'Regresión lineal',
+                                'Regresión lineal con datos sin preprocesar',
                                 metrica_error  = 'r2'
-                                #metrica_error  = 'neg_mean_squared_error'
                               )
 
+regresion_lineal_con_outliers_normalizados =Evaluacion(
+    LINEAL_REGRESSION,
+    x_train_outliers_normalizado,
+    y_train_con_outliers,
+    k_folds,
+    'Regresión lineal con datos sin preprocesar normalizados',
+    metrica_error  = 'r2'
+)
 
-print( 'Máximo coeficiente ', max(regresion_lineal.coef_))
+regresion_lineal_pearson = Evaluacion(  LINEAL_REGRESSION,
+                                x_train_reducido,
+                                        y_train,
+                                k_folds,
+                                'Regresión lineal x reducida por Pearson',
+                                metrica_error  = 'r2'
+                              )
+numero_componentes_pca = [int(n_x_train * 9/10), n_x_test_reducido] # deben de estar definidas en `numero_componentes`
+regresion_lineal_mejor_pca = dict()
+
+for n_pca in numero_componentes_pca :
+    regresion_lineal_mejor_pca = Evaluacion(
+        LINEAL_REGRESSION,
+        x_train_pca_sin_pearson[n_pca],
+        y_train,                                
+        k_folds,
+        f'Regresión lineal, PCA n={n_pca} sin reducción por pearson',
+        metrica_error  = 'r2'
+    )
+
+
+#print( 'Máximo coeficiente ', max(regresion_lineal.coef_))
+
+
+
+## Comparativas de reducción de dimensión
 
 
 # Probamos con una transformación cuadrática
@@ -603,8 +714,6 @@ regresion_lineal_p2 = Evaluacion(
     LINEAL_REGRESSION,
     TransformacionPolinomica( grado, x_train_reducido),
     y_train,
-    TransformacionPolinomica( grado, x_test_reducido,),
-    y_test,
     k_folds,
     'Regresión lineal transformación lineal cuadrática',
     metrica_error  = 'r2'
@@ -613,7 +722,7 @@ regresion_lineal_p2 = Evaluacion(
 
 
 # No hay mejora considerable, descartamos el método de transformar las variables   
-print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
+#print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
 ## Número máximo de iteraciones
 
 NUMERO_MAXIMO_ITERACIONES = 10000
@@ -633,7 +742,6 @@ for a in alphas:
 
     ridge =  Evaluacion(  RIDGE,
                           x_train_reducido, y_train,
-                          x_test_reducido, y_test,
                           k_folds,
                           f'Ridge alpha = {a}',
                           metrica_error  = 'r2'
@@ -718,7 +826,7 @@ for a in alphas:
                 
                 sgd =  Evaluacion(  SGD_REGRESSOR,
                                       x_train_reducido, y_train,
-                                      x_test_reducido, y_test,
+                                     # x_test_reducido, y_test,
                                       k_folds,
                                       titulo,
                                       metrica_error  = 'r2'
