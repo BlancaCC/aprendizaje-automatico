@@ -169,16 +169,80 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 
 print('Veamos ahora si los datos están bie distribuidos')
-### Probar a ajustar con datos balanceados auqnue menos
+### Probar a ajustar con datos balanceados aunque menos
 
 
 #vemos que están balanceados
-y_train_unidimensional = y_train.reshape((-1,1))
-y_aux = np.concatenate((y_train_unidimensional, np.zeros((len(y_train),1))), axis = 1)
 
-#plt.plot(y_aux[:,0],y_aux[:,1],'o')
-plt.show()
-# vemso que no están bien dispersos 
+def BalanceadoRegresion(y, divisiones = 20):
+    min_y = min(y)
+    max_y = max(y)
+
+    longitud = (max_y - min_y)/divisiones    
+    extremo_inferior = min_y
+    extremo_superior = min_y + longitud
+
+    datos_en_rango = np.arange(divisiones)
+    cantidad_minima = np.infty
+    cantidad_maxima = - np.infty
+    indice_minimo = None
+    indice_maximo = None
+    
+    
+    for i in range(divisiones):
+        datos_en_rango[i] = np.count_nonzero(
+            (extremo_inferior <= y ) &
+            (y <= extremo_superior)
+        )
+        extremo_inferior = extremo_superior
+        extremo_superior += longitud
+
+        if cantidad_minima > datos_en_rango[i]:
+            cantidad_minima = datos_en_rango[i]
+            indice_minimo = i
+        if cantidad_maxima < datos_en_rango[i]:
+            cantidad_maxima = datos_en_rango[i]
+            indice_maximo = i
+
+    # imprimimos valores
+    #getcontext().prec = 4
+    print('COMPROBACIÓN BALANCEO DE Y')
+    
+    print('Número total de etiquetas ', len(y))
+    print('Rango de valores de y [%.4f, %.4f]'%(min_y, max_y))
+    print('Cantidad mínima de datos ', cantidad_minima)
+    extremo_inferior = min_y + longitud * indice_minimo
+    print(f'Alcanzada en intervalo [%.4f , %.4f]'%
+          (extremo_inferior , (extremo_inferior + longitud)))
+    
+    print('Cantidad máxima de datos ', cantidad_maxima)
+    extremo_inferior = min_y + longitud * indice_maximo
+    print(f'Alcanzada en intervalo [%.4f , %.4f]'%
+          (extremo_inferior , (extremo_inferior + longitud)))
+    print('La media es %.4f'% datos_en_rango.mean())
+    print('La desviación típica %.4f' % datos_en_rango.std())
+
+    # gráfico  de valores
+    plt.title('Número de etiquetas por rango de valores')
+    plt.bar([i*longitud + min_y for i in range(len(datos_en_rango))],datos_en_rango, width = longitud * 0.9)
+    plt.xlabel('Valor de la etiqueta y (rango de longitud %.3f)'%longitud)
+    plt.ylabel('Número de etiquetas')
+    plt.show()
+    
+
+    
+        
+### Comprobación de balanceo 
+Separador('Comprobamos balanceo')
+BalanceadoRegresion(y, divisiones = 30)
+
+restricciones_y = [100, 140]
+for restriccion_y in restricciones_y: 
+    Separador(f'Veamos para datos que cumplan y>{restriccion_y}')
+    BalanceadoRegresion(y[y>restriccion_y], 30)
+
+
+## Quitamos outliers
 
 
 
@@ -508,8 +572,8 @@ Conclusión: no merece la pena
 algoritmos = ['squared_loss', 'epsilon_insensitive']
 penalizaciones = ['l1', 'l2'] 
 tasa_aprendizaje = ['optimal', 'adaptive']
-alphas = [0.001]
-eta = 0.01
+alphas = [0.001, 0.0001]
+eta = 0.0001
 
 
 cnt = 0 # contado de número de algoritmos lanzados
