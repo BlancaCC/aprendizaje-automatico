@@ -597,9 +597,6 @@ Esta forma nos recuerda a un función de proporcionalidad inversa, quizás sea i
 
 
 
-
-
-
 ### Error a utilizar   
 
 Si bien en los errores hemos utilizado en clase el error cuadrático medio,  $mean\_squared\_error$ [@Varianza explicada]. El  penaliza más a las grandes diferencias.  
@@ -607,6 +604,65 @@ Si bien en los errores hemos utilizado en clase el error cuadrático medio,  $me
 Hemos optado por utilizar $R^2$, el coeficiente de determinación, que no es más que el coeficiente de correlación de Pearson al cuadrado; ya que no dará un valor acotado en el intervalo $[0,1]$, a diferencia del error cuadrático medio que no lo está.   
 
 A nivel computacional puede que en algunos caso por la forma de calcularlo el coeficiente sea negativo, esto se redondeará a cero.  
+
+
+## Selección del modelos  
+
+### Experimento de difernecia de datos  
+
+Vamos a seleccionar con qué transformación de los datos de entrenamiento vamos a trabajar, para ello voy a fijar un modelo cualquiera, en este caso regresión lineal y a partir de ahí compararé los resultados con validación cruzada.  
+
+Nota: Los tiempos de ejecución puede variar a los que aquí se presentan  
+
+
+table: Comparativas en regresión lineal  
+
+| Experimento         | Media error cv | varianza cv | tiempo ajuste modelo | tiempo cv |
+|:-------------------:|:--------------:|:-----------:|----------------------|:---------:|
+| X sin prepocesar    | 0.737095       | 0.012516    | 0.316216             | 1.886190  |
+| X solo normalizado  | 0.737095       | 0.012516    | 0.215509s            | 0.749248  |
+| X norm. sin out     | 0.738254       | 0.013038    | 0.293344             | 0.749254  |
+| X red. dim. Pearson | 0.724373       | 0.012280    | 0.220314             | 0.575430  |
+| X PCA  72 dim       | 0.734363       | 0.013467    | 0.253654             | 0.621077  |
+| X PCA 68 dim.       | 0.732357       | 0.013831    | 0.264193             | 0.562457  |
+
+De aquí se deduce que:   
+
+- Cualquier tipo de reducción de la dimensión emperora el error.   
+- No parece que exista ninguna relación entre la dimensión del vector de características y el tiempo que tarda en ajustar.  
+- La normalización influye considerablemente en el tiempo pero no en el error.
+- La reducción por PCA es mejor que la nuestra hecha eliminado por el coeficiente de Pearson.  
+
+Para un estudio más detallado de los tiempos habría que repetir el experimento más veces, no lo veo del todo relevante para este caso.   
+
+Como conlusión el conjunto de datos con el que trabajaremos de aquí en adelante será el normalizado sin ouliers,el que llamamos `x_train` que ha resultado ser el que mejor resultado ha obtenido.  
+
+
+### Transformación de los datos  
+
+Viendo la gráfica de los datos de la figura 4,  podríamos pensar que una de proporcionalidad inversa podría ser una buena opción, para tenerlo en cuenta realizaremos una comparativa con dicha tranformación, una normal y otra sin con una transformación aleatoria como es la cuadrática.  
+
+Los resultados obtenidos son los siguientes: 
+
+table: Comparativa transformaciones  
+
+
+| Transformación | Media error cv | varianza cv | tiempo ajuste modelo | tiempo cv |
+|:--------------:|:--------------:|:-----------:|:--------------------:|:---------:|
+| Sin ninguna    | 0.738254       | 0.013038    | 0.262464s            | 0.728209  |
+| Inversa        | 0.684363       | 0.088954    | 0.689754             | 2.001623  |
+| Cuadrática     | 0.762161       | 0.012071    | 0.559633             | 1.556234  |
+  
+
+Conclusiones a la vista de los resultado:   
+
+- Nuestra tesis no era cierta, ya que una transformación aleatoria ha mejorado el error de la transformación inversa.  
+- Al aumentar la dimensión ha disminuído el error, sin embargo no tenemos ningún buen motivo para optar por ahora utilizar los datos cuadráticos, así que para evitar riesgo de overfitting seguiremos utilizando los datos de `x_train'  sin transfomar.m  
+
+### Selección de otros modelos y ajuste de sus hiperparámetros  
+
+
+
 
 
 
