@@ -10,6 +10,12 @@ toc-title: Índice
 bibliography: bibliografia.bib
 biblio-style: apalike
 link-citations: true
+header-includes: 
+- \usepackage{tikz,pgfplots}   
+- \usepackage[spanish,es-tabla]{babel}
+- \usepackage[utf8]{inputenc}
+- \usepackage{graphicx}
+- \usepackage{subcaption}
 ---
 
 \newpage  
@@ -409,19 +415,333 @@ De las características obtenidas
 
 ### Tratamiento de los datos   
 
-Trabajaremso solo con el primer fichero, ya que el segundo contiene los compuestos químicos de los que hemos extraído los datos y no nos es relevante.  [@HAMIDIEH2018346]  
+Trabajaremos solo con el primer fichero, ya que el segundo contiene los compuestos químicos de los que hemos extraído los datos y no nos es relevante.  [@HAMIDIEH2018346]  
+
+#### Distribución de las etiquetas de entrenamiento   
+
+Procederemos con un análisis preliminar de las etiquetas, para ver cuál es su distribuición.   Se realizará con la función propia `BalanceadoRegresion(y, divisiones = 20)`.   
+
+Obtenemos los siguiente información relevante:     
+- Los valores se toman en el intervalo $[2 \times 10^{-4}, 185]$  
+- Mediana etiquetas: 20  
+- Media etiquetas: 34.4212   
+- Desviación típica de las etiquetas: 34.2536   
+- Media de número de etiquetas por intervalo: 708.7667  
+- Desviación típica de número de etiquetas por intervalo: 1136.9938    
+
+
+A vista de estos resultdos es notable que los valores no están repartidos homogéneamente, es más presentan un fuerte desequilibrio con mayor presencia de etiquetas bajas y ausencia de etiquetas en ciertos intervalos altos.  
+
+Esto queda reflejado incluso cuando analizamos la dispersión en diferentes rangos:   
+
+| Intervalo a analizar:                                     | $[2 \times 10^{-4}, 185]$ | $[100, 185]$ | $[143, 185]$ |
+|:---------------------------------------------------------:|:-------------------------:|:-----------:|:-------------:|
+| Mediana  de las etiquetas                                 | 20                        | 112         | 143           |
+| Número de etiquetas medio por intervalo                   | 708.7667                  | 25.6        | 0.1           |
+| Desviación típica   de cantidad de etiquetas en intervalo | 1136.9938                 | 35.83       | 0.3958        |
+| Número total de etiquetas                                 | 21263                     | 768         | 3             |  
+
+
+
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{./imagenes/regresion/balance_total.png}
+\caption{Distribución de las etiquetas en rango $[2 \times 10^{-4}, 185]$ }
+\end{figure}
+
+
+\begin{figure}[h!]
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=\linewidth]{./imagenes/regresion/balanceo_mas_100.png}
+\caption{Distribución de las etiquetas en rango $[100, 185]$}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=\linewidth]{./imagenes/regresion/balanceo_mas_140.png}
+\caption{ Distribución de las etiquetas en rango $[143, 185] $ }
+\end{subfigure}
+\end{figure} 
+
+##### Estrategias ante esta distribución  
+
+No podemos ampliar la muestra, así que la única opción para conseguir más homogeneidad en las etiquetas
+sería descartar ciertos datos; como esto nos haría perder precisión en general optaremos por utilizar los datos que tenemos, siendo conscientes
+de que el entrenamiento para valores mayores es peor.  
+
+
+#### Tipificación de los datos   
+
+Procederemos a tificar los datos. Esto nos va a dar algunas ventajas como  reducier la gran diferencia de escala en los valores  manteniendo las difrencias.  
+
+Exiten diferentes métodos de transformación (z-score, min-max, logística...), nosotros hemos optado por el Z-score. [@tificiacionMicrosoft]
+Que consiste en una transformación de la variable aleatoria $X$  a otra, $Z$ de media cero y varianza uno. 
+$$Z = \frac{ x - \bar{x}}{\sigma}$$  
+
+Donde $\bar x$ representa la media de $X$ y $\sigma$ la desviación típica.  
+
+
+Para la implementación utilizamos la función `StandardScaler() ` y los métodos `fit_transform( x_train )` y `scaler.transform( x_test)`.  [@StandardScaler]  
+
+La necesidad de estos método es normalizar a partir de los datos de entrenamiento, guardar la media y varianza de estos datos y luego aplicar la misma transformación (con los mismo datos de entrenamiento) al test, esto se realiza así ya que si se aplicara la transformación a todos los datos se estaría cometiendo data snopping.   
+
+
+#### Reducción de la dimensión   
+
+A continuación intentaremos reducir el tamaño de vector de características sin perder explicación en los datos. 
+
+Para ello utilizaremos el coefiente de correlación de Pearson, que se define como sigue:  
+
+$$\rho _{X,Y} = \frac{cov(X,Y)}{\sigma_X \sigma_Y}$$  
+
+Donde: 
+- $X,Y$ son dos variables aleatorias que siguen la misma distribución, en nustro caso dos características distintas.  
+- $cov$ la covarianza.  
+- $\sigma_X$ la desviación típica de $X$.  
+
+
+La interpretación es la siguiente, $1$ si existe una correlación perfecta, $-1$ si la correlación inversa es perfecta y cero sin no existe relación alguna entre las características.  
+
+La matriz de correlación de los datos queda reflejada en figura 3.   
+
+Los datos explicados a partir de otros son los que se aproximan a uno (blanco) o a menos uno (negros) y estos son los que eliminaremos.   
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{./imagenes/regresion/matriz_de_correlacion.png}
+\caption{Matriz de correlación de los datos}
+\end{figure}
+
+Para tener una visión más analítica de los resultados utilizaremos la función `Person(x,umbral, traza)`, esta nos indicará qué características están relacionadas, con coeficientes en valor absoluto  mayor que umbral indicado.  
+
+La mayor correlación empieza a partir de $0.9977$, relaciones con correlación superior a $0.99$ solo hay 4.
+
+A continuación muestro una tabla que refleja cómo variaría la dimensión de nuestros datos si eliminamos una de las columnas que sea explicada por otra con un umbrar superior al indicado.  
+
+| umbral | tamaño tras reducción | reducción total |
+|:------:|:---------------------:|:---------------:|
+| 0.999  | 81                    | 0               |
+| 0.99   | 76                    | 5               |
+| 0.98   | 72                    | 9               |
+| 0.97   | 68                    | 13              |
+| 0.95   | 58                    | 23              |
+| 0.9    | 42                    | 39              |  
+
+Table: Reducción de la dimensión de la matriz de características a partir del umbral de coeficiente de correlación indicado  
+
+\newpage  
+
+Puede consultar los coeficientes respectivos durante la ejecución del código, aquí le muestro para un umbral de 0.97.  
+
+| Coeficiente | Índice 1 | Índice 2 |     
+| --- | --- | ---|     
+|  0.9977284401815567  |  15  |  25 |     
+|  0.9949859517136572  |  72  |  74 |     
+|  0.9927038888466977  |  15  |  75 |     
+|  0.9922969155759501  |  12  |  14 |     
+|  0.9898601215727296  |  71  |  73 |     
+|  0.9894939628750227  |  25  |  75 |     
+|  0.987794792442112  |  67  |  69 |     
+|  0.9847899736486817  |  57  |  59 |     
+|  0.9815600785302888  |  17  |  19 |     
+|  0.980149145006249  |  22  |  24 |     
+|  0.9738111111636902  |  77  |  79 |     
+|  0.9732998811054523  |  47  |  49 |     
+|  0.9731669940410288  |  0  |  15 |     
+|  0.9722391366986369  |  0  |  25 |     
+|  0.9720659389315596  |  5  |  25 |    
+
+Table: Coeficiente pearson para umbral 0.97     
+
+
+Vamos a seleccionar al final los datos con umbral de 0.97, ya que nos parece que mantiene buen nivel de explicación.  
+
+#### Otras formas de reducción de la dimensión  
+
+Para PCA, datos a analizar   
+
+- score: devuelve la función de verosimilitud logarítmica logarítmica, es decir cuánto de buenos es el ajuste, cuanto mayor sea el ajuste mejro será.    
+https://en.wikipedia.org/wiki/Likelihood_function
+https://medium.com/@analyttica/log-likelihood-analyttica-function-series-cb059e0d379
+Cuanto más alto sea mejor, no tiene cota así que calcularemos uno sin reducir la dimensión para tenerlo como cota, los resultado obtenidos son:   
+
+table:PCA y su máxima verosimilitud  
+
+| N componentes | score sin haber reducido | score habiendo reducido |
+|:-------------:|:------------------------:|:-----------------------:|
+| 1             | -97.49                   | -83.35                  |
+| 2             | -91.81                   | -78.77                  |
+| 34            | -2.557                   | -13.03                  |
+| 51            | 9.146                    | -6.244                  |
+| 72            | 17.9                     | -6.244                  |
+| 68            | 16.53                    | -3.905                  |
+| 81            | 19.95                    | -3.905                  |  
+
+Además es interesante comparar el valor 68, con experimentos posteriores, ya que es el número de dimensiones al que se redució usando el coeficiente de pearson.  
+
+Además de manera general reducir dimensiones emperora drásticamente la verosimilitud, sobretodo si no hay variables redundantes (nótese el caso en el que se habían reducido previamente las dimensiones con Pearson).  
+
+Aprovechando que hemos calculado una con dimensión uno vamso a visualizar los datos:   
+
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{./imagenes/regresion/PCA_visualizacion_2d.png}
+\caption{Visualización de reducción a una dimensión de las etiquetas }
+\end{figure}
+
+Esta forma nos recuerda a un función de proporcionalidad inversa, quizás sea interesante en estadios posteriores probar con una transformación de este tipo.  
+
+
+
+
+
+
 
 
 ### Error a utilizar   
 
-De todos los errores candidatos a usar que nos ofrece scikit-learn:   
+Si bien en los errores hemos utilizado en clase el error cuadrático medio,  $mean\_squared\_error$ [@Varianza explicada]. El  penaliza más a las grandes diferencias.  
+
+Hemos optado por utilizar $R^2$, el coeficiente de determinación, que no es más que el coeficiente de correlación de Pearson al cuadrado; ya que no dará un valor acotado en el intervalo $[0,1]$, a diferencia del error cuadrático medio que no lo está.   
+
+A nivel computacional puede que en algunos caso por la forma de calcularlo el coeficiente sea negativo, esto se redondeará a cero.  
 
 
 
-vamos a utilizar la varianza explicada $mean_squared_error$ [@Varianza explicada]. Este error penaliza más a las grandes diferencias.  
+## Especificaciones técnicas   
+
+Toda la experimentación se ha hecho sobre un ordenador portátil con las siguientes especificaciones  
+```
+equipo               
+    description: Notebook
+    product: HP Pavilion Laptop 14-bk0xx (2MF37EA#ABE)
+    vendor: HP
+    version: Type1ProductConfigId
+    serial: 5CD7440XZ3
+    width: 64 bits
+    capabilities: smbios-3.0.0 dmi-3.0.0 smp vsyscall32
+    configuration: administrator_password=disabled boot=normal chassis=notebook family=103C_5335KV HP Pavilion sku=2MF37EA#ABE uuid=35434437-3434-3058-5A33-ACE2D34F96E0
+
+ description: CPU
+          product: Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
+          vendor: Intel Corp.
+          physical id: 4
+          bus info: cpu@0
+          version: Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
+          serial: To Be Filled By O.E.M.
+          slot: U3E1
+          size: 3100MHz
+          capacity: 4005MHz
+          width: 64 bits
+          clock: 100MHz
+          capabilities: lm fpu fpu_exception wp vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp x86-64 constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d cpufreq
+          configuration: cores=2 enabledcores=2 threads=4
+        *-cache:0
+             description: L1 cache
+             physical id: 5
+             slot: L1 Cache
+             size: 128KiB
+             capacity: 128KiB
+             capabilities: synchronous internal write-back unified
+             configuration: level=1
+        *-cache:1
+             description: L2 cache
+             physical id: 6
+             slot: L2 Cache
+             size: 512KiB
+             capacity: 512KiB
+             capabilities: synchronous internal write-back unified
+             configuration: level=2
+        *-cache:2
+             description: L3 cache
+             physical id: 7
+             slot: L3 Cache
+             size: 3MiB
+             capacity: 3MiB
+             capabilities: synchronous internal write-back unified
+             configuration: level=3
+     *-memory
+          description: System Memory
+          physical id: 17
+          slot: System board or motherboard
+          size: 8GiB
+        *-bank:0
+             description: SODIMM DDR4 Synchronous Unbuffered (Unregistered) 2133 MHz (0,5 ns)
+             product: M471A1K43BB1-CRC
+             vendor: Samsung
+             physical id: 0
+             serial: 36CC9576
+             slot: Bottom-Slot 1(left)
+             size: 8GiB
+             width: 64 bits
+             clock: 2133MHz (0.5ns)
+        *-bank:1
+             description: SODIMM DDR Synchronous [empty]
+             physical id: 1
+             slot: Bottom-Slot 2(right)
+     *-pci
+          description: Host bridge
+          product: Xeon E3-1200 v6/7th Gen Core Processor Host Bridge/DRAM Registers
+          vendor: Intel Corporation
+          physical id: 100
+          bus info: pci@0000:00:00.0
+          version: 02
+          width: 32 bits
+          clock: 33MHz
+          configuration: driver=skl_uncore
+          resources: irq:0
+        *-display
+             description: VGA compatible controller
+             product: HD Graphics 620
+             vendor: Intel Corporation
+             physical id: 2
+             bus info: pci@0000:00:02.0
+             version: 02
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pciexpress msi pm vga_controller bus_master cap_list rom
+             configuration: driver=i915 latency=0
+             resources: irq:129 memory:b2000000-b2ffffff memory:c0000000-cfffffff ioport:5000(size=64) memory:c0000-dffff
+        *-generic:0
+             description: Signal processing controller
+             product: Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Thermal Subsystem
+             vendor: Intel Corporation
+             physical id: 4
+             bus info: pci@0000:00:04.0
+             version: 02
+             width: 64 bits
+             clock: 33MHz
+             capabilities: msi pm bus_master cap_list
+             configuration: driver=proc_thermal latency=0
+             resources: irq:16 memory:b4220000-b4227fff
+        *-usb
+             description: USB controller
+             product: Sunrise Point-LP USB 3.0 xHCI Controller
+             vendor: Intel Corporation
+             physical id: 14
+             bus info: pci@0000:00:14.0
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi xhci bus_master cap_list
+             configuration: driver=xhci_hcd latency=0
+             resources: irq:126 memory:b4200000-b420ffff
+           *-usbhost:0
+                product: xHCI Host Controller
+                vendor: Linux 5.10.36-2-MANJARO xhci-hcd
+                physical id: 0
+                bus info: usb@1
+                logical name: usb1
+                version: 5.10
+                capabilities: usb-2.00
+                configuration: driver=hub slots=12 speed=480Mbit/s
 
 
 
+```
 
-# Fuentes   
+## Hablar de la dimensión   
 
+\newpage

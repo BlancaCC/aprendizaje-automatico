@@ -26,6 +26,7 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import train_test_split
 
 from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import scale
@@ -38,6 +39,7 @@ import seaborn as sns # utilizado para pintar la matriz de correlación
 
 # Validación cruzada
 # ==========================
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import LeaveOneOut
@@ -50,7 +52,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
 
-
 # Otros
 # ==========================
 from operator import itemgetter #ordenar lista
@@ -59,13 +60,13 @@ import time
 np.random.seed(1)
 
 ########## CONSTANTES #########
-NOMBRE_FICHEROS_REGRESION  = ['./datos/train.csv','./datos/unique_m.csv']
+NOMBRE_FICHEROS_REGRESION  = ['./datos/train.csv','./datos/unique_m.csv'] # solo se va a leer el primero 
 SEPARADOR_REGRESION = ','
 
 NUMERO_CPUS_PARALELO = 4
 ####################################################
 ################### funciones auxiliares 
-def LeerDatos (nombre_fichero, separador, cabecera = None):
+def LeerDatos (nombre_fichero, separador):
     '''
     Input: 
     - file_name: nombre del fichero path relativo a dónde se ejecute o absoluto
@@ -77,17 +78,9 @@ def LeerDatos (nombre_fichero, separador, cabecera = None):
     y: vector fila de la etiquetas 
     
     '''
-
-    datos = pd.read_csv(nombre_fichero,
-                       sep = separador,
-                        header = cabecera,
-                        #low_memory = False # Para que no haya tipos de datos mezclados 
-                        )
-    valores = datos.values
-
-    # Los datos son todas las filas de todas las columnas salvo la última 
-    x = valores [:: -1]
-    y = valores [:, -1] # el vector de características es la últma columana
+    data = np.genfromtxt(nombre_fichero,delimiter=separador)
+    y = data[1:,-1].copy()
+    x = data[1:,:-1].copy()
 
     return x,y
 
@@ -130,7 +123,8 @@ def Separador(mensaje = None):
     Hace parada del código y muestra un menaje en tal caso 
     '''
     print('\n-------- fin apartado, enter para continuar -------\n')
-
+    #input('\n-------- fin apartado, enter para continuar -------\n')
+    
     if mensaje:
         print('\n' + mensaje)
 
@@ -148,16 +142,13 @@ def Separador(mensaje = None):
 print(f'Vamos a proceder a leer los datos de los ficheros {NOMBRE_FICHEROS_REGRESION}')
 
 
-x,y = LeerDatos( NOMBRE_FICHEROS_REGRESION[0], SEPARADOR_REGRESION, 0)
+x,y = LeerDatos( NOMBRE_FICHEROS_REGRESION[0], SEPARADOR_REGRESION)
 
-'''
-for nombre_fichero in NOMBRE_FICHEROS_REGRESION[2:]:
-    x_aux,y_aux = LeerDatos( nombre_fichero, SEPARADOR_REGRESION)
-    np.append(x,x_aux)
-    np.append(y,y_aux)
+# Comprobación de si hay algún valor perdido
+print('Hay algún valor perdido:',np.isnan(x).any())
 
-'''
-Separador('Separamso test y entrenamiento')
+
+Separador('Separamos test y entrenamiento')
 
 ###### separación test y entrenamiento  #####
 ratio_test_size = 0.2
@@ -168,13 +159,19 @@ x_train, x_test, y_train, y_test = train_test_split(
     random_state=1)
 
 
-print('Veamos ahora si los datos están bie distribuidos')
-### Probar a ajustar con datos balanceados aunque menos
-
-
 #vemos que están balanceados
 
 def BalanceadoRegresion(y, divisiones = 20):
+    '''
+    INPUT: 
+    y: Etiquetas
+    divisiones: número de agrupaciones en las que dividir el rango de etiquetas
+
+    OUTPUTS: 
+    void
+    imprime en pantalla detalles y gráfica
+ 
+    '''
     min_y = min(y)
     max_y = max(y)
 
@@ -205,11 +202,10 @@ def BalanceadoRegresion(y, divisiones = 20):
             indice_maximo = i
 
     # imprimimos valores
-    #getcontext().prec = 4
-    print('COMPROBACIÓN BALANCEO DE Y')
+    print('\nDistribución de las etiquetas de y en rango valores de [%.4f, %.4f] \n'%(min_y, max_y))
     
     print('Número total de etiquetas ', len(y))
-    print('Rango de valores de y [%.4f, %.4f]'%(min_y, max_y))
+    
     print('Cantidad mínima de datos ', cantidad_minima)
     extremo_inferior = min_y + longitud * indice_minimo
     print(f'Alcanzada en intervalo [%.4f , %.4f]'%
@@ -219,12 +215,17 @@ def BalanceadoRegresion(y, divisiones = 20):
     extremo_inferior = min_y + longitud * indice_maximo
     print(f'Alcanzada en intervalo [%.4f , %.4f]'%
           (extremo_inferior , (extremo_inferior + longitud)))
-    print('La media es %.4f'% datos_en_rango.mean())
-    print('La desviación típica %.4f' % datos_en_rango.std())
+    print('La media de datos por intervalo es %.4f'% datos_en_rango.mean())
+    print('La desviación típica de datos por intervalos es %.4f' % datos_en_rango.std())
+    print('La mediana de y es %4.f' % np.median(y))
+    print('La media de datos %.4f'% y.mean())
+    print('La desviación típica de datos %.4f'% y.std())
+    
 
     # gráfico  de valores
     plt.title('Número de etiquetas por rango de valores')
-    plt.bar([i*longitud + min_y for i in range(len(datos_en_rango))],datos_en_rango, width = longitud * 0.9)
+    plt.bar([i*longitud + min_y for i in range(len(datos_en_rango))],
+            datos_en_rango, width = longitud * 0.9)
     plt.xlabel('Valor de la etiqueta y (rango de longitud %.3f)'%longitud)
     plt.ylabel('Número de etiquetas')
     plt.show()
@@ -233,7 +234,7 @@ def BalanceadoRegresion(y, divisiones = 20):
     
         
 ### Comprobación de balanceo 
-Separador('Comprobamos balanceo')
+Separador('___ Distribución de las etiquetas ___')
 BalanceadoRegresion(y, divisiones = 30)
 
 restricciones_y = [100, 140]
@@ -298,17 +299,19 @@ mascara_sin_outliers = EliminaOutliers(y_train, proporcion_distancia_desviacion_
 x_train = x_train[mascara_sin_outliers]
 y_train = y_train[mascara_sin_outliers]
 
+#########
+
+
+
 
 Separador('Normalizamos los datos')
 #Normalizamos los datos para que tengan media 0 y varianza 1
 scaler = StandardScaler()
-#x_train_normalizados = scaler.fit_transform( x_train )
-#x_test_normalizados = scaler.transform( x_test)
-
 x_train = scaler.fit_transform( x_train )
 x_test = scaler.transform( x_test) 
 
 
+    
 #------- correlacion ----
 def PlotMatrizCorrelacion(matriz_correlacion):
     '''
@@ -326,10 +329,11 @@ def Pearson( x, umbral, traza = False):
     '''INPUT 
     x vector de caracteríscas 
     umbral: valor mínimo del coefiente para ser tenido en cuenta
-    traza: Imprime coeficiente de Pearson e índices que guardan esa relación.   muestra gráfico: determian si se muestra una tabla con los coeficinetes que superen el umbral
+    traza: Imprime coeficiente de Pearson e índices que guardan esa relación.   
+    muestra gráfico: determina si se muestra una tabla con los coeficinetes que superen el umbral
 
     OUTPUT
-    indice_explicativo: índice de columnas linealente independientes (con ese coeficiente)
+    indice_explicativo: índice de columnas linealmente independientes (con ese coeficiente)
     relaciones: lista de tuplas (correlacion, índice 1, índice 2)
 
     '''
@@ -367,10 +371,10 @@ def Pearson( x, umbral, traza = False):
     # imprimimos las relaciones en orden
     if(traza):
         print(f'\nCoeficiente pearson para umbral {umbral}')
-        print('Coeficiente | Índice 1 | Índice 2    ')
-        print( '--- | --- | ---    ')
+        print('| Coeficiente | Índice 1 | Índice 2 |     ')
+        print( '| --- | --- | ---|     ')
         for i,j,k in relaciones:
-            print(i,' | ' , j, ' | ', k , '    ')
+            print('| ',i,' | ' , j, ' | ', k , '|     ')
 
     return indice_explicativo, relaciones
 
@@ -382,7 +386,7 @@ PlotMatrizCorrelacion(np.corrcoef(x_train.T))
 Separador('Índice de las características a mantener')
 
 ### Cálculos para distinto umbrales
-umbrales = [0.999, 0.99, 0.98, 0.97, 0.95, 0.9]
+umbrales = [0.97]##[0.999, 0.99, 0.98, 0.97, 0.95, 0.9] #DESCOMENTAR
 indice_explicativo = dict()
 relaciones = dict()
 
@@ -391,6 +395,7 @@ for umbral in umbrales:
                                                               umbral,
                                                               traza = True,
                                                             )
+    Separador()
 numero_caracteristicas = len(x_train[0])
 print(f'\nEl número inical de características es de { numero_caracteristicas}\n' )
 print('Las reducciones de dimensión total son: \n')
@@ -399,6 +404,7 @@ print('|:------:|:---------------------:|:---------------:|    ')
 for  umbral, ie in indice_explicativo.items():
     len_ie = len(ie)
     print(f'| {umbral} | {len_ie} | {numero_caracteristicas - len_ie} |    ')
+    
 
 
 
@@ -418,12 +424,54 @@ def ReducirCaracteristicas(x,indices_representativos):
     return x_reducido
 
 
-## Nos queamos con los datos que 
+## Reducimos los datos  por regresión    
 x_train_reducido = ReducirCaracteristicas(x_train, indice_explicativo[ umbral_seleccionado])
 x_test_reducido = ReducirCaracteristicas(x_test, indice_explicativo[ umbral_seleccionado])
+n_x_test_reducido =  len(x_test_reducido[0])
 
+##  reducimos datos por PCA
+Separador('PCA y su máxima verosimilitud logaritmica')
 
-## ¿aplicamso PCA ? 
+n_x_train = len(x_train[0]) #número de características del x_train 
+
+numero_componentes = [1,2, n_x_test_reducido//2,
+                      int(n_x_test_reducido* 3/4),
+                      int(n_x_train * 9/10),
+                      n_x_test_reducido,
+                      n_x_train]
+pca_sin_pearson = dict() # tomamos x_train
+x_train_pca_sin_pearson = dict()
+pca_con_pearson = dict() # tomamos x_train_reducido
+x_train_pca_con_pearson = dict()
+
+print('| N componentes | score sin haber reducido | score habiendo reducido |   ')
+print('|:---:'*3 + '|    ')
+for n_componentes in numero_componentes:
+
+    pca_sin_pearson[n_componentes] = PCA(n_components = n_componentes)
+    pca_sin_pearson[n_componentes].fit(x_train)
+    x_train_pca_sin_pearson[n_componentes] = pca_sin_pearson[n_componentes].transform(x_train)
+    score_sin_pearson = pca_sin_pearson[n_componentes].score(x_train)
+    
+    if(n_componentes <= n_x_test_reducido):
+        pca_con_pearson[n_componentes] = PCA(n_components = n_componentes)
+        pca_con_pearson[n_componentes].fit(x_train_reducido)
+        x_train_pca_con_pearson[n_componentes] = pca_con_pearson[n_componentes].fit_transform(x_train_reducido)
+        score_con_pearson = pca_con_pearson[n_componentes].score(x_train_reducido)
+    else:
+        score_con_person = 'no calculable'
+
+    print('| {}|{:.4} |{:.4}|    '.format(
+        n_componentes, score_sin_pearson, score_con_pearson))
+        
+
+Separador('Visualizamos PCA 2d')
+
+plt.title('PCA sin haber reducido antes con Pearson')
+plt.scatter(x_train_pca_sin_pearson[1], y_train)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.show()
 
 
 ### Validación cruzada
@@ -512,12 +560,15 @@ def Evaluacion( clasificador,
 ############################################################
 ############ EVALUACIÓN DE LOS MODELOS #####################
 ############################################################
+
+
 ITERACION_MAXIMAS = 2000
 # ¿sería interesante ver la variabilidad con los folds ?
 k_folds = 5 # valor debe de estar entre 5 y 10
 
 
-
+#_________ regresión lineal __________
+Separador('____ Regresión lineal______')
 LINEAL_REGRESSION = LinearRegression(normalize = False, 
                     n_jobs = NUMERO_CPUS_PARALELO)
 
@@ -533,7 +584,11 @@ regresion_lineal = Evaluacion(  LINEAL_REGRESSION,
 
 print( 'Máximo coeficiente ', max(regresion_lineal.coef_))
 
-#a = np.array([[3,2],[6,5]])## borrar 
+
+# Probamos con una transformación cuadrática
+
+Separador('Regresión lineal transformación cuadrática')
+
 def TransformacionPolinomica( grado,x):
     x_aux = np.copy(x)
     for i in range(1,grado):
@@ -557,32 +612,36 @@ regresion_lineal_p2 = Evaluacion(
 )
 
 
-# No hay mejora considerable, descartamso este método.   
+# No hay mejora considerable, descartamos el método de transformar las variables   
 print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
 ## Número máximo de iteraciones
 
-NUMERO_MAXIMO_ITERACIONES = 5000
+NUMERO_MAXIMO_ITERACIONES = 10000
 
 ##_________ método Ridge ______
 
+alphas = [0.0001, 0.01, 1, 100]
+RIDGE = dict() # clasificadores 
+ridge = dict() # ajustes 
+for a in alphas:
+    Separador(f'Ridge alpha = {a}')
+    RIDGE = Ridge(alpha = a,
+                  max_iter = NUMERO_MAXIMO_ITERACIONES,
+                  
+                  )
 
-RIDGE = Ridge(alpha = 1.0,
-              max_iter = NUMERO_MAXIMO_ITERACIONES,
-              
-              )
 
-
-ridge =  Evaluacion(  RIDGE,
-                      x_train_reducido, y_train,
-                      x_test_reducido, y_test,
-                      k_folds,
-                      'Ridge alpha = 1.0',
-                      metrica_error  = 'r2'
+    ridge =  Evaluacion(  RIDGE,
+                          x_train_reducido, y_train,
+                          x_test_reducido, y_test,
+                          k_folds,
+                          f'Ridge alpha = {a}',
+                          metrica_error  = 'r2'
                       
-                    )
+                        )
 
-#print(f'Parámetro de ridge: {ridge.coef_}')
-print('Máximo parámetro ridge ', max(ridge.coef_))
+    #print(f'Parámetro de ridge: {ridge.coef_}')
+    print('Máximo parámetro ridge ', max(ridge.coef_))
 # La variación es muy poca, y el error en cross validation se mantien, luego descartamso esta opción
 
 
