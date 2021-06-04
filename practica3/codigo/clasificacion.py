@@ -38,7 +38,7 @@ import seaborn as sns # utilizado para pintar la matriz de correlación
 # ==========================
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import LeaveOneOut
+#from sklearn.model_selection import LeaveOneOut
 
 # metricas
 # ==========================
@@ -125,7 +125,8 @@ def Separador(mensaje = None):
     '''
     Hace parada del código y muestra un menaje en tal caso 
     '''
-    print('\n-------- fin apartado, enter para continuar -------\n')
+    #print('\n-------- fin apartado, enter para continuar -------\n')
+    input('\n-------- fin apartado, enter para continuar -------\n')
 
     if mensaje:
         print('\n' + mensaje)
@@ -164,6 +165,7 @@ def ExploracionInicial(x):
     print(f'Valor máximo de las varianzas {max(varianza)}')
     
     print('-'*20)
+
 
     
 
@@ -217,7 +219,7 @@ def ImprimeDiccionario(diccionario, titulos):
     for k,v in diccionario.items():
         print(k , ' | ', v , '    ')
         
-
+Separador()
 print('Comprobación de balanceo')
 ImprimeDiccionario(
     NumeroDeEtiquetas(y),
@@ -233,10 +235,10 @@ x_train, x_test, y_train, y_test = train_test_split(
     shuffle = True, 
     random_state=1)
 
-print('Veamos si ha sido homogéneo')
+print('Veamos si ha sido homogéneo la selección etiquetas en test')
 
 ImprimeDiccionario(
-    NumeroDeEtiquetas(y_test),
+    NumeroDeEtiquetas(y_train),
     ['Etiqueta', 'Número apariciones'])
 
 Separador('Normalización')  
@@ -244,7 +246,7 @@ Separador('Normalización')
 print('Datos sin normalizar ')
 ExploracionInicial(x_train)
 
-print ('Datos normalizados')
+print ('Los datos van a ser normalizados.')
 
 ## Normalización de los datos
 
@@ -256,7 +258,7 @@ x_test = scaler.transform( x_test )
 # La media deberá ser cero y la desviación típica 1, lo que no sea serán errores de redondeo.
 # ExploracionInicial(x_train)
 
-Separador('Correlación')
+Separador('Análisis de la correlación entre los datos')
 #------- correlacion ----
 def PlotMatrizCorrelacion(matriz_correlacion):
     '''
@@ -324,6 +326,7 @@ def Pearson( x, umbral, traza = False):
     return indice_explicativo, relaciones
 
 Separador('Matriz de correlación asociada a los datos de entrenamiento')
+print('Visualización de las correlación entre características')
 PlotMatrizCorrelacion(np.corrcoef(x_train.T))
 
 
@@ -335,12 +338,14 @@ indice_explicativo = dict()
 relaciones = dict()
 
 for umbral in umbrales:
+    Separador(f'Características a manterner con umbrar {umbral}')
     indice_explicativo[umbral], relaciones[umbral] = Pearson( x_train,
                                                               umbral,
                                                               traza = True,
-                                                            )
+                                                           )
+Separador('Veamos cuántos somos capaces de reducir la dimensión con esta técnica')
 numero_caracteristicas = len(x_train[0])
-print(f'\nEl número inical de características es de { numero_caracteristicas}\n' )
+print(f'\nEl número inicial de características es de { numero_caracteristicas}\n' )
 print('Las reducciones de dimensión total son: \n')
 print('| umbral | tamaño tras reducción | reducción total |    ')
 print('|:------:|:---------------------:|:---------------:|    ')
@@ -366,7 +371,13 @@ def MostrarMatrizConfusion(clasificador, x, y, titulo, normalizar):
     plt.show()
 
 
-def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
+def Evaluacion( clasificador,
+                x, y,
+                x_test, y_test,
+                k_folds,
+                nombre_modelo,
+                hacer_test = False
+               ):
     '''
     Función para automatizar el proceso de experimento: 
     1. Ajustar modelo.
@@ -382,6 +393,7 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     - k-folds: número de particiones para la validación cruzada
 
     OUTPUT:
+    clasificador
     '''
 
     ###### constantes a ajustar
@@ -451,12 +463,16 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
 
     
     '''
-    
-    # AQUÍ SE ESTÁ HACIENDO DATA SNOPIING !!!!!!!!!!
 
+    if(hacer_test):
     # Precisión
-    print('______Test____')
-    print(f'Accuracy en test {clasificador.score(x_test, y_test)}')
+        print('______Test____')
+        print(f'Accuracy en test {clasificador.score(x_test, y_test)}')
+
+        y_predecida_test = clasificador.predict(x_test)
+        
+        # matriz de confusión
+        confusion_matrix(y_test, y_predecida_test)
 
     '''
    
@@ -472,21 +488,54 @@ def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
     print("\tE_test: ", 1 - numero_aciertos)
 
     
-    # matriz de confusión
-    confusion_matrix(y_test, y_predecida_test)
+    
     '''
     return clasificador
 
 
-
+Separador('Evaluación de los modelos')
 
 ############################################################
 ############ EVALUACIÓN DE LOS MODELOS #####################
 ############################################################
 ITERACION_MAXIMAS = 2000
-# ¿sería interesante ver la variabilidad con los folds ?
+print('El número de iteraciones máximas con el que se va a trabajar es de ',ITERACION_MAXIMAS)
+
 k_folds = 5 # valor debe de estar entre 5 y 10
 
+
+          
+# _____ Perceptrón __________
+Separador('_____ Perceptrón________')
+tasas_de_aprendizaje = [0.001, 0.01, 0.1, 1]
+PERCEPTRON = dict()
+ajuste_perceptron = dict()
+
+print('Vamos a procedes a experimentar con el perceptrón ')
+print('Variando su tasa de aprendizaje en  ', tasas_de_aprendizaje)
+for eta in tasas_de_aprendizaje:
+
+    Separador(f'Análisis para perceprón de tasa de aprendizaje {eta}')
+    PERCEPTRON[eta] = Perceptron(
+        eta0 = eta, 
+        shuffle = True,
+        n_jobs = NUMERO_CPUS_PARALELO,
+        max_iter = ITERACION_MAXIMAS
+    )
+
+
+    Separador()
+    ajuste_perceptron[eta] = Evaluacion(PERCEPTRON[eta],
+                                             x_train, y_train,
+                                             x_test, y_test,
+                                             k_folds,
+                                             f'Perceptrón con tasa aprendizaje = {eta}'
+                                            )
+
+    
+print('Media de los coeficientes del ajuste del mejor perceptrón {:.4f}'.format(ajuste_perceptron[tasas_de_aprendizaje[0]].coef_.mean()))
+
+Separador('SGD')
 
 SGD = SGDClassifier(loss='hinge',
                     penalty='l2',
@@ -500,36 +549,6 @@ y_predecida = Evaluacion(SGD,
         'SGD Classifier con tasa de aprendizaje optima (variable) y factor de regularización 0.01 y función de perdida hinge'
         )
     
-
-
-
-            
-# _____ Perceptrón __________
-Separador('_____ Perceptrón________')
-
-tasas_de_aprendizaje = [1]#[0.001, 0.01, 0.1, 1]
-PERCEPTRON = dict()
-y_predecida_perceptron = dict()
-
-for eta in tasas_de_aprendizaje:
-
-    Separador(f'Análisis para perceprón de tasa de aprendizaje {eta}')
-    PERCEPTRON[eta] = Perceptron(
-        eta0 = eta, 
-        shuffle = True,
-        n_jobs = NUMERO_CPUS_PARALELO,
-        max_iter = ITERACION_MAXIMAS
-    )
-
-
-    Separador()
-    y_predecida_perceptron[eta] = Evaluacion(PERCEPTRON[eta],
-                                             x_train, y_train,
-                                             x_test, y_test,
-                                             k_folds,
-                                             f'Perceptrón con tasa aprendizaje = {eta}'
-                                            )
-
 
 # ____ regresión lineal   
 Separador('Regresión lineal')
@@ -560,25 +579,20 @@ y_predecida_regresion_logistica = Evaluacion(REGRESION_LOGISTICA,
 
 
 
-# Falta comprobar balanceo de la solución   ¿esto cómo se haría ?
+
 
 ################################################
 ####       Análisis de los resultados       ####
 ################################################
 
 
-Separador('Comprobación error test en ajuste y predecidad')
+Separador('Accuray en test del mejor modelo, regresión lineal')
 
-print(f'La precisión en test con logística es {y_predecida_regresion_logistica.score(x_test, y_test)} ')
+print(f'La precisión en test con logística es {y_predecida_regresion_lineal.score(x_test, y_test)} ')
 
-escala = 1/5
-fig = plt.figure()
-ax = fig.add_subplot(111)
-cax = ax.matshow(  confusion_matrix( (y_predecida*escala).round(),(y*escala).round()))
-plt.title(f'Matriz de confusión escala')
-fig.colorbar(cax)
-ax.set_xticklabels([''] + labels)
-ax.set_yticklabels([''] + labels)
-plt.xlabel('Predicted')
-plt.ylabel('True')
-plt.show()
+'''
+print('Sus coeficientes son ',
+      y_predecida_regresion_lineal.coef_
+      )
+'''
+

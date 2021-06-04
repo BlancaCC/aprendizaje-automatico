@@ -20,381 +20,27 @@ header-includes:
 
 \newpage  
 
-# Problema de clasificación   
-
-## Análisis del problema   
-
-Estamos ante un problema de clasificación.   
-
-De la página web de la que se han obtenido los datos [Dataset for Sensorless Drive Diagnosis Data Set](https://archive.ics.uci.edu/ml/datasets/Dataset+for+Sensorless+Drive+Diagnosis#)   
 
 
-Abstract:   Las características son extraídas de la corriente de un motos. 
-El motor puede tener componentes intactos o defectuosos. 
-Estos resultados se encuentras en 11 clases con diferentes condiciones.   
+# Regresión.  Problema de los superconductores   
 
+## Nota preliminar  
 
-Tenemos además la siguiente información:   
-
-- Las características del data set son multivariantes. 
-- Los datos son tipo números reales.  
-- Es una tarea de clasificación.  
-- En número de instancias total es 58509.  
-- El número de atributos es de 49.  
-- Si faltan datos: N/A .  TO-DO (¿qué hacer si faltan datos?)  
-
-## Descripción del tratamiento de los datos  
-
-## Lectura y tratamiento inicial de los datos   
-
-
-El fichero tiene extensión `.txt` de texto plano, para leerlo usaremos la función escrita `LeerDatos (nombre_fichero, separador)` que tiene como pilar básico la función `read_csv` de la biblioteca de pandas.   
-
-Nota: suponemso que la estructura de carpetas es:   
+Para poder leer los datos, estos deben de estar situados en una carpeta con la siguiete estructura:  
 
 ```
-.
-|- clasificacion.py
-|- datos
+codigo/
+|-- clasificacion.py
+|---regresion.py
+|---datos
     |-Sensorless_drive_diagnosis.txt
-```  
-
-Donde `clasificacion.py` es el nombre del ejecutable de nuestra práctica, `datos` es una carpeta y `Sensorless_drive_diagnosis.txt` es el fichero que contiene los datos.  
-
-
-
-### Encode   
-
-Las etiquetas ya se encuentran como enteros, luego las dejaremos de esta manera, es decir estamos utilizando una codificación por enteros.   En caso de haber tenido una codificación categórica, hubiera sido interesante plantearse el one-Hot encoding.  
-
-
-
-### Selección de test y entrenamiento  
-
-Comprobaremos antes si los datos están balanceados, para ello contaré el número de distintas etiquetas.  
-
-
-Esto lo haremos viendo el número de veces que se repite cada etiqueta, el resultado es:   
-
-Etiqueta | Número apariciones  	  
---- | ---    
-1.0  |  5319     
-2.0  |  5319     
-3.0  |  5319     
-4.0  |  5319     
-5.0  |  5319     
-6.0  |  5319     
-7.0  |  5319     
-8.0  |  5319     
-9.0  |  5319     
-10.0  |  5319     
-11.0  |  5319    
-
-Como podemos ver está perfectamente balanceado.  
-
-
-Debemos determinar ahora qué datos usaremos para test y cuáles para entrenamiento.   
-
-El porcentaje que voy a usar será un $20\%$ de los datos reservados para test. La elección de esta se debe a heurísticas generales usadas y porque tenemos los suficientes datos para el entrenamiento.  
-
-
-
-En cuanto a las opciones de cómo separarlos estos deben ser seleccionados de manera aleatoria con una distribución uniforme. Desconozco si además el tamaño es suficientemente grande como para serpararlos directamente sin tener que ir clase por clase tomando el mismo número, ya que al ser homogénena, si el tamaño es sufiente puedo suponer que la selección por clases será homogénea.  
-
-
-Para separarlos usaré la función 
-`sklearn.model_selection.train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None)` de la biblioteca de scikilearn, concretamente con los siguientes parámetros:   
-
-```python
-ratio_test_size = 0.2
-X_train, X_test, y_train, y_test = train_test_split(
-    x, y,
-    test_size= ratio_test_size,
-    shuffle = True, 
-    random_state=1)
-```  
-
-- `test_size` se corresponde a la proporción de los datos que usaremos para el test, está a 0.2 porque ya hemos comentado que trabajaremos con el $20\%$.  
-- `shuffle` a `True` porque queremos coger los datos al azar.   
-- `random_state` es una semilla para la mezcla.  
-
-Los resultados han sido:  
-
-Etiqueta | Número apariciones  	  
---- | ---    
-1.0  |  1138     
-2.0  |  1097     
-3.0  |  1056     
-4.0  |  1065     
-5.0  |  1055     
-6.0  |  1029     
-7.0  |  1072     
-8.0  |  1044     
-9.0  |  1044     
-10.0  |  1043     
-11.0  |  1059  
- 
-
-Vemos que la mayor diferencia es de $| 1138 - 1029 | = 109$  si recordamos que cada clase contaba con $5319$ esto supone una diferencia de $\frac{109}{5319} 100 = 2.0493 %$ es decir que en el peor de los casos estamos entrenando con dos datos más por cada cien.   
-
-Esto no me parece del todo significativo, así que continuaré sin hacerlo por clases. (TO-DO Hay que justificar esto, ya sea por un paper o por ).   
-
-Nótese que desde ahora solo trabajaremos con los datos de entrenamiento, para no cometer ningún tipo de data snooping.  
-
-## Normalización   
-
-Diferencias muy grandes entre los datos podría perjudicar al modelo, luego
-comprobaremos antes si es necesario si es necesario normalizar los datos.  
-
-Para ello he diseñado la función `ExploracionInicial()` que muestra la media y la varianza de los datos.   
-
+    |-train.csv
+    |-unique_m.csv
 
 ```
---------------------
-Resumen de las tablas
---------------------
 
-Media
-Valor mínimo de las medias -1.5019152989937367
-Valor máximo de las medias 8.416765275493
 
-Varianza 
-Valor mínimo de las varianzas 3.419960283480337e-09
-Valor máximo de las varianzas 752.5259323408474
---------------------
-```
-
-
-La variabilidad entre las medias y datos es considerable, así que vamos a normalizar.   
-
-Para ello usaremos la función ` class sklearn.preprocessing.StandardScaler(*, copy=True, with_mean=True, with_std=True)` [@StandardScaler]
-Según la documentación oficial a fecha de hoy, esta función normaliza las característias eliminando la media y escalando en función de la varianza, es calculado de la siguiente manera:   
-
-$$Z =\frac{X -U}{s}$$  
-
-Donde $u$ es la media de los dtos de entrenamiento o cero si el parámetro `with_mean=False`  y $s$ es la desviación típica de los datos del ejemplo y $1$ en caso de que `with_std=False`.     
-
-
-No es más que una normalización del estimador (Como se hace con una distribución de normal de varianza y media... TO-DO completar).   
-
-
-### Correlación de los datos   
-Veamos ahora si podemos encontrar alguna relación entre las características, para ello vamos a utilizar la matriz de correlación.   
-
-( TO-DO Añadir información sobre la correlación )
-
-Para calcularla utilizaremos `corrcoef` de la bibliote de numpy [@CorrcoefNumpy] que devuelve el el producto de los momentos de los coeficientes.  
-
-Queda recogido el código utilizado en la función `Pearson(x,umbral,traza)`.  
-
-Para un umbral de 0.9 hemos obtenido los siguientes coeficientes:  
-
-Coeficiente | Índice 1 | Índice 2    
---- | --- | ---    
-0.9999999848109128  |  21  |  22     
-0.9999999822104457  |  18  |  19     
-0.9999995890206894  |  9  |  10     
-0.9999995669836421  |  22  |  23     
-0.99999955603151  |  19  |  20     
-0.9999995050949259  |  21  |  23     
-0.9999994842185346  |  18  |  20     
-0.999998703692659  |  6  |  7     
-0.9999940569381244  |  10  |  11     
-0.9999930415927719  |  9  |  11     
-0.9999790106652213  |  7  |  8     
-0.9999755087084263  |  6  |  8     
-0.9999725598028012  |  33  |  34     
-0.999949107548143  |  18  |  23     
-0.9999489468171506  |  19  |  23     
-0.9999482678605511  |  18  |  22     
-0.9999480910272748  |  18  |  21     
-0.9999480589259971  |  19  |  22     
-0.9999478753629836  |  19  |  21     
-0.9999476614349387  |  20  |  23     
-0.9999462814165702  |  20  |  22     
-0.9999460533676524  |  20  |  21     
-0.9999314039884376  |  30  |  31     
-0.9996912953730146  |  42  |  43     
-0.9996506253036762  |  45  |  46     
-0.9996206790946303  |  34  |  35     
-0.9995813582717437  |  33  |  35     
-0.9993189379606644  |  31  |  32     
-0.9991906311233252  |  30  |  32     
-0.9970729715793113  |  43  |  44     
-0.9967946202246001  |  42  |  44     
-0.996435194391921  |  46  |  47     
-0.9963402918378648  |  45  |  47     
-0.9266535247934785  |  15  |  16     
-0.9105009972932715  |  12  |  13    
-
-Si además nos fijamos se cumple la propieda transitiva, esto es, si entendemos la correlación como *Si dos vectores guardan cierta correlación superior al umbral, entonces se podría decir que uno es combinación lineal del otro*  
-
-Luego podríamos aplicar la propiedad transitiva, esto es si $i$ explica $j$ y $j$ explica $k$ entonces $i$ explica $k$.   
-
-Una vez explicado esto, utilizaremos este critero para reducir la dimensionalidad del vector de características, de tal manera que pueda verse como una base linealmente independiente.  
-
-
-Experimentamos con los umbrales 0.9999, 0.999, 0.95, 0.9 para ver cómo se reduce la dimensión. 
-
-Estas han sido las conclusiones (recordemos que el tamaño inicial del vector de características era de 49):   
-
-| umbral | tamaño tras reducción | reducción total |
-|:------:|:---------------------:|:---------------:|
-| 0.9999 | 38 | 11 |    
-| 0.999 | 34 | 15 |    
-| 0.95 | 32 | 17 |    
-| 0.9 | 30 | 19 |  
-
-
-Más adelante, en la validación cruzada, experimentaremos cómo afectan las reducciones.  
-
-## Modelos a utilizar   
-
-Compararemos los modelos a través de la función de `Evaluacion`:   
-
-```python 
-def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
-    '''
-    Función para automatizar el proceso de experimento: 
-    1. Ajustar modelo.
-    2. Aplicar validación cruzada.
-    3. Medir tiempo empleado en ajuste y validación cruzada.
-    4. Medir la precisión.   
-
-    INPUT:
-    - Clasificador: Modelo con el que buscar el clasificador
-    - X datos entrenamiento. 
-    - Y etiquetas de los datos de entrenamiento
-    - x_test, y_test
-    - k-folds: número de particiones para la validación cruzada
-
-    OUTPUT:
-    '''
-```  
-
-En ella se emplea la función `cross_val_score` [@crossValScore].  
-La cabecera de dicha función es la siguiente: 
-```python
- sklearn.model_selection.cross_val_score(
-    estimator,
-    X, y=None, *, 
-    groups=None, 
-    scoring=None, 
-    cv=None, 
-    n_jobs=None, 
-    verbose=0, 
-    fit_params=None,
-    pre_dispatch='2*n_jobs', 
-    error_score=nan
-    )
-```
-
-Y los argumentos que nos conciernen son: 
-
-- `estimator`:  el objeto usado para ajustar los datos (por ejemplo `SGDClassifier`.   
-- `X` array o lista con los datos a ajustar.   
-- `Y` array  de etiquetas.  ( En el caso de aprendizaje automático como els el nuestro.  
-- `cv` Estrategia de validación cruzada, número de particiones.  
-- Salida: `scores` ndarray  de flotantes del tamaño `len(list(cv))` que son las puncuaciones que recibe cada ejecución de la validación cruzada.  
-  
-  
-
-
-Se ha optado por esta función y no por `cross_validate` [@crossValidate] porque la diferencia entre estas dos funciones son que éste segundo permite especificar múltiples métricas para la evaluación, pero éstas no nos son útiles ya que que miden cuestiones de tiempo que por ahora no nos interesa.    
-
-
-
-Como medida de la bondad del ajuste hemos usado `accuracy_score`[@accuracyScore] que devuelve un florando con la número de acierto, hemos optado por esta por tratarse de un problema de clasificación, ya que esta medida es la más intuitiva.     
-
-
-
-
-
-
-### Por qué hemos optado por esta técnica de validación 
-
-[@crossValEvaluating] 
-
-## Modelos lineales que se van a utilizar del paquete de sklearn   
-
-#### SGDClassifier  
-
-[@https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html ]  
-
-Teste estimador implementa el graciente descendente estocástico.   
-
-Vamos a normalizar los datos ya que la documentación no dice que para mejores resutlado deben de tener media cero y varianza uno.   
-
-Por defecto este ajuste soporta SVM.   
-
-Por defecto esta función utiliza la normal euflide.   
-
-
-##### Como funciona el gradiente descendiente para clasificación en varias dimensiones  
-
-Como hemos visto en la teoría el gradiente descendente no es más que una técnica de optimización que no se corresponde a ninguna familia concreta de modelos de optimización.  
-
-Las ventajas que presenta este método son: 
-
-- Eficiencia   
-- Facilidad de ajuste de los datos.  
-
-Las desventajas que presenta este método son:   
-- Sensibla a la característica de las escalas. 
-- Requiere parámeteros como el de regularización y el número máximo de iteraciones.   
-
-
-Por ser ser sensible a las escalas normalizaré los datos, además en teoría hemos visto que sí que influye el orden de los datos, luego procederé a un desordenado de los datos ( con el parámetro `shuffle = True`).   
-
-
-
-Además entreré el modelo con la función de pérdida de sciki-learn llamada `hinge` ya que de esta manera será equivalente a SVM.  
-
-
-Otros parámetros que nos podríamos haber planteado eran:  
-
-- `loss="hinge"`: (soft-margin) linear Support Vector Machine  
-- `loss="modified_huber"`: smoothed hinge loss  
-- `loss="log"`: logistic regression  
-
-TO-DO ¿Por qué usamso hinge?
-
-La función `SGDClassifier` soporta clasificació combinando múltiples clasificadores binarios en un esquema OVA *ine versus all*.   
-
-Esto quiere decir que para $K$ clases el clasificador binario discrimian una clase frente a las $K -1$ clases restantes.  
-
-Cuando legue el momento de testeo, el se calcula el valor de confianza, es decir la distancias con signo al hiperplano y se elege aquella que se la má salta.  
-
-
-TO-DO falta añadir más información sobre este método, como que devuelve   
-
-https://scikit-learn.org/stable/modules/sgd.html  
-(después de la imagen te encontrarás la información.  
-
-
-[@StochasticGradientDescent]
-
-
-#### Resultados obtenidos   
-
-HAY QUE CAMBIAR ESTOS RESULTADOS 
-```
-Tiempo empleado para el ajuste: 1.0308427810668945s
-Tiempo empleado para validación cruzada: 3.9933764934539795s
-Evaluación media de aciertos usando cross-validation:  0.8557272854255336
-
-```  
-
-Las respectivas matrices de confusión: 
-
-## Utilización del perceptrón   
-
-
-# Regresión   
-
-## Problema de los superconductores   
-
-### Descripción del problema   
+## Descripción del problema   
 
 Se tienen dos ficheros que contienen 21263 datos sobre superconductores y sus características relevantes.   
 
@@ -403,8 +49,8 @@ Se tienen dos ficheros que contienen 21263 datos sobre superconductores y sus ca
 - Tarea de regresión   
 - Número de instancias: 21263   
 - Número de atributos: 81  
-- No se sabe si faltan valores.  
-- Área de físicas   
+- No faltan valores.  
+- Área de físicas.   
 
 
 
@@ -413,11 +59,11 @@ De las características obtenidas
 
 [@UCISuperconductivtyDataSet]
 
-### Tratamiento de los datos   
+## Tratamiento de los datos   
 
 Trabajaremos solo con el primer fichero, ya que el segundo contiene los compuestos químicos de los que hemos extraído los datos y no nos es relevante.  [@HAMIDIEH2018346]  
 
-#### Distribución de las etiquetas de entrenamiento   
+### Distribución de las etiquetas de entrenamiento   
 
 Procederemos con un análisis preliminar de las etiquetas, para ver cuál es su distribuición.   Se realizará con la función propia `BalanceadoRegresion(y, divisiones = 20)`.   
 
@@ -430,16 +76,19 @@ Obtenemos los siguiente información relevante:
 - Desviación típica de número de etiquetas por intervalo: 1136.9938    
 
 
-A vista de estos resultdos es notable que los valores no están repartidos homogéneamente, es más presentan un fuerte desequilibrio con mayor presencia de etiquetas bajas y ausencia de etiquetas en ciertos intervalos altos.  
+A vista de estos resultdos es notable que los valores no están repartidos homogéneamente, es más, presentan un fuerte desequilibrio con mayor presencia de etiquetas bajas y ausencia de etiquetas en ciertos intervalos altos.  
 
-Esto queda reflejado incluso cuando analizamos la dispersión en diferentes rangos:   
+Esto queda reflejado incluso cuando analizamos la dispersión en diferentes rangos, 
+
+Table: Distribución de la etiquetas con valor en cierto rango. 
 
 | Intervalo a analizar:                                     | $[2 \times 10^{-4}, 185]$ | $[100, 185]$ | $[143, 185]$ |
 |:---------------------------------------------------------:|:-------------------------:|:-----------:|:-------------:|
-| Mediana  de las etiquetas                                 | 20                        | 112         | 143           |
-| Número de etiquetas medio por intervalo                   | 708.7667                  | 25.6        | 0.1           |
-| Desviación típica   de cantidad de etiquetas en intervalo | 1136.9938                 | 35.83       | 0.3958        |
 | Número total de etiquetas                                 | 21263                     | 768         | 3             |  
+| Mediana  de las etiquetas                                 | 20                        | 112         | 143           |
+| Número de etiquetas medio por partición                   | 708.7667                  | 25.6        | 0.1           |
+| Desviación típica   de cantidad de etiquetas en intervalo | 1136.9938                 | 35.83       | 0.3958        |
+
 
 
 
@@ -463,14 +112,14 @@ Esto queda reflejado incluso cuando analizamos la dispersión en diferentes rang
 \end{subfigure}
 \end{figure} 
 
-##### Estrategias ante esta distribución  
+#### Estrategias ante esta distribución  
 
 No podemos ampliar la muestra, así que la única opción para conseguir más homogeneidad en las etiquetas
 sería descartar ciertos datos; como esto nos haría perder precisión en general optaremos por utilizar los datos que tenemos, siendo conscientes
 de que el entrenamiento para valores mayores es peor.  
 
 
-#### Tipificación de los datos   
+### Tipificación de los datos   
 
 Procederemos a tificar los datos. Esto nos va a dar algunas ventajas como  reducier la gran diferencia de escala en los valores  manteniendo las difrencias.  
 
@@ -486,7 +135,7 @@ Para la implementación utilizamos la función `StandardScaler() ` y los método
 La necesidad de estos método es normalizar a partir de los datos de entrenamiento, guardar la media y varianza de estos datos y luego aplicar la misma transformación (con los mismo datos de entrenamiento) al test, esto se realiza así ya que si se aplicara la transformación a todos los datos se estaría cometiendo data snopping.   
 
 
-#### Reducción de la dimensión   
+### Reducción de la dimensión   
 
 A continuación intentaremos reducir el tamaño de vector de características sin perder explicación en los datos. 
 
@@ -494,13 +143,15 @@ Para ello utilizaremos el coefiente de correlación de Pearson, que se define co
 
 $$\rho _{X,Y} = \frac{cov(X,Y)}{\sigma_X \sigma_Y}$$  
 
-Donde: 
+Donde:   
+
 - $X,Y$ son dos variables aleatorias que siguen la misma distribución, en nustro caso dos características distintas.  
 - $cov$ la covarianza.  
 - $\sigma_X$ la desviación típica de $X$.  
 
 
-La interpretación es la siguiente, $1$ si existe una correlación perfecta, $-1$ si la correlación inversa es perfecta y cero sin no existe relación alguna entre las características.  
+La interpretación es la siguiente, $1$ si existe una correlación perfecta, $-1$ si la correlación inversa es perfecta y
+cero si no existe relación alguna entre las características.  
 
 La matriz de correlación de los datos queda reflejada en figura 3.   
 
@@ -514,7 +165,7 @@ Los datos explicados a partir de otros son los que se aproximan a uno (blanco) o
 
 Para tener una visión más analítica de los resultados utilizaremos la función `Person(x,umbral, traza)`, esta nos indicará qué características están relacionadas, con coeficientes en valor absoluto  mayor que umbral indicado.  
 
-La mayor correlación empieza a partir de $0.9977$, relaciones con correlación superior a $0.99$ solo hay 4.
+La mayor correlación empieza a partir de $0.9977$, relaciones con correlación superior a $0.99$ hay 5.
 
 A continuación muestro una tabla que refleja cómo variaría la dimensión de nuestros datos si eliminamos una de las columnas que sea explicada por otra con un umbrar superior al indicado.  
 
@@ -528,8 +179,7 @@ A continuación muestro una tabla que refleja cómo variaría la dimensión de n
 | 0.9    | 42                    | 39              |  
 
 Table: Reducción de la dimensión de la matriz de características a partir del umbral de coeficiente de correlación indicado  
-
-\newpage  
+  
 
 Puede consultar los coeficientes respectivos durante la ejecución del código, aquí le muestro para un umbral de 0.97.  
 
@@ -556,7 +206,7 @@ Table: Coeficiente pearson para umbral 0.97
 
 Vamos a seleccionar al final los datos con umbral de 0.97, ya que nos parece que mantiene buen nivel de explicación.  
 
-#### Otras formas de reducción de la dimensión  
+### Otras formas de reducción de la dimensión  
 
 Para PCA, datos a analizar   
 
@@ -599,7 +249,7 @@ Esta forma nos recuerda a un función de proporcionalidad inversa, quizás sea i
 
 
 
-### Error a utilizar   
+## Error a utilizar   
 
 Si bien en los errores hemos utilizado en clase el error cuadrático medio,  $mean\_squared\_error$ [@Varianza explicada]. El  penaliza más a las grandes diferencias.  
 
@@ -608,13 +258,13 @@ Hemos optado por utilizar $R^2$, el coeficiente de determinación, que no es má
 A nivel computacional puede que en algunos caso por la forma de calcularlo el coeficiente sea negativo, esto se redondeará a cero.  
 
 
-## Selección del modelos  
+# Selección del modelos  
 
-### Modelos que vamos a tratar  
+## Modelos que vamos a tratar  
 
 La infomación a todos estos modelos ha sido sacada de la página oficial de skleart entre el 23 de mayo de 2021 y e 5 de julio del mismo año.   
 
-#### Modelo de regresión lineal   
+### Modelo de regresión lineal   
 
 Se corresponde a un modelos de regresión lineal  por mínimos cuadrados usual, la funcion es `class sklearn.linear_model.LinearRegression(*, fit_intercept=True, normalize=False, copy_X=True, n_jobs=None, positive=False)`  
 
@@ -626,7 +276,7 @@ Este método tiene como característica que da más importancia a reducir grande
 
 Las variantes que posteriormente utilizaremos de este método son Lasso y Ridge, ambos introduce regularización.   
 
-#### Ridge   
+### Ridge   
 
 Regresión lineal de mínimos cuadrados con regularización l2, es decir la función objetivo a minimzar es:  
 
@@ -639,7 +289,7 @@ Este tipo de regresiones consiguen que los coeficientes tomen de manera general 
 Es equivalente a usar `SGDRegresor` con los argumentos `SGDRegressor(loss='squared_loss', penalty='l2')`  
 
 
-#### Lasso  
+### Lasso  
 Regresión lineal de mínimos cuadrados con regularización l2, es decir la función objetivo a minimzar es:  
 
 $$f(w) = \| y-wX\| + alpha \| w\|$$  
@@ -650,7 +300,7 @@ Este tipo de regresiones consiguen que los coeficientes tomen de manera general 
 
 Es equivalente a usar `SGDRegresor` con los argumentos `SGDRegressor(loss='squared_loss', penalty='l1')`  
 
-#### Gradiente descendente estocástico  
+### Gradiente descendente estocástico  
 
 Implementa el gradiente descendiente estocástico, en la documentación se recomienda utilizar estos métodos cuando el número de valores sea lo suficientemente grande (mayor que 10000).  En nuestro caso contamos con más de 20000 tras el procesado, luego es legítimo su uso.  
 
@@ -668,7 +318,7 @@ Nosotros utilizaremos la de mínimos cuadrados y la última.
 La mayor ventaja de este método es su eficiencia computacional $\mathcal O(kn\bar p)$  donde $k$ es el número de épocas y $\bar p$ es la media de los atributos no nulos del conjunto,  $n$ es el número de características de la matriz de entrenamiento $X \mathbb R^{n \times p}$.  
 
 
-#### Epsilon-Insensitive  
+### Epsilon-Insensitive  
 
 Esto es un caso de soft-margin equivalente a regresiónd de soporte vectorial donde la función a minimizar es: 
 
@@ -683,14 +333,14 @@ vendría dada por
 
 $$\eta ^(t) = \frac{1}{ \alpha(t_0 + t)}$$
 
-#### Argumentos y parámetros generalel a todos los modelos   
+### Argumentos y parámetros generalel a todos los modelos   
 
 Todos los modelos nos permiten agilizar el ajuste utilizando programación en paralelo, esto se hace gracias  `n_jobs`.  
 
 El error a usar será $R^2$.  
 
 
-### Experimento transformaciones características  
+## Experimento transformaciones características  
 
 Vamos a seleccionar con qué transformación de los datos de entrenamiento vamos a trabajar, para ello voy a fijar un modelo cualquiera, en este caso regresión lineal y a partir de ahí compararé los resultados con validación cruzada.  
 
@@ -698,7 +348,7 @@ Nota: Los tiempos de ejecución puede variar a los que aquí se presentan
 
 
 
-| Experimento         | Media $R^2$ cv | varianza cv | tiempo ajuste modelo | tiempo cv |
+| Experimento         | Media $R^2$ cv | $\sigma$ cv | tiempo ajuste modelo | tiempo cv |
 |:-------------------:|:--------------:|:-----------:|----------------------|:---------:|
 | X sin prepocesar    | 0.737095       | 0.012516    | 0.316216             | 1.886190  |
 | X solo normalizado  | 0.737095       | 0.012516    | 0.215509s            | 0.749248  |
@@ -729,7 +379,7 @@ Los resultados obtenidos son los siguientes:
 
 
 
-| Transformación | Media error cv | varianza cv | tiempo ajuste modelo | tiempo cv |
+| Transformación | Media error cv | desv.tip cv | tiempo ajuste modelo | tiempo cv |
 |:--------------:|:--------------:|:-----------:|:--------------------:|:---------:|
 | Sin ninguna    | 0.738254       | 0.013038    | 0.262464s            | 0.728209  |
 | Inversa        | 0.684363       | 0.088954    | 0.689754             | 2.001623  |
@@ -743,7 +393,7 @@ Conclusiones a la vista de los resultado:
 - Nuestra tesis no era cierta, ya que una transformación aleatoria ha mejorado el error de la transformación inversa.  
 - Al aumentar la dimensión ha disminuído el error, sin embargo no tenemos ningún buen motivo para optar por ahora utilizar los datos cuadráticos, así que para evitar riesgo de overfitting seguiremos utilizando los datos de `x_train'  sin transfomar.  
 
-### Planteamos regularización  
+## Planteamos regularización  
 
 Observando los coeficientes vemos que para el caso de regresión lineal tienen una media de -0.3357, desviación típica de 23.2933 y estos valores obscilan en el intervalo $[-109.8194 , 100.3491]$. Luego podría ser interesante plantear regularización.   
 
@@ -814,14 +464,14 @@ Table: Comparativas de regularización tiempos
 
 Por lo general ridge parece tener mejores tiempos.  
 
-#### Conclusiones de la regularización   
+### Conclusiones de la regularización   
 
 No parece que haya hipótesis suficientes para asegurar que la regularización mejore el error en el problema, 
 aunque un buen motivo de selección puede ser la mejora en tiempos con el método ridge.  
 
 
 
-### Selección de otros modelos y ajuste de sus hiperparámetros  
+## Selección de otros modelos y ajuste de sus hiperparámetros  
 
 Finalmente probaremos regularización por gradiente estocástico y L2 para ver si podemos mejorar   
 
@@ -903,7 +553,7 @@ Table: Bondad ajuste SGD
  | SGD 11, epsilon_insensitive, adaptive, a=1     | 0.01202             | 0.10616            | $[-0.161,0.219]$                         |
 
 
-## Conclusiones finales  
+# Conclusiones finales  
 
 A partir de los datos obtenidos en validación cruzada el modelo que creemos más oportuno es regresión lineal clásica con los datos normalizado. Vamos a proceder al cálculo de su error en test.  
 
@@ -936,16 +586,501 @@ Y los coeficientes finales son:
    -0.43269037  -19.63394812   29.28920034   23.77807324  -33.40295992
    29.3930802   -26.99417789    6.22070315   -0.86233777    3.2880403
   -11.42343509]
+```    
+
+### Matriz de confusión   
+
+A pesar de que la matriz de confusión es para datos, enteros, redondeando los datos a valores enteros podemos visualizarla para poder tener
+una idea de cómo se destribuyen las etiquetas y los problemas de clasificación.  
+
+
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{./imagenes/regresion/matriz_confusion_escala_1.png}
+\caption{Matriz de confusión de todos los datos }
+\end{figure}
+
+
+\begin{figure}[h!]
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=\linewidth]{./imagenes/regresion/matriz_confusion_escala_02.png}
+\caption{Matriz de confusión con escala 0.2 de las etiquetas}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=\linewidth]{./imagenes/regresion/matriz_confusion_escala_05.png}
+\caption{Matriz de confusión con escala 0.2 de las etiquetas}
+\end{subfigure}
+\end{figure} 
+
+
+Podemos ver que una gran nube de etiquetas se encuentra en la diagonal, lo que refleja que el acierto es correcto, por otra parte también se aprecia muchos para valores menores, lo cual indica que es por ello que es más difícil de clasificarlos.  
+
+
+
+## Comparación bondad del ajuste con dummy approximator 
+
+Aunque la bondad del ajuste no se acerque a la perfección, si utilizáramos un aproximador dummy, su bondad sería peor, luego podemos estar satisfechos con el ajuste encontrado.  
+
+\pagebreak
+\newpage  
+
+
+# Problema de clasificación   
+
+## Análisis del problema   
+
+Estamos ante un problema de clasificación.   
+
+De la página web de la que se han obtenido los datos [Dataset for Sensorless Drive Diagnosis Data Set](https://archive.ics.uci.edu/ml/datasets/Dataset+for+Sensorless+Drive+Diagnosis#)   
+
+
+Abstract:   Las características son extraídas de la corriente de un motos. 
+El motor puede tener componentes intactos o defectuosos. 
+Estos resultados se encuentras en 11 clases con diferentes condiciones.   
+
+
+Tenemos además la siguiente información:   
+
+- Las características del data set son multivariantes.   
+- Los datos son tipo números reales.  
+- Es una tarea de clasificación.  
+- En número de instancias total es 58509.  
+- El número de atributos es de 49.  
+- No faltan datos.  
+
+## Descripción del tratamiento de los datos  
+
+## Lectura y tratamiento inicial de los datos   
+
+
+El fichero tiene extensión `.txt` de texto plano, para leerlo usaremos la función escrita `LeerDatos (nombre_fichero, separador)` que tiene como pilar básico la función `read_csv` de la biblioteca de pandas.   
+
+Nota: suponemos que la estructura de carpetas es:   
+
+```
+.
+|- clasificacion.py
+|- datos
+    |-Sensorless_drive_diagnosis.txt
 ```  
 
-
-### Comparación bondad del ajuste con dummy approximator 
-
+Donde `clasificacion.py` es el nombre del ejecutable de nuestra práctica, `datos` es una carpeta y `Sensorless_drive_diagnosis.txt` es el fichero que contiene los datos.  
 
 
 
+### Encode   
 
-## Especificaciones técnicas   
+Las etiquetas ya se encuentran como enteros, luego las dejaremos de esta manera, es decir estamos utilizando una codificación por enteros.   En caso de haber tenido una codificación categórica, hubiera sido interesante plantearse el one-Hot encoding.  
+
+
+
+### Selección de test y entrenamiento  
+
+Comprobaremos antes si los datos están balanceados, para ello contaré el número de distintas etiquetas.  
+
+
+Esto lo haremos viendo el número de veces que se repite cada etiqueta, el resultado es:   
+
+Table: Comprobación del balanceo total en $X$. 
+
+
+Etiqueta | Número apariciones  	  
+--- | ---    
+1.0  |  5319     
+2.0  |  5319     
+3.0  |  5319     
+4.0  |  5319     
+5.0  |  5319     
+6.0  |  5319     
+7.0  |  5319     
+8.0  |  5319     
+9.0  |  5319     
+10.0  |  5319     
+11.0  |  5319    
+
+Como podemos ver está perfectamente balanceado.  
+
+
+Debemos determinar ahora qué datos usaremos para test y cuáles para entrenamiento.   
+
+El porcentaje que voy a usar será un $20\%$ de los datos reservados para test. La elección de esta se debe a heurísticas generales usadas y porque tenemos los suficientes datos para el entrenamiento.  
+
+
+
+En cuanto a las opciones de cómo separarlos estos deben ser seleccionados de manera aleatoria con una distribución uniforme. Desconozco si además el tamaño es suficientemente grande como para serpararlos directamente sin tener que ir clase por clase tomando el mismo número. Al ser homogénena, si el tamaño es lo sufiente grande es posible suponer que la selección por clases será homogénea.  
+
+
+Para separarlos usaré la función 
+`sklearn.model_selection.train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None)` de la biblioteca de scikilearn, concretamente con los siguientes parámetros:   
+
+```python
+ratio_test_size = 0.2
+X_train, X_test, y_train, y_test = train_test_split(
+    x, y,
+    test_size= ratio_test_size,
+    shuffle = True, 
+    random_state=1)
+```  
+
+- `test_size` se corresponde a la proporción de los datos que usaremos para el test, está a 0.2 porque ya hemos comentado que trabajaremos con el $20\%$.  
+- `shuffle` a `True` porque queremos coger los datos al azar.   
+- `random_state` es una semilla para la mezcla.  
+
+Los resultados han sido:  
+
+Table: Balanceo datos entrenamiento por clases.  
+
+Etiqueta | Número apariciones  	  
+--- | ---    
+1.0  |  4181     
+2.0  |  4222     
+3.0  |  4263     
+4.0  |  4254     
+5.0  |  4264     
+6.0  |  4290     
+7.0  |  4247     
+8.0  |  4275     
+9.0  |  4275     
+10.0  |  4276     
+11.0  |  4260  
+ 
+
+Vemos que la mayor diferencia es de $| 4181   - 4290 | = 109$  si recordamos que cada clase contaba con $5319$ esto supone una diferencia de $\frac{109}{5319} 100 = 2.0493 %$ es decir que en el peor de los casos estamos entrenando con dos datos más por cada cien.   
+
+Esto no me parece del todo significativo, así que continuaré sin hacerlo por clases.
+
+Nótese que desde ahora solo trabajaremos con los datos de entrenamiento, para no cometer ningún tipo de data snooping.  
+
+## Normalización   
+
+Diferencias muy grandes entre los datos podría perjudicar al modelo, luego
+comprobaremos antes si es necesario si es necesario normalizar los datos.  
+
+Para ello he diseñado la función `ExploracionInicial()` que muestra la media y la varianza de los datos.   
+
+
+```
+--------------------
+Resumen de las tablas
+--------------------
+
+Media
+Valor mínimo de las medias -1.5019152989937367
+Valor máximo de las medias 8.416765275493
+
+Varianza 
+Valor mínimo de las varianzas 3.419960283480337e-09
+Valor máximo de las varianzas 752.5259323408474
+--------------------
+```
+
+
+La variabilidad entre las medias y datos es considerable, así que vamos a normalizar.   
+
+Para ello usaremos la función ` class sklearn.preprocessing.StandardScaler(*, copy=True, with_mean=True, with_std=True)` [@StandardScaler]
+Según la documentación oficial a fecha de hoy, esta función normaliza las característias eliminando la media y escalando en función de la varianza, es calculado de la siguiente manera:   
+
+$$Z =\frac{X -U}{s}$$  
+
+Donde $u$ es la media de los datos de entrenamiento o cero si el parámetro `with_mean=False`  y $s$ es la desviación típica de los datos del ejemplo y $1$ en caso de que `with_std=False`.     
+
+
+No es más que una tipificación del estimador.   
+
+
+### Correlación de los datos   
+Veamos ahora si podemos encontrar alguna relación entre las características, para ello vamos a utilizar la matriz de correlación.   
+
+No es más que una matriz cuyas entradas toman un valor entre -1 y 1. Una entrada de índice $i,j$ representa la relación entre la característica $i$ y $j$,  cuando mayor sea ese valor absuloto más relacionada estará, si es negativo la relación será de proporcionalidad inversa.  
+
+Para calcularla utilizaremos `corrcoef` de la biblioteca de numpy [@CorrcoefNumpy] que devuelve el el producto de los momentos de los coeficientes.  
+
+Y para visualizarla hemos utilizado la función `PlotMatrizCorrelacion`
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/matriz_correlacion.png}
+\caption{Matriz de correlación datos train}
+\end{figure}.   
+
+Cuando blanco sea mayor será la correlación directa, cuando más oscuro la correlación inversa.  
+
+
+
+
+Queda recogido el código utilizado en la función `Pearson(x,umbral,traza)`.  
+
+Aquí se muestra la correlación de las características cuyo umbrar el superior a 0.9999, en el código puede encontrar también los de `[0.9999, 0.999, 0.95, 0.9]`
+
+Table: Coeficiente pearson para umbral 0.9999  
+
+Coeficiente | Índice 1 | Índice 2    
+--- | --- | ---    
+0.9999999848109186  |  21  |  22     
+0.9999999822104304  |  18  |  19     
+0.9999995890206923  |  9  |  10     
+0.9999995669836448  |  22  |  23     
+0.9999995560315011  |  19  |  20     
+0.9999995050949245  |  21  |  23     
+0.9999994842185348  |  18  |  20     
+0.9999987036926605  |  6  |  7     
+0.9999940569381277  |  10  |  11     
+0.9999930415927681  |  9  |  11     
+0.9999790106652306  |  7  |  8     
+0.9999755087084222  |  6  |  8     
+0.9999725598027991  |  33  |  34     
+0.9999491075481474  |  18  |  23     
+0.9999489468171381  |  19  |  23     
+0.9999482678605495  |  18  |  22     
+0.9999480910272766  |  18  |  21     
+0.9999480589259921  |  19  |  22     
+0.9999478753629737  |  19  |  21     
+0.999947661434928  |  20  |  23     
+0.9999462814165624  |  20  |  22     
+0.9999460533676472  |  20  |  21     
+0.9999314039884454  |  30  |  31   
+
+Si además nos fijamos se cumple la propieda transitiva, esto es, si entendemos la correlación como *Si dos vectores guardan cierta correlación superior al umbral, entonces se podría decir que uno es combinación lineal del otro*  
+
+Luego podríamos aplicar la propiedad transitiva, esto es si $i$ explica $j$ y $j$ explica $k$ entonces $i$ explica $k$.   
+
+Utilizaremos el critero recién explicado para reducir la dimensionalidad del vector de características, de tal manera que pueda verse como una base linealmente independiente.  
+
+
+Experimentamos con los umbrales 0.9999, 0.999, 0.95, 0.9 para ver cómo se reduce la dimensión. 
+
+Estas han sido las conclusiones (recordemos que el tamaño inicial del vector de características era de 49):   
+
+Table: Reducción de la dimensión por coeficiente de Pearson  
+
+| umbral | tamaño tras reducción | reducción total |
+|:------:|:---------------------:|:---------------:|
+| 0.9999 | 38                    | 11              |
+| 0.999  | 34                    | 15              |
+| 0.95   | 32                    | 17              |
+| 0.9    | 30                    | 19              |
+
+
+## Modelos a utilizar   
+
+Compararemos los modelos a través de la función de `Evaluacion`:   
+
+```python 
+def Evaluacion( clasificador, x, y, x_test, y_test, k_folds, nombre_modelo):
+    '''
+    Función para automatizar el proceso de experimento: 
+    1. Ajustar modelo.
+    2. Aplicar validación cruzada.
+    3. Medir tiempo empleado en ajuste y validación cruzada.
+    4. Medir la precisión.   
+
+    INPUT:
+    - Clasificador: Modelo con el que buscar el clasificador
+    - X datos entrenamiento. 
+    - Y etiquetas de los datos de entrenamiento
+    - x_test, y_test
+    - k-folds: número de particiones para la validación cruzada
+
+    OUTPUT:
+    clasificador
+    '''
+```  
+
+En ella se emplea la función `cross_val_score` [@crossValScore].  
+La cabecera de dicha función es la siguiente: 
+```python
+ sklearn.model_selection.cross_val_score(
+    estimator,
+    X, y=None, *, 
+    groups=None, 
+    scoring=None, 
+    cv=None, 
+    n_jobs=None, 
+    verbose=0, 
+    fit_params=None,
+    pre_dispatch='2*n_jobs', 
+    error_score=nan
+    )
+```
+
+Y los argumentos que nos conciernen son: 
+
+- `estimator`:  el objeto usado para ajustar los datos (por ejemplo `SGDClassifier`.   
+- `X` array o lista con los datos a ajustar.   
+- `Y` array  de etiquetas.  ( En el caso de aprendizaje automático como els el nuestro.  
+- `cv` Estrategia de validación cruzada, número de particiones.  
+- Salida: `scores` ndarray  de flotantes del tamaño `len(list(cv))` que son las puncuaciones que recibe cada ejecución de la validación cruzada.  
+  
+  
+
+
+Se ha optado por esta función y no por `cross_validate` [@crossValidate] porque la diferencia entre estas dos funciones son que ésta segunda permite especificar múltiples métricas para la evaluación, pero éstas no nos son útiles ya que que miden cuestiones de tiempo que por ahora no nos interesa.    
+
+
+
+Como medida de la bondad del ajuste hemos usado `accuracy_score`[@accuracyScore] que devuelve un florando con la número de acierto, hemos optado por esta por tratarse de un problema de clasificación, ya que esta medida es la más intuitiva.     
+
+
+### Constantes que vamos a utilizar para la experimentación   
+
+Además el número de épocas máximas que vamso a utilizar son 2000 (en regresión este valor se verá reducido por cuestiones de tiempo).  
+
+El número de folds que usamos es de 5, podría utilizarse cualquiera entre 5 y 10; pero por cuestiones de no prolongar innceseariamente la ejecución del código se van a utilizar 5.   
+
+
+### La técnica de validación usada será el cross validation  
+
+[@crossValEvaluating] que además es la vista en clase de teoría.  
+
+Esta nos permite una buena idea del error fuera de la muestra sin cometer data snopping.   
+
+## Modelos lineales que se van a utilizar del paquete de sklearn   
+
+#### SGDClassifier  
+
+[@https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html ]  
+
+Teste estimador implementa el graciente descendente estocástico.   
+
+Vamos a normalizar los datos ya que la documentación no dice que para mejores resutlado deben de tener media cero y varianza uno.   
+
+Por defecto este ajuste soporta SVM.   
+
+Por defecto esta función utiliza la normal euclidea.   
+
+
+##### Como funciona el gradiente descendiente para clasificación en varias dimensiones  
+
+Como hemos visto en la teoría el gradiente descendente no es más que una técnica de optimización que no se corresponde a ninguna familia concreta de modelos de optimización.  
+
+Las ventajas que presenta este método son: 
+
+- Eficiencia   
+- Facilidad de ajuste de los datos.  
+
+Las desventajas que presenta este método son:   
+- Sensibla a la característica de las escalas. 
+- Requiere parámeteros como el de regularización y el número máximo de iteraciones.   
+
+
+Por ser ser sensible a las escalas normalizaré los datos, además en teoría hemos visto que sí que influye el orden de los datos, luego procederé a un desordenado de los datos ( con el parámetro `shuffle = True`).   
+
+
+
+Además entreré el modelo con la función de pérdida de sciki-learn llamada `hinge` ya que de esta manera será equivalente a SVM.  
+
+
+Otros parámetros que nos podríamos haber planteado eran:  
+
+- `loss="hinge"`: (soft-margin) linear Support Vector Machine  
+- `loss="modified_huber"`: smoothed hinge loss  
+- `loss="log"`: logistic regression  
+
+La función de pérdida hinge se define como:  
+
+$$L_{Hinge}(y,w) = max(1-wy, 0)$$
+
+La función `SGDClassifier` soporta clasificació combinando múltiples clasificadores binarios en un esquema OVA *one versus all*.   
+
+Esto quiere decir que para $K$ clases el clasificador binario discrimina una clase frente a las $K -1$ clases restantes.  
+
+Cuando llegua el momento de test, se calcula el valor de confianza, es decir cada una de las distancias con signo al hiperplano y se elege aquella que se la más salta.  
+
+
+https://scikit-learn.org/stable/modules/sgd.html  
+(después de la imagen te encontrarás la información.  
+
+
+[@StochasticGradientDescent]
+
+
+## Búsque del modelo  
+
+Comenzaremos con un modelos simple como es el perceptrón variando su tasa de aprendizaje entre: $[0.001, 0.01, 0.1, 1]$.  
+
+El resultado mejor ha obtenido una media en los coeficientes de -0.0028 . 
+
+Luego podría ser interesante directamente guiar a tal resultado usando regularización, vamos a probar con  a = 0.01 y también, para comparar con un método de regresión lineal con max_iter = 20 y de regresión logística.   
+
+Table: Resultados obtenidos   
+
+| Modelo                                  | Accuray en cross-validation | Tiempo en ajuste |
+|:---------------------------------------:|:---------------------------:|:----------------:|
+| Regresión lineal max_iter = 20          | 0.9938702                   | 2.567            |
+| Regresión logística max_iter = 20       | 0.99386845                  | 2.3799           |
+| SGD Classifier, tasa variable, a = 0.01 | 0.8533                      | 0.570            |
+| Perceptrón con tasa aprendizaje = 0.001 | 0.826                       | 0.4367           |
+| Perceprón de tasa de aprendizaje 0.01   | 0.81974                     | 0.54796          |
+| Perceptrón con tasa aprendizaje = 0.1   | 0.81447                     | 0.4367           |
+| Perceptrón con tasa aprendizaje = 1     | 0.81178                     | 0.85268          |
+
+
+
+
+Podemos observar que el percentrón no mejora al primer modelo de la tabla 17 e indiferentemente de la tasa de aprendizaje su error se mantien más o menos igual.  Utilizando regularización hemos obtenido un valor similar al del perceptrón, pero sin lugar a dudas los megres son los obtenidos con regresión lineal sin regularización y regresión logística, de hecho son tan buenos que no vamos a seguir explorando modelos. 
+
+
+Las respectivas matrices de confusión: 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/regresion_linea.png}
+\caption{Regresión lineal max-iter = 20}
+\end{figure}.   
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/regresion_logistica.png}
+\caption{Regresión logística max-iter = 20}
+\end{figure}.  
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/hinge_0_01.png}
+\caption{Evaluando SGD Classifier con tasa de aprendizaje optima (variable) y factor de regularización 0.01 y función de perdida hinge}
+\end{figure}.   
+
+
+\begin{figure}[h!]
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/Perceptron_001.png}
+\caption{Perceptrón con tasa aprendizaje = 0.001}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/Perceptron_01.png}
+\caption{Perceptrón con tasa aprendizaje = 0.01}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/Perceptron_1.png}
+\caption{Perceptrón con tasa aprendizaje = 0.1}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\linewidth}
+\includegraphics[width=1\textwidth]{/home/blanca/repositorios/aprendizaje-automatico/practica3/memoria/imagenes/clasificacion/Perceptron_10.png}
+\caption{Perceptrón con tasa aprendizaje = 1}
+\end{subfigure}
+\end{figure} 
+
+
+# Conclusión final  
+
+El mejor modelos seleccionado es el de regresión lineal  
+que tiene un error en test de 0.99307.  
+
+
+
+
+   
+
+
+\pagebreak
+\newpage  
+\newpage  
+
+# Especificaciones técnicas   
 
 Toda la experimentación se ha hecho sobre un ordenador portátil con las siguientes especificaciones  
 ```
@@ -1077,6 +1212,6 @@ equipo
 
 ```
 
-## Hablar de la dimensión   
-
 \newpage
+
+# Recursos consultados  

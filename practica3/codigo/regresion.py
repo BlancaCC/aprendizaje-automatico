@@ -40,10 +40,9 @@ import seaborn as sns # utilizado para pintar la matriz de correlación
 
 # Validación cruzada
 # ==========================
-from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import LeaveOneOut
+
 
 # metricas
 # ==========================
@@ -123,8 +122,8 @@ def Separador(mensaje = None):
     '''
     Hace parada del código y muestra un menaje en tal caso 
     '''
-    print('\n-------- fin apartado, enter para continuar -------\n')
-    #input('\n-------- fin apartado, enter para continuar -------\n')
+    #print('\n-------- fin apartado, enter para continuar -------\n')
+    input('\n-------- fin apartado, enter para continuar -------\n')
     
     if mensaje:
         print('\n' + mensaje)
@@ -392,7 +391,7 @@ PlotMatrizCorrelacion(np.corrcoef(x_train.T))
 Separador('Índice de las características a mantener')
 
 ### Cálculos para distinto umbrales
-umbrales = [0.97]##[0.999, 0.99, 0.98, 0.97, 0.95, 0.9] #DESCOMENTAR
+umbrales = [0.999, 0.99, 0.98, 0.97, 0.95, 0.9] 
 indice_explicativo = dict()
 relaciones = dict()
 
@@ -439,14 +438,13 @@ n_x_test_reducido =  len(x_test_reducido[0])
 Separador('PCA y su máxima verosimilitud logaritmica')
 
 n_x_train = len(x_train[0]) #número de características del x_train 
-numero_componentes = [1,int(n_x_train * 9/10), n_x_test_reducido] 
-''' DESCOMENTAR
+
 numero_componentes = [1,2, n_x_test_reducido//2,
                       int(n_x_test_reducido* 3/4),
                       int(n_x_train * 9/10),
                       n_x_test_reducido,
                       n_x_train]
-'''
+
 pca_sin_pearson = dict() # tomamos x_train
 x_train_pca_sin_pearson = dict()
 pca_con_pearson = dict() # tomamos x_train_reducido
@@ -832,9 +830,9 @@ def EvaluacionTablaCoeficientes ( clasificador,
     
 
 
-'''
+
 ##_________ método Ridge y Lasso______
-Separazion('Comparativas regularización entre Lasso y Ridge')
+Separador('Comparativas regularización entre Lasso y Ridge')
 
 # COMENTARIO PARA AHORAR TIEMPO DE EJECUCIÓN
 #alphas = [0.0001, 0.01, 1, 100]
@@ -882,7 +880,7 @@ for a in alphas:
                           metrica_error  = 'r2'                 
                         )
 
-   ''' 
+    
 # La variación es muy poca, y el error en cross validation se mantien, luego descartamso esta opción
 
 
@@ -953,7 +951,7 @@ for a in alphas:
                 
                 SGD_REGRESSOR = SGDRegressor(
                     alpha = a,
-                    max_iter = NUMERO_MAXIMO_ITERACIONES,
+                    max_iter = ITERACION_MAXIMAS,
                     eta0 = eta,
                     learning_rate = aprendizaje,
                     penalty = penalizacion,
@@ -962,7 +960,7 @@ for a in alphas:
                     early_stopping = True
                 )
 
-                '''
+                
                 titulo = str(
                     f'\n___SGD regresión ({cnt})___\n' +
                     'algoritmo: ' + algoritmo  + '\n' +
@@ -971,7 +969,7 @@ for a in alphas:
                     'eta: ' + str(eta) +  '\n' +
                     'alpha: ' + str(a) + '\n'
                 )
-                   '''
+                   
 
                 sgd =  Evaluacion(  SGD_REGRESSOR,
                                     x_train, y_train,
@@ -1024,10 +1022,6 @@ print('Los coeficientes finales son: \n',
 
 # _______ matriz de confusión _____
 
--------- fin apartado, enter para continuar -------
-
-
-Matriz de confusión escala 0.05
 Separador('Vamos a comparar la predicción usando la matris de confusión')
 y_predecida = regresion_lineal_sin_outliers_normalizados.predict(x)
 
