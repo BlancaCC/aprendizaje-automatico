@@ -17,6 +17,7 @@ import numpy as np
 # =========================================
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor
 
@@ -116,7 +117,7 @@ def VisualizarClasificacion2D(x,y, titulo=None):
     if titulo is not None:
         plt.title(titulo)
     plt.show()
-q
+
 
 def Separador(mensaje = None):
     '''
@@ -438,12 +439,14 @@ n_x_test_reducido =  len(x_test_reducido[0])
 Separador('PCA y su máxima verosimilitud logaritmica')
 
 n_x_train = len(x_train[0]) #número de características del x_train 
-
+numero_componentes = [1,int(n_x_train * 9/10), n_x_test_reducido] 
+''' DESCOMENTAR
 numero_componentes = [1,2, n_x_test_reducido//2,
                       int(n_x_test_reducido* 3/4),
                       int(n_x_train * 9/10),
                       n_x_test_reducido,
                       n_x_train]
+'''
 pca_sin_pearson = dict() # tomamos x_train
 x_train_pca_sin_pearson = dict()
 pca_con_pearson = dict() # tomamos x_train_reducido
@@ -622,10 +625,10 @@ def Evaluacion( clasificador,
     tiempo_validacion_cruzada = tiempo_fin_validacion_cruzada - tiempo_inicio_validacion_cruzada
     print('\tscore_validacion_cruzada')
     print(score_validacion_cruzada)
-    print ('\tMedia error de validación cruzada {:5f}'.format(score_validacion_cruzada.mean()))
-    print('\tVarianza del error de validación cruzada{:5f}'.format(score_validacion_cruzada.std()))
-    print('\tTiempo empleado para el ajuste: {:4f}s'.format(tiempo_ajuste))
-    print('\tTiempo empleado para el validacion cruzada{:4f}s'.format(tiempo_validacion_cruzada))
+    print ('\tMedia error de validación cruzada {:.5f} '.format(score_validacion_cruzada.mean()))
+    print('\tDesviación típica del error de validación cruzada {:.5f} '.format(score_validacion_cruzada.std()))
+    print('\tTiempo empleado para el ajuste: {:.4f}s '.format(tiempo_ajuste))
+    print('\tTiempo empleado para el validacion cruzada {:.4f}s'.format(tiempo_validacion_cruzada))
 
 
 
@@ -664,10 +667,18 @@ regresion_lineal_con_outliers_normalizados =Evaluacion(
     x_train_outliers_normalizado,
     y_train_con_outliers,
     k_folds,
-    'Regresión lineal con datos sin preprocesar normalizados',
+    'Regresión lineal con datos normalizados sin preprocesar, normalizados',
     metrica_error  = 'r2'
 )
 
+regresion_lineal_sin_outliers_normalizados =Evaluacion(
+    LINEAL_REGRESSION,
+    x_train,
+    y_train,
+    k_folds,
+    'Regresión lineal con datos normalizados y sin outliers',
+    metrica_error  = 'r2'
+)
 regresion_lineal_pearson = Evaluacion(  LINEAL_REGRESSION,
                                 x_train_reducido,
                                         y_train,
@@ -688,14 +699,7 @@ for n_pca in numero_componentes_pca :
         metrica_error  = 'r2'
     )
 
-
-#print( 'Máximo coeficiente ', max(regresion_lineal.coef_))
-
-
-
-## Comparativas de reducción de dimensión
-
-
+# ________ experimentos transformación de los datos  ____________
 # Probamos con una transformación cuadrática
 
 Separador('Regresión lineal transformación cuadrática')
@@ -708,7 +712,18 @@ def TransformacionPolinomica( grado,x):
     return x
 
 
+x_inversa = np.array([ [1/x for x in fila]
+                       for fila in x_train
+])
 
+regresion_lineal_inversa = Evaluacion(
+    LINEAL_REGRESSION,
+    np.c_[x_inversa, x_train],
+    y_train,
+    k_folds,
+    'Regresión lineal transformación en inversa',
+    metrica_error  = 'r2'
+)
 grado = 2
 regresion_lineal_p2 = Evaluacion(
     LINEAL_REGRESSION,
@@ -717,44 +732,163 @@ regresion_lineal_p2 = Evaluacion(
     k_folds,
     'Regresión lineal transformación lineal cuadrática',
     metrica_error  = 'r2'
-    #metrica_error  = 'neg_mean_squared_error'
 )
+regresion_lineal_sin_transformacion = Evaluacion(
+    LINEAL_REGRESSION,
+    x_train,
+    y_train,
+    k_folds,
+    'Regresión lineal sin transformaciones',
+    metrica_error  = 'r2'
+)
+# No hay mejora considerable, descartamos el método de transformar las variables
+
+#_______ Experimentos coeficientes  _________ 
+
+Separador('Coeficientes')
+
+def EvaluacionCoeficientes( w, title, mostrar_coeficientes = False):
+    print(title)
+    
+    if(mostrar_coeficientes):
+        print(w)
+
+    print('Media de los coeficientes {:.4f}'.format(w.mean()))
+    print('Desviación típicade los coeficientes {:.4f}'.format(w.std()))
+    print('Rango valores de los coeffientes [{:.4f} , {:.4f}]'.format(
+        min(w), max(w)))
+    
+    
+EvaluacionCoeficientes(
+    regresion_lineal_sin_transformacion.coef_,
+    'Coeficientes del ajuste lineal para regresión lineal sin regularizar',
+    mostrar_coeficientes = True)
 
 
-# No hay mejora considerable, descartamos el método de transformar las variables   
-#print( 'Máximo coeficiente regresión lineal p2 ', max(regresion_lineal.coef_))
+EvaluacionCoeficientes(
+    regresion_lineal_p2.coef_,
+    'Coeficientes del ajuste final para regresión lineal con transformacíon cuadrática')
+
+
+
 ## Número máximo de iteraciones
 
-NUMERO_MAXIMO_ITERACIONES = 10000
 
-##_________ método Ridge ______
 
-alphas = [0.0001, 0.01, 1, 100]
+#NUMERO_MAXIMO_ITERACIONES = 10000
+
+# Evaluación tabla
+
+def EvaluacionTablaCoeficientes ( clasificador,
+                x, y, 
+                k_folds,
+                nombre_modelo,
+                metrica_error):
+
+    ###### constantes a ajustar
+    numero_trabajos_paralelos_en_validacion_cruzada = NUMERO_CPUS_PARALELO
+    ##########################
+    
+    tiempo_inicio_ajuste = time.time()
+    
+    #ajustamos modelo 
+    ajuste = clasificador.fit(x,y) 
+    tiempo_fin_ajuste = time.time()
+
+    tiempo_ajuste = tiempo_fin_ajuste - tiempo_inicio_ajuste
+
+    
+    
+
+    #validación cruzada
+    tiempo_inicio_validacion_cruzada = time.time()
+
+    score_validacion_cruzada = cross_val_score(
+        clasificador,
+        x, y,
+        scoring = metrica_error,
+        cv = k_folds,
+        n_jobs = numero_trabajos_paralelos_en_validacion_cruzada
+    )
+    tiempo_fin_validacion_cruzada = time.time()
+    
+    tiempo_validacion_cruzada = tiempo_fin_validacion_cruzada - tiempo_inicio_validacion_cruzada
+
+    w = ajuste.coef_
+    #| Modelo               | Media $R^2$ cv | Desviación típica cv | Media coeficientes | Desv. coef | Intervalo coeficientes   | t.ajuste | t t vc  |
+    print('|{:s} |{:.5f} |{:.5f} |{:.5f} |{:.5f} | $[{:.3f},{:.3f}]$ | {:.3f} | {:.3f} |      '.format(
+        nombre_modelo,
+        score_validacion_cruzada.mean(),
+        score_validacion_cruzada.std(),
+        w.mean(),
+        w.std(),
+        min(w), max(w),
+        tiempo_ajuste,
+        tiempo_validacion_cruzada
+              
+    ))
+
+    return ajuste
+    
+
+
+'''
+##_________ método Ridge y Lasso______
+Separazion('Comparativas regularización entre Lasso y Ridge')
+
+# COMENTARIO PARA AHORAR TIEMPO DE EJECUCIÓN
+#alphas = [0.0001, 0.01, 1, 100]
+alphas = [ 0.01]
+
+print('ATENCIÓN: En la memoria se ha calculado para alpha tomando los valores : ',
+      '[0.0001, 0.01, 1, 100]',
+      '\nPara esta ejecución se ha utilizado ', alphas ,
+      '\npara agilizar la ejecución')
+
 RIDGE = dict() # clasificadores 
-ridge = dict() # ajustes 
+ridge = dict() # ajustes
+
+LASSO = dict() # clasificadores 
+lasso = dict() # ajustes
+
+print(' | Modelo               | Media $R^2$ cv | Desviación típica cv | Media coeficientes | Desv. coef | Intervalo coeficientes   | t.ajuste | tiempo vc |    ')
+print('|:--------------------:|:--------------:|:--------------------:|:------------------:|:----------:|--------------------------|----------|:---------:|     ')
 for a in alphas:
-    Separador(f'Ridge alpha = {a}')
-    RIDGE = Ridge(alpha = a,
-                  max_iter = NUMERO_MAXIMO_ITERACIONES,
+    #Separador(f'Ridge alpha = {a}')
+    RIDGE[a] = Ridge(alpha = a,
+                  max_iter = ITERACION_MAXIMAS,
                   
                   )
 
 
-    ridge =  Evaluacion(  RIDGE,
-                          x_train_reducido, y_train,
+    ridge[a] =  EvaluacionTablaCoeficientes(  RIDGE[a],
+                          x_train, y_train,
                           k_folds,
                           f'Ridge alpha = {a}',
                           metrica_error  = 'r2'
                       
                         )
 
-    #print(f'Parámetro de ridge: {ridge.coef_}')
-    print('Máximo parámetro ridge ', max(ridge.coef_))
+    LASSO[a] = Lasso(alpha = a,
+                  max_iter = ITERACION_MAXIMAS,
+                  
+                  )
+    
+
+    lasso[a] =  EvaluacionTablaCoeficientes(LASSO[a],
+                          x_train, y_train,
+                          k_folds,
+                          f'Lasso alpha = {a}',
+                          metrica_error  = 'r2'                 
+                        )
+
+   ''' 
 # La variación es muy poca, y el error en cross validation se mantien, luego descartamso esta opción
 
 
 #tenemso los datos sufiecientes para aplicar 
 # https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR
+
 '''
 SUPPORT_VECTOR_REGRESSION = SVR(C=1.0, epsilon=0.2)
 grado = 1
@@ -784,17 +918,30 @@ ______Test____
 En_test r2 0.29736389886545533
 
 Conclusión: no merece la pena
+
 '''
 
 ### ______ sgd regresor ________
+Separador('Otros modelos sgd')
 
+print()
+''' Datos usados en experimentos, dejamos los más significativos
 algoritmos = ['squared_loss', 'epsilon_insensitive']
-penalizaciones = ['l1', 'l2'] 
+penalizaciones = ['l2'] 
 tasa_aprendizaje = ['optimal', 'adaptive']
-alphas = [0.001, 0.0001]
+alphas = [0.001, 0.0001, 1]
+eta = 0.0001
+'''
+algoritmos = [ 'epsilon_insensitive']
+penalizaciones = ['l2'] 
+tasa_aprendizaje = ['optimal']
+alphas = [1]
 eta = 0.0001
 
-
+''' para gráfica memoria
+print(' | Modelo               | Media $R^2$ cv | Desviación típica cv | Media coeficientes | Desv. coef | Intervalo coeficientes   | t.ajuste | tiempo vc |    ')
+print('|:--------------------:|:--------------:|:--------------------:|:------------------:|:----------:|--------------------------|----------|:---------:|     ')
+'''
 cnt = 0 # contado de número de algoritmos lanzados
 ajustes = list()
 
@@ -802,6 +949,7 @@ for a in alphas:
     for algoritmo in algoritmos:
         for penalizacion in penalizaciones:
             for aprendizaje in tasa_aprendizaje:
+                Separador()
                 
                 SGD_REGRESSOR = SGDRegressor(
                     alpha = a,
@@ -814,6 +962,7 @@ for a in alphas:
                     early_stopping = True
                 )
 
+                '''
                 titulo = str(
                     f'\n___SGD regresión ({cnt})___\n' +
                     'algoritmo: ' + algoritmo  + '\n' +
@@ -822,17 +971,79 @@ for a in alphas:
                     'eta: ' + str(eta) +  '\n' +
                     'alpha: ' + str(a) + '\n'
                 )
-                    
-                
+                   '''
+
                 sgd =  Evaluacion(  SGD_REGRESSOR,
-                                      x_train_reducido, y_train,
-                                     # x_test_reducido, y_test,
+                                    x_train, y_train,
+                                    k_folds,
+                                    titulo,
+                                    metrica_error  = 'r2'
+                      
+                                  )
+                ''' PARA DIBUJAR LA GRÁFICA DE LA MEMORIA
+                titulo = str(
+                    f'SGD {cnt}, ' + algoritmo  + ', ' + aprendizaje +', ' +
+                    'a=' + str(a) 
+                )
+                
+                sgd =  EvaluacionTablaCoeficientes(  SGD_REGRESSOR,
+                                      x_train, y_train,
                                       k_folds,
                                       titulo,
                                       metrica_error  = 'r2'
                       
                                   )
-
+                '''
 
                 ajustes.append(sgd)
                 cnt += 1
+
+
+# _______- conclusiones finales ________
+
+Separador('Datos mejor ajuste')
+# mejor ajuste
+
+print('El score en test de regresion_lineal_sin_outliers_normalizados es {:.5f}'.format(regresion_lineal_sin_outliers_normalizados.score(x_test, y_test) ))
+
+print('Su error dentro de la muestra era de {:.5f}'.format(regresion_lineal_sin_outliers_normalizados.score(x_train, y_train) ))
+
+Separador('Vamos a entrenar ahora con todos los datos y devolver los coeficientes')
+
+x = np.append(x_train, x_test).reshape(len(x_train) + len(x_test),
+                                       len(x_train[0]))
+y = np.append(y_train, y_test)
+
+
+regresion_lineal_sin_outliers_normalizados.fit(x,y)
+
+print('Su error dentro de la muestra era de {:.5f}'.format(regresion_lineal_sin_outliers_normalizados.score(x, y) ))
+
+print('Los coeficientes finales son: \n',
+      regresion_lineal_sin_outliers_normalizados.coef_)
+
+# _______ matriz de confusión _____
+
+-------- fin apartado, enter para continuar -------
+
+
+Matriz de confusión escala 0.05
+Separador('Vamos a comparar la predicción usando la matris de confusión')
+y_predecida = regresion_lineal_sin_outliers_normalizados.predict(x)
+
+escalas = [1,1/5,1/20]
+for escala in escalas:
+    Separador('Matriz de confusión escala {:.2f}'.format(escala))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(  confusion_matrix( (y_predecida*escala).round(),(y*escala).round()))
+    plt.title('Matriz de confusión escala {:.2f}'.format(escala))
+    fig.colorbar(cax)
+    plt.xlabel('Predición')
+    plt.ylabel('Valor real')
+    plt.show()
+
+
+
+
+ ## Comparación con un aproximador dummy   

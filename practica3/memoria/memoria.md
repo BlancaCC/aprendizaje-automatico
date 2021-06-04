@@ -564,8 +564,8 @@ Para PCA, datos a analizar
 https://en.wikipedia.org/wiki/Likelihood_function
 https://medium.com/@analyttica/log-likelihood-analyttica-function-series-cb059e0d379
 Cuanto más alto sea mejor, no tiene cota así que calcularemos uno sin reducir la dimensión para tenerlo como cota, los resultado obtenidos son:   
+    
 
-table:PCA y su máxima verosimilitud  
 
 | N componentes | score sin haber reducido | score habiendo reducido |
 |:-------------:|:------------------------:|:-----------------------:|
@@ -576,6 +576,8 @@ table:PCA y su máxima verosimilitud
 | 72            | 17.9                     | -6.244                  |
 | 68            | 16.53                    | -3.905                  |
 | 81            | 19.95                    | -3.905                  |  
+
+Table: PCA y su máxima verosimilitud  
 
 Además es interesante comparar el valor 68, con experimentos posteriores, ya que es el número de dimensiones al que se redució usando el coeficiente de pearson.  
 
@@ -608,16 +610,95 @@ A nivel computacional puede que en algunos caso por la forma de calcularlo el co
 
 ## Selección del modelos  
 
-### Experimento de difernecia de datos  
+### Modelos que vamos a tratar  
+
+La infomación a todos estos modelos ha sido sacada de la página oficial de skleart entre el 23 de mayo de 2021 y e 5 de julio del mismo año.   
+
+#### Modelo de regresión lineal   
+
+Se corresponde a un modelos de regresión lineal  por mínimos cuadrados usual, la funcion es `class sklearn.linear_model.LinearRegression(*, fit_intercept=True, normalize=False, copy_X=True, n_jobs=None, positive=False)`  
+
+De manera general el modelo trata de ajustar el vector de pesos minimizando el la suma de al cuadrado de la diferencia entre las etiquetas y el valor actual.   
+
+Este método tiene como característica que da más importancia a reducir grandes diferencias entre los datos.  
+
+.  
+
+Las variantes que posteriormente utilizaremos de este método son Lasso y Ridge, ambos introduce regularización.   
+
+#### Ridge   
+
+Regresión lineal de mínimos cuadrados con regularización l2, es decir la función objetivo a minimzar es:  
+
+$$f(w) = \| y-wX\| + alpha \| w\|^2$$  
+
+Donde $alpha \in \mathbb R^+$ es la fuerza de la regularización. Se corresponde al argumento `alpha`.    
+
+Este tipo de regresiones consiguen que los coeficientes tomen de manera general valores más bajos.  
+
+Es equivalente a usar `SGDRegresor` con los argumentos `SGDRegressor(loss='squared_loss', penalty='l2')`  
+
+
+#### Lasso  
+Regresión lineal de mínimos cuadrados con regularización l2, es decir la función objetivo a minimzar es:  
+
+$$f(w) = \| y-wX\| + alpha \| w\|$$  
+
+Donde $alpha \in \mathbb R^+$ es la fuerza de la regularización. Se corresponde al argumento `alpha`.    
+
+Este tipo de regresiones consiguen que los coeficientes tomen de manera general valores más bajos.  
+
+Es equivalente a usar `SGDRegresor` con los argumentos `SGDRegressor(loss='squared_loss', penalty='l1')`  
+
+#### Gradiente descendente estocástico  
+
+Implementa el gradiente descendiente estocástico, en la documentación se recomienda utilizar estos métodos cuando el número de valores sea lo suficientemente grande (mayor que 10000).  En nuestro caso contamos con más de 20000 tras el procesado, luego es legítimo su uso.  
+
+
+Las funciones de pérdida a minimizar pueden ser:   
+
+
+- `loss="squared_loss"`: Ordinary least squares,  
+- ` loss="huber"`: Huber loss for robust regression,  
+- `loss="epsilon_insensitive"`: linear Support Vector Regression.  
+
+
+Nosotros utilizaremos la de mínimos cuadrados y la última.   
+
+La mayor ventaja de este método es su eficiencia computacional $\mathcal O(kn\bar p)$  donde $k$ es el número de épocas y $\bar p$ es la media de los atributos no nulos del conjunto,  $n$ es el número de características de la matriz de entrenamiento $X \mathbb R^{n \times p}$.  
+
+
+#### Epsilon-Insensitive  
+
+Esto es un caso de soft-margin equivalente a regresiónd de soporte vectorial donde la función a minimizar es: 
+
+$$L(y_i, f(x_i)) = max(0, |y_i, f(x_i)| - \epsilon)$$
+
+La regla de actualización de los pesons viene dada por 
+
+$$w_{new} = w - \eta ( \alpha \frac{\partial R(w)}{\partial w} + \frac{\partial L(w^T x_i + b, y_i)}{\partial w})$$
+
+Donde $\eta$ es la tasa de aprendizaje, $\eta$ la tasa de aprendizaje que puede ser constante o gradualemnte menos usando `learning_rate = 'optimal'`  $R$ es el cuadrado de la norma euclídea en L2 o la norma uno en L1. 
+vendría dada por 
+
+$$\eta ^(t) = \frac{1}{ \alpha(t_0 + t)}$$
+
+#### Argumentos y parámetros generalel a todos los modelos   
+
+Todos los modelos nos permiten agilizar el ajuste utilizando programación en paralelo, esto se hace gracias  `n_jobs`.  
+
+El error a usar será $R^2$.  
+
+
+### Experimento transformaciones características  
 
 Vamos a seleccionar con qué transformación de los datos de entrenamiento vamos a trabajar, para ello voy a fijar un modelo cualquiera, en este caso regresión lineal y a partir de ahí compararé los resultados con validación cruzada.  
 
 Nota: Los tiempos de ejecución puede variar a los que aquí se presentan  
 
 
-table: Comparativas en regresión lineal  
 
-| Experimento         | Media error cv | varianza cv | tiempo ajuste modelo | tiempo cv |
+| Experimento         | Media $R^2$ cv | varianza cv | tiempo ajuste modelo | tiempo cv |
 |:-------------------:|:--------------:|:-----------:|----------------------|:---------:|
 | X sin prepocesar    | 0.737095       | 0.012516    | 0.316216             | 1.886190  |
 | X solo normalizado  | 0.737095       | 0.012516    | 0.215509s            | 0.749248  |
@@ -625,6 +706,8 @@ table: Comparativas en regresión lineal
 | X red. dim. Pearson | 0.724373       | 0.012280    | 0.220314             | 0.575430  |
 | X PCA  72 dim       | 0.734363       | 0.013467    | 0.253654             | 0.621077  |
 | X PCA 68 dim.       | 0.732357       | 0.013831    | 0.264193             | 0.562457  |
+
+Table: Comparativas en regresión lineal  
 
 De aquí se deduce que:   
 
@@ -644,7 +727,6 @@ Viendo la gráfica de los datos de la figura 4,  podríamos pensar que una de pr
 
 Los resultados obtenidos son los siguientes: 
 
-table: Comparativa transformaciones  
 
 
 | Transformación | Media error cv | varianza cv | tiempo ajuste modelo | tiempo cv |
@@ -652,15 +734,212 @@ table: Comparativa transformaciones
 | Sin ninguna    | 0.738254       | 0.013038    | 0.262464s            | 0.728209  |
 | Inversa        | 0.684363       | 0.088954    | 0.689754             | 2.001623  |
 | Cuadrática     | 0.762161       | 0.012071    | 0.559633             | 1.556234  |
+
+Table: Comparativa transformaciones  
   
 
 Conclusiones a la vista de los resultado:   
 
 - Nuestra tesis no era cierta, ya que una transformación aleatoria ha mejorado el error de la transformación inversa.  
-- Al aumentar la dimensión ha disminuído el error, sin embargo no tenemos ningún buen motivo para optar por ahora utilizar los datos cuadráticos, así que para evitar riesgo de overfitting seguiremos utilizando los datos de `x_train'  sin transfomar.m  
+- Al aumentar la dimensión ha disminuído el error, sin embargo no tenemos ningún buen motivo para optar por ahora utilizar los datos cuadráticos, así que para evitar riesgo de overfitting seguiremos utilizando los datos de `x_train'  sin transfomar.  
+
+### Planteamos regularización  
+
+Observando los coeficientes vemos que para el caso de regresión lineal tienen una media de -0.3357, desviación típica de 23.2933 y estos valores obscilan en el intervalo $[-109.8194 , 100.3491]$. Luego podría ser interesante plantear regularización.   
+
+Para valores de alpha $[[0.0001, 0.01, 1, 100]$   
+
+
+
+| Modelo               | Media $R^2$ validación cruzada | Desviación típica validación cruzada |
+|:--------------------:|:------------------------------:|:------------------------------------:|
+| Sin regularización   | 0.73825                        | 0.01304                              |
+| Ridge alpha = 0.0001 | 0.72437                        | 0.01228                              |
+| Lasso alpha = 0.0001 | 0.73669                        | 0.01318                              |
+| Ridge alpha = 0.01   | 0.73826                        | 0.01304                              |
+| Lasso alpha = 0.01   | 0.73531                        | 0.01328                              |
+| Ridge alpha = 1      | 0.73788                        | 0.01311                              |
+| Lasso alpha = 1      | 0.65187                        | 0.00722                              |
+| Ridge alpha = 100    | 0.72353                        | 0.01221                              |
+| Lasso alpha = 100    | -0.00041                       | 0.00038                              |
+
+Table: Comparativas de regularización errores  
+
+Observando los errores no se aprecia una mejora considerable como para asegurar que la regulación ha sido beneficiosa, 
+de hecho, salvo para el valor  Ridge alpha = 0.01 el resto de errores ha sido peor al modelo sin regularizar. 
+
+Lasso es por lo gneral peor siendo incluso extremadamente malo para alpha = 100. No pasemos por alto que a nivel teórico el error
+$R ^2$ debería de ser positivo o cero, sin embargo a nivel de cálculos, el propio sklearn nos avisa que esto es posible, por el método
+de cálculo. 
+
+
+| Modelo               | Media coeficientes | Desviación típica coeficiente | Intervalo coeficientes   |
+|:--------------------:|:------------------:|:-----------------------------:|--------------------------|
+| Sin regularización   | -0.3357            | 23.2933                       | $[-109.8194 , 100.3491]$ |
+| Ridge alpha = 0.0001 | 0.0897             | 11.6398                       | $[-36.2930 , 26.0460]$   |
+| Lasso alpha = 0.0001 | -0.10280           | 13.23585                      | $[-28.655,33.710]$       |
+| Ridge alpha = 0.01   | -0.33305           | 23.14947                      | $[-109.058,99.727]$      |
+| Lasso alpha = 0.01   | -0.06890           | 10.11854                      | $[-23.478,26.716]$       |
+| Ridge alpha = 1      | -0.19816           | 16.45576                      | $[-68.236,66.293]$       |
+| Lasso alpha = 1      | 0.12576            | 1.76816                       | $[-4.889,7.522]$         |
+| Ridge alpha = 100    | 0.09446            | 5.45929                       | $[-12.657,14.729]$       |
+| Lasso alpha = 100    | 0.00000            | 0.00000                       | $[0.000,0.000]$          |
+
+Table: Comparativas de regularización coeficientes    
+
+En cuanto a regularización de los coeficientes podemso aprecia que para valores $0.0001$ ya se nota considerablemente la mejora, 
+aunque es notable que un mayor incremento del alpha no significa una reducción de la media, compárese por ejemplo  Ridge alpha = 0.0001 y 
+ Ridge alpha = 0.01 .  
+ 
+ Valores grandes como el caso alpha = 100 son demasiados agresivos para este problema, ya que en lasso incluso hace tender todos los coeficientes a cero.  
+ 
+ A nivel de media y desviación de coeficientes no parece que exista una disminución considerable entre ridge y lasso.  
+ 
+ 
+
+| Modelo               | Tiempo ajuste | tiempo validación cruzada |
+|:--------------------:|---------------|:-------------------------:|
+| Sin regularización   | 0.2780        | 0.7299                    |
+| Ridge alpha = 0.0001 | 0.1542        | 0.3140                    |
+| Lasso alpha = 0.0001 | 7.772         | 14.024                    |
+| Ridge alpha = 0.01   | 0.074         | 0.366                     |
+| Lasso alpha = 0.01   | 7.468         | 13.940                    |
+| Ridge alpha = 1      | 0.101         | 0.372                     |
+| Lasso alpha = 1      | 0.323         | 0.668                     |
+| Ridge alpha = 100    | 0.099         | 0.370                     |
+| Lasso alpha = 100    | 0.068         | 0.236                     |
+
+Table: Comparativas de regularización tiempos    
+
+
+Por lo general ridge parece tener mejores tiempos.  
+
+#### Conclusiones de la regularización   
+
+No parece que haya hipótesis suficientes para asegurar que la regularización mejore el error en el problema, 
+aunque un buen motivo de selección puede ser la mejora en tiempos con el método ridge.  
+
+
 
 ### Selección de otros modelos y ajuste de sus hiperparámetros  
 
+Finalmente probaremos regularización por gradiente estocástico y L2 para ver si podemos mejorar   
+
+
+En penalizaciones usaremos l2 porque ya hemos visto que es considerablememente mejor que l1. 
+
+Para valores de alpha optaremos por los mejores según el experimento anterior 
+`alphas = [0, 0.01, 1.0]`
+
+Los datos generales ajustados son: 
+
+```
+algoritmos = ['squared_loss', 'epsilon_insensitive']
+penalizaciones = ['l2'] 
+tasa_aprendizaje = ['optimal', 'adaptive']
+alphas = [0.001, 0.0001, 1]
+eta = 0.0001
+```  
+
+Los datos obtenidos han sido   
+
+Table: Bondad ajuste SGD   
+
+ | Modelo                                         | Media $R^2$ cv                | Desviación típica cv         |
+ |:----------------------------------------------:|:-----------------------------:|:----------------------------:|
+ | SGD 0, squared_loss, optimal, a=0.001          | -379879755363378.37500        | 316806030106607.68750        |
+ | SGD 1, squared_loss, adaptive, a=0.001         | 0.70043                       | 0.01111                      |
+ | SGD 2, epsilon_insensitive, optimal, a=0.001   | 0.70078                       | 0.01274                      |
+ | SGD 3, epsilon_insensitive, adaptive, a=0.001  | 0.42907                       | 0.40104                      |
+ | SGD 4, squared_loss, optimal, a=0.0001         | -8724081136905541910528.00000 | 4014304236392014151680.00000 |
+ | SGD 5, squared_loss, adaptive, a=0.0001        | 0.70015                       | 0.01193                      |
+ | SGD 6, epsilon_insensitive, optimal, a=0.0001  | 0.62925                       | 0.05990                      |
+ | SGD 7, epsilon_insensitive, adaptive, a=0.0001 | 0.44876                       | 0.37637                      |
+ | SGD 8, squared_loss, optimal, a=1              | -725063748.16417              | 1449512907.71730             |
+ | SGD 9, squared_loss, adaptive, a=1             | 0.62073                       | 0.00773                      |
+ | SGD 10, epsilon_insensitive, optimal, a=1      | -0.38109                      | 0.03355                      |
+ | SGD 11, epsilon_insensitive, adaptive, a=1     | -0.46762                      | 0.02048                      |
+
+  
+  Todos son considerablemente peor.   
+  
+  
+  
+  
+  
+ Table: Tiempos empleados para SGD   
+
+ | Modelo                                         | t.ajuste | tiempo vc |
+ |:----------------------------------------------:|----------|:---------:|
+ | SGD 0, squared_loss, optimal, a=0.001          | 0.165    | 0.573     |
+ | SGD 1, squared_loss, adaptive, a=0.001         | 0.220    | 0.587     |
+ | SGD 2, epsilon_insensitive, optimal, a=0.001   | 0.082    | 0.255     |
+ | SGD 3, epsilon_insensitive, adaptive, a=0.001  | 0.567    | 1.250     |
+ | SGD 4, squared_loss, optimal, a=0.0001         | 0.104    | 0.352     |
+ | SGD 5, squared_loss, adaptive, a=0.0001        | 0.234    | 0.566     |
+ | SGD 6, epsilon_insensitive, optimal, a=0.0001  | 0.084    | 0.260     |
+ | SGD 7, epsilon_insensitive, adaptive, a=0.0001 | 0.616    | 1.277     |
+ | SGD 8, squared_loss, optimal, a=1              | 0.410    | 63.568    |
+ | SGD 9, squared_loss, adaptive, a=1             | 0.194    | 0.527     |
+ | SGD 10, epsilon_insensitive, optimal, a=1      | 0.078    | 0.254     |
+ | SGD 11, epsilon_insensitive, adaptive, a=1     | 0.257    | 0.529     |
+
+  
+  Table: Análisis coeficientes SGD  
+  
+ | Modelo                                         | Media coeficientes  | Desv. coef         | Intervalo coeficientes                   |
+ |:----------------------------------------------:|:-------------------:|:------------------:|------------------------------------------|
+ | SGD 0, squared_loss, optimal, a=0.001          | -16167710.23694     | 2528128884.56301   | $[-8072925316.819,9290240617.779]$       |
+ | SGD 1, squared_loss, adaptive, a=0.001         | 0.16742             | 2.82429            | $[-7.495,7.855]$                         |
+ | SGD 2, epsilon_insensitive, optimal, a=0.001   | 0.11424             | 3.53939            | $[-9.858,11.893]$                        |
+ | SGD 3, epsilon_insensitive, adaptive, a=0.001  | 0.13799             | 1.30179            | $[-3.501,4.082]$                         |
+ | SGD 4, squared_loss, optimal, a=0.0001         | -110164007089.55455 | 710643433147.06018 | $[-2184110916265.495,1498885737018.452]$ |
+ | SGD 5, squared_loss, adaptive, a=0.0001        | 0.16891             | 2.77359            | $[-7.490,7.692]$                         |
+ | SGD 6, epsilon_insensitive, optimal, a=0.0001  | -0.06156            | 7.53228            | $[-20.290,21.228]$                       |
+ | SGD 7, epsilon_insensitive, adaptive, a=0.0001 | 0.14259             | 1.38753            | $[-3.778,4.321]$                         |
+ | SGD 8, squared_loss, optimal, a=1              | 42.91602            | 1267.73112         | $[-3008.964,3498.335]$                   |
+ | SGD 9, squared_loss, adaptive, a=1             | 0.11079             | 0.86456            | $[-2.400,2.397]$                         |
+ | SGD 10, epsilon_insensitive, optimal, a=1      | 0.01241             | 0.11200            | $[-0.170,0.230]$                         |
+ | SGD 11, epsilon_insensitive, adaptive, a=1     | 0.01202             | 0.10616            | $[-0.161,0.219]$                         |
+
+
+## Conclusiones finales  
+
+A partir de los datos obtenidos en validación cruzada el modelo que creemos más oportuno es regresión lineal clásica con los datos normalizado. Vamos a proceder al cálculo de su error en test.  
+
+- El score en test de `regresion_lineal_sin_outliers_normalizados` es 0.72809
+- Su error dentro de la muestra es de 0.74058  
+
+Dan resultados coerentens.  
+
+Para conseguir una aproximación final mejor entrenaré ahora con todos los datos disponibles: 
+
+Ahora el error dentro de la muestra es de 0.73810.  
+
+Y los coeficientes finales son:
+
+```
+ [  -5.03464881   25.12726738  -29.63955445  -16.08989186   23.31876557
+  -12.72930963    2.28827438   11.79554543    0.65189973  -11.23126874
+    1.68295703   14.32638897  -23.67662571  -12.48164682   22.21200275
+  -42.87020392   14.789619     21.62170753    4.63353855  -22.20847874
+   -3.09023986  -10.75758111   92.41603694    4.47084164 -100.91127751
+   27.27759662   17.93545442   12.91883547   -3.11178101   -8.13559299
+   -8.18806856  -13.5568395    -0.59300049    4.56602126    9.14065602
+    5.75605075   -6.3981041    -6.59051061   -0.11583777   10.39194084
+   -2.54616392   -2.86413771   16.77665281    5.15527572  -18.37745171
+    1.41183552   -6.0048152   -21.57223156   -3.79018449   26.89261847
+  -11.19120282   19.97938517  -28.24282798  -15.79903521   21.55958573
+   -7.49115431    9.35899058   -7.64875089    6.98899077   -4.98260296
+    5.66919664   -2.16366059   23.92419635   -2.29311171  -13.02622619
+    3.30095386    0.50554918  -13.88054008   -9.80820039   16.37230292
+   -0.43269037  -19.63394812   29.28920034   23.77807324  -33.40295992
+   29.3930802   -26.99417789    6.22070315   -0.86233777    3.2880403
+  -11.42343509]
+```  
+
+
+### Comparación bondad del ajuste con dummy approximator 
 
 
 

@@ -1,0 +1,1087 @@
+Python 3.9.5 (default, May  9 2021, 14:00:28) 
+[GCC 10.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> python.el: native completion setup loaded
+>>> Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/blanca/repositorios/aprendizaje-automatico/practica3/codigo/regresion.py", line 119, in <module>
+    q
+NameError: name 'q' is not defined
+>>> Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/blanca/repositorios/aprendizaje-automatico/practica3/codigo/regresion.py", line 119, in <module>
+    q
+NameError: name 'q' is not defined
+>>> Vamos a proceder a leer los datos de los ficheros ['./datos/train.csv', './datos/unique_m.csv']
+Hay algún valor perdido: False
+
+-------- fin apartado, enter para continuar -------
+
+
+Separamos test y entrenamiento
+
+-------- fin apartado, enter para continuar -------
+
+
+___ Distribución de las etiquetas ___
+
+Distribución de las etiquetas de y en rango valores de [0.0002, 185.0000] 
+
+Número total de etiquetas  21263
+Cantidad mínima de datos  0
+Alcanzada en intervalo [148.0000 , 154.1667]
+Cantidad máxima de datos  5851
+Alcanzada en intervalo [0.0002 , 6.1669]
+La media de datos por intervalo es 708.7667
+La desviación típica de datos por intervalos es 1136.9938
+La mediana de y es   20
+La media de datos 34.4212
+La desviación típica de datos 34.2536
+qt.qpa.xcb: QXcbConnection: XCB error: 5 (BadAtom), sequence: 481, resource id: 0, major code: 20 (GetProperty), minor code: 0
+
+-------- fin apartado, enter para continuar -------
+
+
+Veamos para datos que cumplan y>100
+
+Distribución de las etiquetas de y en rango valores de [100.1000, 185.0000] 
+
+Número total de etiquetas  768
+Cantidad mínima de datos  0
+Alcanzada en intervalo [139.7200 , 142.5500]
+Cantidad máxima de datos  131
+Alcanzada en intervalo [105.7600 , 108.5900]
+La media de datos por intervalo es 25.6000
+La desviación típica de datos por intervalos es 35.8335
+La mediana de y es  112
+La media de datos 115.1110
+La desviación típica de datos 10.0942
+
+-------- fin apartado, enter para continuar -------
+
+
+Veamos para datos que cumplan y>140
+
+Distribución de las etiquetas de y en rango valores de [143.0000, 185.0000] 
+
+Número total de etiquetas  3
+Cantidad mínima de datos  0
+Alcanzada en intervalo [144.4000 , 145.8000]
+Cantidad máxima de datos  2
+Alcanzada en intervalo [143.0000 , 144.4000]
+La media de datos por intervalo es 0.1000
+La desviación típica de datos por intervalos es 0.3958
+La mediana de y es  143
+La media de datos 157.0000
+La desviación típica de datos 19.7990
+
+___ Información eliminando outliers___
+Proporcion de deistancia a la desviación típica tomada  3
+Media de los datos 34.3770
+Desviación típica 34.2947
+Rango de valores aceptado [-68.5071, 137.2611]
+Número de outliers eliminados 4
+
+-------- fin apartado, enter para continuar -------
+
+
+Normalizamos los datos
+
+-------- fin apartado, enter para continuar -------
+
+
+Matriz de correlación asociada a los datos de entrenamiento
+
+-------- fin apartado, enter para continuar -------
+
+
+Índice de las características a mantener
+
+Coeficiente pearson para umbral 0.97
+| Coeficiente | Índice 1 | Índice 2 |     
+| --- | --- | ---|     
+|  0.9977344836132547  |  15  |  25 |     
+|  0.9949851032288713  |  72  |  74 |     
+|  0.9927370559393953  |  15  |  75 |     
+|  0.9922857116863967  |  12  |  14 |     
+|  0.9900332397045414  |  71  |  73 |     
+|  0.9895765625613749  |  25  |  75 |     
+|  0.9879106324819098  |  67  |  69 |     
+|  0.9846934874781107  |  57  |  59 |     
+|  0.9814966304423618  |  17  |  19 |     
+|  0.9800574445217765  |  22  |  24 |     
+|  0.9737056111907341  |  77  |  79 |     
+|  0.9731786577395288  |  0  |  15 |     
+|  0.9727940993327779  |  47  |  49 |     
+|  0.9724241796704087  |  5  |  25 |     
+|  0.9722313118161271  |  0  |  25 |     
+|  0.9707351648209968  |  52  |  54 |     
+
+-------- fin apartado, enter para continuar -------
+
+
+El número inical de características es de 81
+
+Las reducciones de dimensión total son: 
+
+| umbral | tamaño tras reducción | reducción total |    
+|:------:|:---------------------:|:---------------:|    
+| 0.97 | 68 | 13 |    
+
+-------- fin apartado, enter para continuar -------
+
+
+PCA y su máxima verosimilitud logaritmica
+| N componentes | score sin haber reducido | score habiendo reducido |   
+|:---:|:---:|:---:|    
+| 1|-97.49 |-83.35|    
+| 2|-91.81 |-78.77|    
+| 34|-2.557 |-13.03|    
+| 51|9.146 |-6.244|    
+| 72|17.9 |-6.244|    
+| 68|16.53 |-3.905|    
+| 81|19.95 |-3.905|    
+
+-------- fin apartado, enter para continuar -------
+
+
+Visualizamos PCA 2d
+
+-------- fin apartado, enter para continuar -------
+
+
+____ Regresión lineal______
+
+ --------------------
+ Evaluando Regresión lineal con datos sin preprocesar
+	score_validacion_cruzada
+[0.71380233 0.74185518 0.74697892 0.73497783 0.74786019]
+	Media error de validación cruzada 0.737095
+	Varianza del error de validación cruzada0.0125160.012516
+	Tiempo empleado para el ajuste: 0.316216s
+	Tiempo empleado para el validacion cruzada2.091899s
+
+ --------------------
+ Evaluando Regresión lineal con datos sin preprocesar normalizados
+	score_validacion_cruzada
+[0.71380233 0.74185518 0.74697892 0.73497783 0.74786019]
+	Media error de validación cruzada 0.737095
+	Varianza del error de validación cruzada0.012516
+	Tiempo empleado para el ajuste: 0.288309s
+	Tiempo empleado para el validacion cruzada0.749248s
+
+ --------------------
+ Evaluando Regresión lineal x reducida por Pearson
+	score_validacion_cruzada
+[0.70195087 0.73144725 0.73343813 0.72047008 0.73456025]
+	Media error de validación cruzada 0.724373
+	Varianza del error de validación cruzada0.012280
+	Tiempo empleado para el ajuste: 0.220314s
+	Tiempo empleado para el validacion cruzada0.575430s
+
+ --------------------
+ Evaluando Regresión lineal, PCA n=72 sin reducción por pearson
+	score_validacion_cruzada
+[0.7092303  0.74374746 0.74258568 0.73137088 0.74487833]
+	Media error de validación cruzada 0.734363
+	Varianza del error de validación cruzada0.013467
+	Tiempo empleado para el ajuste: 0.253654s
+	Tiempo empleado para el validacion cruzada0.621077s
+
+ --------------------
+ Evaluando Regresión lineal, PCA n=68 sin reducción por pearson
+	score_validacion_cruzada
+[0.70613179 0.74170913 0.74093361 0.73045061 0.74256036]
+	Media error de validación cruzada 0.732357
+	Varianza del error de validación cruzada0.013831
+	Tiempo empleado para el ajuste: 0.264193s
+	Tiempo empleado para el validacion cruzada0.562457s
+
+-------- fin apartado, enter para continuar -------
+
+
+Regresión lineal transformación cuadrática
+
+ --------------------
+ Evaluando Regresión lineal transformación lineal cuadrática
+	score_validacion_cruzada
+[0.7405107  0.76575386 0.77314678 0.75857975 0.77281219]
+	Media error de validación cruzada 0.762161
+	Varianza del error de validación cruzada0.012071
+	Tiempo empleado para el ajuste: 0.577417s
+	Tiempo empleado para el validacion cruzada1.590874s
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 0.0001
+
+ --------------------
+ Evaluando Ridge alpha = 0.0001
+	score_validacion_cruzada
+[0.70195086 0.73144725 0.73343815 0.72047008 0.73456026]
+	Media error de validación cruzada 0.724373
+	Varianza del error de validación cruzada0.012280
+	Tiempo empleado para el ajuste: 0.178120s
+	Tiempo empleado para el validacion cruzada0.314663s
+Máximo parámetro ridge  26.045968750382603
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 0.01
+
+ --------------------
+ Evaluando Ridge alpha = 0.01
+	score_validacion_cruzada
+[0.70195027 0.73144659 0.73343973 0.72047006 0.73456147]
+	Media error de validación cruzada 0.724374
+	Varianza del error de validación cruzada0.012281
+	Tiempo empleado para el ajuste: 0.169070s
+	Tiempo empleado para el validacion cruzada0.314227s
+Máximo parámetro ridge  26.029991108693192
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 1
+
+ --------------------
+ Evaluando Ridge alpha = 1
+	score_validacion_cruzada
+[0.70187729 0.7313597  0.7335588  0.72044887 0.73463181]
+	Media error de validación cruzada 0.724375
+	Varianza del error de validación cruzada0.012328
+	Tiempo empleado para el ajuste: 0.167252s
+	Tiempo empleado para el validacion cruzada0.308437s
+Máximo parámetro ridge  24.521332597400296
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 100
+
+ --------------------
+ Evaluando Ridge alpha = 100
+	score_validacion_cruzada
+[0.69494157 0.72196558 0.72606937 0.71208063 0.72586253]
+	Media error de validación cruzada 0.716184
+	Varianza del error de validación cruzada0.011772
+	Tiempo empleado para el ajuste: 0.167978s
+	Tiempo empleado para el validacion cruzada0.307336s
+Máximo parámetro ridge  13.715918706912051
+
+ --------------------
+ Evaluando 
+___SGD regresión (0)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-1.32225474e+17 -5.81770461e+16 -1.68264312e+17 -4.86965160e+17
+ -2.84658821e+17]
+	Media error de validación cruzada -226058162795266912.000000
+	Varianza del error de validación cruzada149556190375970528.000000
+	Tiempo empleado para el ajuste: 0.357016s
+	Tiempo empleado para el validacion cruzada0.496909s
+
+ --------------------
+ Evaluando 
+___SGD regresión (1)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.68005859 0.70344003 0.70756439 0.69174662 0.70739884]
+	Media error de validación cruzada 0.698042
+	Varianza del error de validación cruzada0.010681
+	Tiempo empleado para el ajuste: 0.357653s
+	Tiempo empleado para el validacion cruzada0.718719s
+
+ --------------------
+ Evaluando 
+___SGD regresión (2)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-1.40947671e+14 -6.89922601e+12 -3.27015114e+13 -1.94285244e+14
+ -3.32859424e+13]
+	Media error de validación cruzada -81623918842846.406250
+	Varianza del error de validación cruzada72836286688357.703125
+	Tiempo empleado para el ajuste: 0.346654s
+	Tiempo empleado para el validacion cruzada0.370028s
+
+ --------------------
+ Evaluando 
+___SGD regresión (3)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.67922055 0.70424778 0.70612242 0.69361901 0.70930089]
+	Media error de validación cruzada 0.698502
+	Varianza del error de validación cruzada0.010985
+	Tiempo empleado para el ajuste: 0.197474s
+	Tiempo empleado para el validacion cruzada0.573334s
+
+ --------------------
+ Evaluando 
+___SGD regresión (4)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.67328515 0.71052951 0.71087426 0.69487492 0.70664463]
+	Media error de validación cruzada 0.699242
+	Varianza del error de validación cruzada0.014215
+	Tiempo empleado para el ajuste: 0.185478s
+	Tiempo empleado para el validacion cruzada0.336744s
+
+ --------------------
+ Evaluando 
+___SGD regresión (5)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.61755998 0.64890392 0.65528798 0.62624903 0.63489763]
+	Media error de validación cruzada 0.636580
+	Varianza del error de validación cruzada0.013951
+	Tiempo empleado para el ajuste: 0.960751s
+	Tiempo empleado para el validacion cruzada2.300044s
+
+ --------------------
+ Evaluando 
+___SGD regresión (6)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.67171151 0.70850057 0.70727965 0.68661978 0.69696325]
+	Media error de validación cruzada 0.694215
+	Varianza del error de validación cruzada0.013758
+	Tiempo empleado para el ajuste: 0.129792s
+	Tiempo empleado para el validacion cruzada0.379856s
+
+ --------------------
+ Evaluando 
+___SGD regresión (7)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-0.31165069  0.65042937  0.62177027  0.65110538  0.63750639]
+	Media error de validación cruzada 0.449832
+	Varianza del error de validación cruzada0.380891
+	Tiempo empleado para el ajuste: 0.910747s
+	Tiempo empleado para el validacion cruzada1.281657s
+
+ --------------------
+ Evaluando 
+___SGD regresión (8)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-1.12948945e+22 -1.82053970e+21 -1.09363363e+22 -2.47673218e+21
+ -4.95033540e+21]
+	Media error de validación cruzada -6295767610614012182528.000000
+	Varianza del error de validación cruzada4073058591634099798016.000000
+	Tiempo empleado para el ajuste: 0.418543s
+	Tiempo empleado para el validacion cruzada0.453274s
+
+ --------------------
+ Evaluando 
+___SGD regresión (9)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.67852737 0.70330829 0.70705958 0.69209397 0.7084699 ]
+	Media error de validación cruzada 0.697892
+	Varianza del error de validación cruzada0.011259
+	Tiempo empleado para el ajuste: 0.377030s
+	Tiempo empleado para el validacion cruzada0.729021s
+
+ --------------------
+ Evaluando 
+___SGD regresión (10)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-1.07376976e+22 -6.14586532e+21 -2.17982802e+22 -4.97523785e+21
+ -6.11389578e+21]
+	Media error de validación cruzada -9954195347032831426560.000000
+	Varianza del error de validación cruzada6243997394420426080256.000000
+	Tiempo empleado para el ajuste: 0.189003s
+	Tiempo empleado para el validacion cruzada0.347631s
+
+ --------------------
+ Evaluando 
+___SGD regresión (11)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.67881109 0.7036695  0.70754644 0.69345017 0.70892842]
+	Media error de validación cruzada 0.698481
+	Varianza del error de validación cruzada0.011229
+	Tiempo empleado para el ajuste: 0.284975s
+	Tiempo empleado para el validacion cruzada0.571535s
+
+ --------------------
+ Evaluando 
+___SGD regresión (12)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.63851441 0.64951287 0.70410266 0.68601254 0.70023224]
+	Media error de validación cruzada 0.675675
+	Varianza del error de validación cruzada0.026771
+	Tiempo empleado para el ajuste: 0.246727s
+	Tiempo empleado para el validacion cruzada0.424913s
+
+ --------------------
+ Evaluando 
+___SGD regresión (13)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-0.24154576  0.64936213  0.65558471  0.63468304  0.63628631]
+	Media error de validación cruzada 0.466874
+	Varianza del error de validación cruzada0.354297
+	Tiempo empleado para el ajuste: 1.316375s
+	Tiempo empleado para el validacion cruzada1.802636s
+
+ --------------------
+ Evaluando 
+___SGD regresión (14)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.6595684  0.64657811 0.68869929 0.56230308 0.70254165]
+	Media error de validación cruzada 0.651938
+	Varianza del error de validación cruzada0.049058
+	Tiempo empleado para el ajuste: 0.151070s
+	Tiempo empleado para el validacion cruzada0.302189s
+
+ --------------------
+ Evaluando 
+___SGD regresión (15)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.62888559 0.6532894  0.66271727 0.63441411 0.63656012]
+	Media error de validación cruzada 0.643173
+	Varianza del error de validación cruzada0.012719
+	Tiempo empleado para el ajuste: 0.678040s
+	Tiempo empleado para el validacion cruzada1.687687s
+>>> x_train_outliers_normalizado
+array([[-0.76951558, -1.25516534, -0.54793834, ...,  2.19994925,
+        -0.04651646, -0.31690616],
+       [ 0.61634572, -0.51899723, -0.52028797, ..., -0.40590505,
+        -0.08049078, -0.43365582],
+       [ 0.61634572, -0.77307175,  0.08722685, ..., -0.28153887,
+         1.00413228,  1.05559993],
+       ...,
+       [-0.07658493,  0.1941464 , -0.55916316, ..., -0.62959396,
+        -0.83629245, -0.92966436],
+       [-1.46244623,  0.30947946,  0.70674605, ..., -0.9019109 ,
+        -1.72807188, -1.47641434],
+       [ 0.61634572,  0.15462141,  0.32342884, ..., -0.93108772,
+        -0.90428133, -0.70941746]])
+>>> x_train_con_outliers
+array([[ 3.        , 50.1843462 , 54.6518077 , ...,  3.6375    ,
+         0.81649658,  0.5290026 ],
+       [ 5.        , 72.201783  , 55.58687193, ...,  1.08571429,
+         0.8       ,  0.47573788],
+       [ 5.        , 64.60288064, 76.13145764, ...,  1.2075    ,
+         1.32664992,  1.15518126],
+       ...,
+       [ 4.        , 93.5306    , 54.27221333, ...,  0.86666667,
+         0.4330127 ,  0.24944383],
+       [ 2.        , 96.98      , 97.082     , ...,  0.6       ,
+         0.        ,  0.        ],
+       [ 5.        , 92.34848   , 84.1192    , ...,  0.57142857,
+         0.4       ,  0.34992711]])
+>>> Vamos a proceder a leer los datos de los ficheros ['./datos/train.csv', './datos/unique_m.csv']
+Hay algún valor perdido: False
+
+-------- fin apartado, enter para continuar -------
+
+
+Separamos test y entrenamiento
+
+-------- fin apartado, enter para continuar -------
+
+
+___ Distribución de las etiquetas ___
+
+Distribución de las etiquetas de y en rango valores de [0.0002, 185.0000] 
+
+Número total de etiquetas  21263
+Cantidad mínima de datos  0
+Alcanzada en intervalo [148.0000 , 154.1667]
+Cantidad máxima de datos  5851
+Alcanzada en intervalo [0.0002 , 6.1669]
+La media de datos por intervalo es 708.7667
+La desviación típica de datos por intervalos es 1136.9938
+La mediana de y es   20
+La media de datos 34.4212
+La desviación típica de datos 34.2536
+
+-------- fin apartado, enter para continuar -------
+
+
+Veamos para datos que cumplan y>100
+
+Distribución de las etiquetas de y en rango valores de [100.1000, 185.0000] 
+
+Número total de etiquetas  768
+Cantidad mínima de datos  0
+Alcanzada en intervalo [139.7200 , 142.5500]
+Cantidad máxima de datos  131
+Alcanzada en intervalo [105.7600 , 108.5900]
+La media de datos por intervalo es 25.6000
+La desviación típica de datos por intervalos es 35.8335
+La mediana de y es  112
+La media de datos 115.1110
+La desviación típica de datos 10.0942
+
+-------- fin apartado, enter para continuar -------
+
+
+Veamos para datos que cumplan y>140
+
+Distribución de las etiquetas de y en rango valores de [143.0000, 185.0000] 
+
+Número total de etiquetas  3
+Cantidad mínima de datos  0
+Alcanzada en intervalo [144.4000 , 145.8000]
+Cantidad máxima de datos  2
+Alcanzada en intervalo [143.0000 , 144.4000]
+La media de datos por intervalo es 0.1000
+La desviación típica de datos por intervalos es 0.3958
+La mediana de y es  143
+La media de datos 157.0000
+La desviación típica de datos 19.7990
+
+___ Información eliminando outliers___
+Proporcion de deistancia a la desviación típica tomada  3
+Media de los datos 34.3770
+Desviación típica 34.2947
+Rango de valores aceptado [-68.5071, 137.2611]
+Número de outliers eliminados 4
+
+-------- fin apartado, enter para continuar -------
+
+
+Normalizamos los datos
+
+-------- fin apartado, enter para continuar -------
+
+
+Matriz de correlación asociada a los datos de entrenamiento
+
+-------- fin apartado, enter para continuar -------
+
+
+Índice de las características a mantener
+
+Coeficiente pearson para umbral 0.97
+| Coeficiente | Índice 1 | Índice 2 |     
+| --- | --- | ---|     
+|  0.9977344836132547  |  15  |  25 |     
+|  0.9949851032288713  |  72  |  74 |     
+|  0.9927370559393953  |  15  |  75 |     
+|  0.9922857116863967  |  12  |  14 |     
+|  0.9900332397045414  |  71  |  73 |     
+|  0.9895765625613749  |  25  |  75 |     
+|  0.9879106324819098  |  67  |  69 |     
+|  0.9846934874781107  |  57  |  59 |     
+|  0.9814966304423618  |  17  |  19 |     
+|  0.9800574445217765  |  22  |  24 |     
+|  0.9737056111907341  |  77  |  79 |     
+|  0.9731786577395288  |  0  |  15 |     
+|  0.9727940993327779  |  47  |  49 |     
+|  0.9724241796704087  |  5  |  25 |     
+|  0.9722313118161271  |  0  |  25 |     
+|  0.9707351648209968  |  52  |  54 |     
+
+-------- fin apartado, enter para continuar -------
+
+
+El número inical de características es de 81
+
+Las reducciones de dimensión total son: 
+
+| umbral | tamaño tras reducción | reducción total |    
+|:------:|:---------------------:|:---------------:|    
+| 0.97 | 68 | 13 |    
+
+-------- fin apartado, enter para continuar -------
+
+
+PCA y su máxima verosimilitud logaritmica
+| N componentes | score sin haber reducido | score habiendo reducido |   
+|:---:|:---:|:---:|    
+| 1|-97.49 |-83.35|    
+| 2|-91.81 |-78.77|    
+| 34|-2.557 |-13.03|    
+| 51|9.146 |-6.244|    
+| 72|17.9 |-6.244|    
+| 68|16.53 |-3.905|    
+| 81|19.95 |-3.905|    
+
+-------- fin apartado, enter para continuar -------
+
+
+Visualizamos PCA 2d
+
+-------- fin apartado, enter para continuar -------
+
+
+____ Regresión lineal______
+
+ --------------------
+ Evaluando Regresión lineal con datos sin preprocesar
+	score_validacion_cruzada
+[0.71380233 0.74185518 0.74697892 0.73497783 0.74786019]
+	Media error de validación cruzada 0.737095
+	Varianza del error de validación cruzada0.012516
+	Tiempo empleado para el ajuste: 0.330637s
+	Tiempo empleado para el validacion cruzada1.886190s
+
+ --------------------
+ Evaluando Regresión lineal con datos normalizados sin preprocesar
+	score_validacion_cruzada
+[0.71380233 0.74185518 0.74697892 0.73497783 0.74786019]
+	Media error de validación cruzada 0.737095
+	Varianza del error de validación cruzada0.012516
+	Tiempo empleado para el ajuste: 0.215509s
+	Tiempo empleado para el validacion cruzada0.763491s
+
+ --------------------
+ Evaluando Regresión lineal con datos normalizados y sin outliers
+	score_validacion_cruzada
+[0.71403727 0.7475221  0.74699157 0.73495806 0.74776128]
+	Media error de validación cruzada 0.738254
+	Varianza del error de validación cruzada0.013038
+	Tiempo empleado para el ajuste: 0.293344s
+	Tiempo empleado para el validacion cruzada0.749254s
+
+ --------------------
+ Evaluando Regresión lineal x reducida por Pearson
+	score_validacion_cruzada
+[0.70195087 0.73144725 0.73343813 0.72047008 0.73456025]
+	Media error de validación cruzada 0.724373
+	Varianza del error de validación cruzada0.012280
+	Tiempo empleado para el ajuste: 0.211887s
+	Tiempo empleado para el validacion cruzada0.595358s
+
+ --------------------
+ Evaluando Regresión lineal, PCA n=72 sin reducción por pearson
+	score_validacion_cruzada
+[0.7092303  0.74374746 0.74258568 0.73137088 0.74487833]
+	Media error de validación cruzada 0.734363
+	Varianza del error de validación cruzada0.013467
+	Tiempo empleado para el ajuste: 0.246724s
+	Tiempo empleado para el validacion cruzada0.629082s
+
+ --------------------
+ Evaluando Regresión lineal, PCA n=68 sin reducción por pearson
+	score_validacion_cruzada
+[0.70613179 0.74170913 0.74093361 0.73045061 0.74256036]
+	Media error de validación cruzada 0.732357
+	Varianza del error de validación cruzada0.013831
+	Tiempo empleado para el ajuste: 0.251259s
+	Tiempo empleado para el validacion cruzada0.580328s
+
+-------- fin apartado, enter para continuar -------
+
+
+Regresión lineal transformación cuadrática
+
+ --------------------
+ Evaluando Regresión lineal transformación lineal cuadrática
+	score_validacion_cruzada
+[0.7405107  0.76575386 0.77314678 0.75857975 0.77281219]
+	Media error de validación cruzada 0.762161
+	Varianza del error de validación cruzada0.012071
+	Tiempo empleado para el ajuste: 0.597573s
+	Tiempo empleado para el validacion cruzada1.590975s
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 0.0001
+
+ --------------------
+ Evaluando Ridge alpha = 0.0001
+	score_validacion_cruzada
+[0.70195086 0.73144725 0.73343815 0.72047008 0.73456026]
+	Media error de validación cruzada 0.724373
+	Varianza del error de validación cruzada0.012280
+	Tiempo empleado para el ajuste: 0.148524s
+	Tiempo empleado para el validacion cruzada0.316373s
+Máximo parámetro ridge  26.045968750382603
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 0.01
+
+ --------------------
+ Evaluando Ridge alpha = 0.01
+	score_validacion_cruzada
+[0.70195027 0.73144659 0.73343973 0.72047006 0.73456147]
+	Media error de validación cruzada 0.724374
+	Varianza del error de validación cruzada0.012281
+	Tiempo empleado para el ajuste: 0.161205s
+	Tiempo empleado para el validacion cruzada0.312851s
+Máximo parámetro ridge  26.029991108693192
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 1
+
+ --------------------
+ Evaluando Ridge alpha = 1
+	score_validacion_cruzada
+[0.70187729 0.7313597  0.7335588  0.72044887 0.73463181]
+	Media error de validación cruzada 0.724375
+	Varianza del error de validación cruzada0.012328
+	Tiempo empleado para el ajuste: 0.157289s
+	Tiempo empleado para el validacion cruzada0.312644s
+Máximo parámetro ridge  24.521332597400296
+
+-------- fin apartado, enter para continuar -------
+
+
+Ridge alpha = 100
+
+ --------------------
+ Evaluando Ridge alpha = 100
+	score_validacion_cruzada
+[0.69494157 0.72196558 0.72606937 0.71208063 0.72586253]
+	Media error de validación cruzada 0.716184
+	Varianza del error de validación cruzada0.011772
+	Tiempo empleado para el ajuste: 0.163614s
+	Tiempo empleado para el validacion cruzada0.319085s
+Máximo parámetro ridge  13.715918706912051
+
+ --------------------
+ Evaluando 
+___SGD regresión (0)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-6.75860607e+17 -4.39109895e+17 -9.31955754e+16 -2.02645643e+17
+ -1.25535183e+17]
+	Media error de validación cruzada -307269380823888320.000000
+	Varianza del error de validación cruzada220473332845919296.000000
+	Tiempo empleado para el ajuste: 0.301860s
+	Tiempo empleado para el validacion cruzada0.592261s
+
+ --------------------
+ Evaluando 
+___SGD regresión (1)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.67911161 0.70350495 0.70626369 0.69343478 0.70763449]
+	Media error de validación cruzada 0.697990
+	Varianza del error de validación cruzada0.010668
+	Tiempo empleado para el ajuste: 0.362182s
+	Tiempo empleado para el validacion cruzada0.740813s
+
+ --------------------
+ Evaluando 
+___SGD regresión (2)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-4.78585568e+14 -2.69864065e+13 -3.14711724e+12 -1.55090986e+15
+ -1.22027756e+14]
+	Media error de validación cruzada -436331342393317.000000
+	Varianza del error de validación cruzada582763982186599.875000
+	Tiempo empleado para el ajuste: 0.352892s
+	Tiempo empleado para el validacion cruzada0.414768s
+
+ --------------------
+ Evaluando 
+___SGD regresión (3)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.67809323 0.70487725 0.70728369 0.69136308 0.70872908]
+	Media error de validación cruzada 0.698069
+	Varianza del error de validación cruzada0.011738
+	Tiempo empleado para el ajuste: 0.280851s
+	Tiempo empleado para el validacion cruzada0.582028s
+
+ --------------------
+ Evaluando 
+___SGD regresión (4)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.68023637 0.70982976 0.71528324 0.70495824 0.71346346]
+	Media error de validación cruzada 0.704754
+	Varianza del error de validación cruzada0.012756
+	Tiempo empleado para el ajuste: 0.175710s
+	Tiempo empleado para el validacion cruzada0.369867s
+
+ --------------------
+ Evaluando 
+___SGD regresión (5)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-0.24216806  0.64670801  0.65420781  0.63195246  0.63863966]
+	Media error de validación cruzada 0.465868
+	Varianza del error de validación cruzada0.354097
+	Tiempo empleado para el ajuste: 0.944012s
+	Tiempo empleado para el validacion cruzada1.761893s
+
+ --------------------
+ Evaluando 
+___SGD regresión (6)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[0.66855548 0.70119268 0.70562183 0.69266489 0.69992362]
+	Media error de validación cruzada 0.693592
+	Varianza del error de validación cruzada0.013193
+	Tiempo empleado para el ajuste: 0.125075s
+	Tiempo empleado para el validacion cruzada0.261182s
+
+ --------------------
+ Evaluando 
+___SGD regresión (7)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.001
+
+	score_validacion_cruzada
+[-0.30574969  0.6611668   0.68364126  0.65896432  0.66236704]
+	Media error de validación cruzada 0.472078
+	Varianza del error de validación cruzada0.389016
+	Tiempo empleado para el ajuste: 0.923199s
+	Tiempo empleado para el validacion cruzada1.699220s
+
+ --------------------
+ Evaluando 
+___SGD regresión (8)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-4.07356884e+21 -2.57708194e+21 -1.33372927e+21 -4.65856624e+21
+ -3.80627035e+21]
+	Media error de validación cruzada -3289843328413566763008.000000
+	Varianza del error de validación cruzada1190691894301519773696.000000
+	Tiempo empleado para el ajuste: 0.456191s
+	Tiempo empleado para el validacion cruzada0.576557s
+
+ --------------------
+ Evaluando 
+___SGD regresión (9)___
+algoritmo: squared_loss
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.67913169 0.70480622 0.70757112 0.69398458 0.70703056]
+	Media error de validación cruzada 0.698505
+	Varianza del error de validación cruzada0.010866
+	Tiempo empleado para el ajuste: 0.363742s
+	Tiempo empleado para el validacion cruzada0.755697s
+
+ --------------------
+ Evaluando 
+___SGD regresión (10)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-1.10131470e+22 -4.91997194e+21 -2.76122676e+21 -1.41045105e+22
+ -1.19364807e+22]
+	Media error de validación cruzada -8947067369917777969152.000000
+	Varianza del error de validación cruzada4342501996724512882688.000000
+	Tiempo empleado para el ajuste: 0.186773s
+	Tiempo empleado para el validacion cruzada0.314509s
+
+ --------------------
+ Evaluando 
+___SGD regresión (11)___
+algoritmo: squared_loss
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.67907075 0.70356786 0.70776913 0.69356104 0.70810867]
+	Media error de validación cruzada 0.698415
+	Varianza del error de validación cruzada0.011007
+	Tiempo empleado para el ajuste: 0.288572s
+	Tiempo empleado para el validacion cruzada0.584989s
+
+ --------------------
+ Evaluando 
+___SGD regresión (12)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.66647409 0.71318285 0.64733033 0.676933   0.7031898 ]
+	Media error de validación cruzada 0.681422
+	Varianza del error de validación cruzada0.024035
+	Tiempo empleado para el ajuste: 0.302908s
+	Tiempo empleado para el validacion cruzada0.603810s
+
+ --------------------
+ Evaluando 
+___SGD regresión (13)___
+algoritmo: epsilon_insensitive
+penalización: l1
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-0.18135695  0.64728641  0.66024343  0.63977516  0.6342506 ]
+	Media error de validación cruzada 0.480040
+	Varianza del error de validación cruzada0.330813
+	Tiempo empleado para el ajuste: 1.130979s
+	Tiempo empleado para el validacion cruzada1.781677s
+
+ --------------------
+ Evaluando 
+___SGD regresión (14)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: optimal
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[0.65141763 0.58829522 0.68081312 0.60681356 0.6094241 ]
+	Media error de validación cruzada 0.627353
+	Varianza del error de validación cruzada0.033781
+	Tiempo empleado para el ajuste: 0.146023s
+	Tiempo empleado para el validacion cruzada0.282732s
+
+ --------------------
+ Evaluando 
+___SGD regresión (15)___
+algoritmo: epsilon_insensitive
+penalización: l2
+aprendizaje: adaptive
+eta: 0.0001
+alpha: 0.0001
+
+	score_validacion_cruzada
+[-0.30686421  0.64771849  0.61412934  0.64252065  0.63255272]
+	Media error de validación cruzada 0.446011
+	Varianza del error de validación cruzada0.376612
+	Tiempo empleado para el ajuste: 0.703419s
+	Tiempo empleado para el validacion cruzada1.298025s
+>>> a = np.array([[1,2,2],[3,4]])

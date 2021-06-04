@@ -571,14 +571,4 @@ Separador('Comprobación error test en ajuste y predecidad')
 
 print(f'La precisión en test con logística es {y_predecida_regresion_logistica.score(x_test, y_test)} ')
 
-escala = 1/5
-fig = plt.figure()
-ax = fig.add_subplot(111)
-cax = ax.matshow(  confusion_matrix( (y_predecida*escala).round(),(y*escala).round()))
-plt.title(f'Matriz de confusión escala')
-fig.colorbar(cax)
-ax.set_xticklabels([''] + labels)
-ax.set_yticklabels([''] + labels)
-plt.xlabel('Predicted')
-plt.ylabel('True')
-plt.show()
+
